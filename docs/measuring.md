@@ -10,12 +10,29 @@ and write on.
 
 ---
 
-## Before anything else: one origin for the whole home
+## Before anything else: two things to get straight
+
+### One origin per project
 
 Pick the **north-west inside corner of the building** and call it `0, 0`. From
 there, `x` runs east and `y` runs south. Every room states where its own north-west
 inside corner falls in that space, and everything inside a room is then measured
 from the room's own corner.
+
+A project is one job — a whole home, a floor of one, or a single room. They are all
+the same in the data. For a single room, put its corner at `200, 200` and let the
+building outline be worked out; nothing else depends on the number.
+
+### Rooms are facts, designs are decisions
+
+A **room** holds what is true of the space: where it sits, its outline, its ceiling,
+and its doorways. A **design** holds what you have decided: the style, the floor and
+the furniture. Every room has at least one design, and can have several to compare.
+
+Measure the room once. Then write as many designs against it as you are undecided
+between. What you cannot do is move a door between designs — a doorway is shared with
+whatever is on the far side of it, and both sides are checked against each other. If
+the question is where the door goes, that is a second project.
 
 Pick which way is up on the plan and keep it. If plan-up is not true north, record
 how many degrees off it is as `northOffset`, and the compass will point correctly.
@@ -32,40 +49,45 @@ how many degrees off it is as `northOffset`, and the compass will point correctl
 
 ---
 
-## 1. The home, measured once
+## 1. The project, measured once
 
 | Field | Unit | What to take |
 | --- | --- | --- |
-| `envelope` | mm | Outer face of the building, clockwise from `0,0`. A rectangle is four points. |
-| `walls.exterior` | mm | Perimeter wall, finish face to finish face. Commonly 150–250. |
-| `walls.interior` | mm | A partition. Commonly 80–120. Used wherever two rooms sit apart. |
+| `id`, `name`, `location` | text | The id is the URL. The location can be as vague as you like. |
+| `scope` | home / floor / room | What kind of job it is. For the reader only; the pages key off the room count. |
+| `walls.exterior` | mm | Perimeter wall, finish face to finish face. Commonly 150–250. For a single-room job, the walls around that room. |
+| `walls.interior` | mm | A partition. Commonly 80–120. Used wherever two rooms of this project sit apart. |
 | `ceiling` | mm | Floor to ceiling, clear. The default for rooms that do not state their own. |
 | `northOffset` | degrees | How far plan-up is from true north. `0` if plan-up is north. |
-| `registeredArea` | m² | The figure on the deed. Published beside the area the drawing measures. |
-| `name`, `location`, `premise` | text | Whatever is worth publishing. |
+| `envelope` | mm, **optional** | Outer face of the building, clockwise from `0,0`. Leave it out and it is taken as the rooms grown by one exterior wall. |
+| `registeredArea` | m², **optional** | The figure on the deed. Published beside the area the drawing measures. A single room has none. |
+| `premise` | text | The brief for the job as a whole. |
 
-Take the envelope with the longest tape you have, along the outside if you can get
-to it, and check the diagonal — if the two diagonals of a supposedly rectangular
-flat differ by more than about 20 mm, the walls are not square and the rooms want
-tracing as polygons rather than rectangles.
+Two of those can usually be skipped. **Leave out `envelope`** unless the real outline
+differs from the rooms plus a wall — a building that is not a rectangle, or a deed
+drawing you want the plan held against. **Leave out `registeredArea`** for anything
+that is not a whole dwelling.
+
+If you do take the envelope, use the longest tape you have, along the outside if you
+can get to it, and check the diagonals — if the two diagonals of a supposedly
+rectangular flat differ by more than about 20 mm, the walls are not square and the
+rooms want tracing as polygons rather than rectangles.
 
 ---
 
 ## 2. Each room
 
-One file per room in `src/data/rooms/`.
+One file per room in `src/data/projects/<project>/rooms/`.
 
 | Field | Unit | What to take |
 | --- | --- | --- |
-| `id` | slug | `main-bedroom`. Becomes the URL, and the name other rooms use across a door. |
-| `origin` | mm point | The room's north-west inside corner, in home coordinates. |
+| `id` | slug | `main-bedroom`. Becomes the URL, and the name other rooms use across a door. Unique within this project only. |
+| `name`, `kind` | text, enum | Kind decides whether the floor counts as habitable. |
+| `origin` | mm point | The room's north-west inside corner, in the project's coordinates. |
 | `shape` | mm | `{ kind: 'rect', width, depth }`, or a clockwise polygon of inside corners. |
 | `ceiling` | mm | Clear height in this room. Note any bulkhead separately. |
-| `theme` | text | What the room has to do. One line. |
-| `summary` | text | How it is meant to work. A paragraph; it is the room's page. |
-| `style` | key | One of the styles in `src/data/styles.ts`. Sets the drawing's colours. |
-| `floor` | text + hex | The finish, and the colour to fill the room with. |
-| `openQuestions` | text[] | Anything still undecided. Printed as-is. |
+| `openings` | list | Doors and windows. See section 3. |
+| `designs` | list | At least one. `single({ … })` when there is nothing to compare. |
 
 **Measure the width in three places** — at each end and in the middle. If they
 differ, use the smallest, because that is what furniture has to pass.
@@ -73,13 +95,28 @@ differ, use the smallest, because that is what furniture has to pass.
 Blank to fill in:
 
 ```
-Room ______________________  id ______________________
+Room ______________________  id ______________________  kind __________
 
 origin      x __________  y __________
 size        width __________  depth __________     (or trace a polygon)
 ceiling     __________       bulkhead? __________
-style       __________       floor ______________________
 ```
+
+## 2b. Each design of that room
+
+| Field | Unit | What to take |
+| --- | --- | --- |
+| `id`, `name` | slug, text | The id is the URL under the room; the name is what the switcher shows. |
+| `preferred` | boolean | The one drawn wherever a page has to pick just one. Exactly one design per room. |
+| `theme` | text | What this design is trying to do that the others are not. One line. |
+| `summary` | text | How it is meant to work. A paragraph; it is the text on the page. |
+| `style` | key | One of the styles in `src/data/styles.ts`. Sets the drawing's colours. |
+| `floor` | text + hex | The finish, and the colour to fill the room with. |
+| `furniture` | list | See section 4. |
+| `openQuestions` | text[] | Anything still undecided. Printed as-is, and used as the ‘what it costs’ column when designs are compared. |
+
+For a room with one design, `single({ … })` fills in the id, the name and
+`preferred` for you. Write the fields above and nothing else.
 
 ---
 
@@ -98,7 +135,7 @@ report any disagreement, so this is worth doing rather than skipping.
 | `sill` | mm | Floor to the underside. `0` for a door. |
 | `kind` | enum | `door-swing`, `door-sliding`, `door-pocket`, `door-folding`, `door-french`, `window`, `window-floor`, `opening`. |
 | `swing` | enum | `left-in`, `left-out`, `right-in`, `right-out`. Hinge side first, then whether the leaf comes into this room. Judged standing in the room the entry is written under. |
-| `to` | room id | The room on the other side, or `outside`. |
+| `to` | room id or label | The room on the other side. Anything that is not a room in this project — `outside`, or a hallway you are not designing — makes the wall count as the perimeter, so the hole cuts the full exterior thickness. |
 
 Blank to fill in, one line each:
 
@@ -152,7 +189,18 @@ x ________  y ________            clearance ____________________
 
 ---
 
-## 5. Type it in, then read the audit
+## 5. If you cannot decide
+
+Write it twice. Give the room two designs instead of one, each with its own furniture
+and its own argument, and put what each one costs in its `openQuestions`. A
+`compare` page appears on its own, drawing both against the same shell with a table
+of the pieces they disagree about.
+
+This is the honest way to hold an open question: not a note saying *sofa here or
+there?*, but two drawings, both measured, both checked, with the cost of each
+printed under it.
+
+## 6. Type it in, then read the audit
 
 ```bash
 npm run build
@@ -167,8 +215,12 @@ mean a figure was written down wrong rather than that a room is badly designed:
 
 - `rooms-overlap` — two rooms claim the same floor, so one `origin` is wrong.
 - `opening-drift` — the two sides of one door disagree, so one `offset` is wrong.
+- `unpaired-opening` — one room records a door the other does not record back.
 - `outside-room` — a piece sticks out of the room, so either its `x, y` or the
   room's `shape` is wrong.
+
+Two designs of one room can never be reported as overlapping each other. They are
+arrangements of the same room, and only one is ever drawn at a time.
 
 To get pictures out for a contractor:
 
