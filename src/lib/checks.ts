@@ -78,7 +78,12 @@ export function checkDesign(room: Room, design: Design): Finding[] {
 
   for (const item of furniture) {
     const corners = cornersOf(item);
-    const own = item.width * item.depth;
+    /**
+     * The floor the piece really covers, which is its box only when it has no outline
+     * of its own. Measured as width × depth, a run with its end cut off would be
+     * reported as sticking out of the room by exactly the piece that was cut away.
+     */
+    const own = polygonArea(corners);
     const inside = overlapArea(corners, outline);
     if (own - inside > SLIVER) {
       findings.push({

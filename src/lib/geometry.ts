@@ -114,11 +114,22 @@ export const footprintOf = (item: Furniture): Box => ({
   depth: item.depth,
 });
 
-/** The four corners a piece actually occupies, rotation included. */
+/**
+ * The floor a piece actually covers, rotation included: the corners of its box, or
+ * of its own outline where it has one.
+ */
 export function cornersOf(item: Furniture): Point[] {
   const box = footprintOf(item);
   const about = { x: box.x + box.width / 2, y: box.y + box.depth / 2 };
-  return boxCorners(box).map((p) => rotatePoint(p, about, item.rotation ?? 0));
+  return footprintPoints(item).map((p) => rotatePoint(p, about, item.rotation ?? 0));
+}
+
+/** The unrotated footprint, in the same coordinates as the piece's box. */
+export function footprintPoints(item: Furniture): Point[] {
+  const box = footprintOf(item);
+  return item.outline
+    ? item.outline.map((p) => ({ x: box.x + p.x, y: box.y + p.y }))
+    : boxCorners(box);
 }
 
 /**
@@ -346,11 +357,14 @@ export function placed(
 
 export const roomArea = (room: Room): number => polygonArea(outlineOf(room));
 
-/** Floor actually stood on, so a rug and a wall-hung cupboard do not count. */
+/**
+ * Floor actually stood on, so a rug and a wall-hung cupboard do not count, and a
+ * piece with a cut corner counts only the floor it really covers.
+ */
 export const footprintArea = (design: Design): number =>
   design.furniture
     .filter((item) => item.mountedAt === undefined && item.kind !== 'rug')
-    .reduce((sum, item) => sum + item.width * item.depth, 0);
+    .reduce((sum, item) => sum + polygonArea(cornersOf(item)), 0);
 
 /**
  * The building outline. Stated when the real one is known, and otherwise taken as

@@ -30,7 +30,20 @@ const front = y + depth;
 const centre = { x: x + width / 2, y: y + depth / 2 };
 
 const pillowWidth = width >= 1400 ? width / 2 - 120 : width - 160;
-const divisions = Math.max(1, Math.round(width / 600));
+
+/**
+ * Where the run is divided, along its width. Given by the piece where the joinery is
+ * known; otherwise guessed at roughly 600 intervals.
+ */
+const even = Math.max(1, Math.round(width / 600));
+const cuts =
+  item.divisions ?? Array.from({ length: even - 1 }, (_, i) => (width * (i + 1)) / even);
+
+/**
+ * How far along the run the doors go. A piece with a cut end stops its doors at the
+ * last division, because what is left past it is a filler panel and not a cupboard.
+ */
+const doorRun = item.cut && cuts.length > 0 ? Math.max(...cuts) : width;
 const glyph = item.symbol;
 const cased = ['wardrobe', 'sideboard', 'shelving', 'counter', 'appliance'].includes(item.kind);
 const seats = Math.max(1, Math.round(width / 700));
@@ -49,20 +62,10 @@ const dashed = `${px(3)} ${px(2)}`;
        * shape that has the door's corner bitten out of it. Without outlines they
        * meet invisibly, which is what the material does.
        */
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={depth}
-        fill={item.fill}
-        fill-opacity="0.55"
-      />
+      <path d={item.shape} fill={item.fill} fill-opacity="0.55" />
     ) : (
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={depth}
+      <path
+        d={item.shape}
         fill={item.fill}
         fill-opacity={item.mounted ? 0.3 : 0.92}
         stroke={item.stroke}
@@ -128,14 +131,8 @@ const dashed = `${px(3)} ${px(2)}`;
 
         {cased && !glyph && (
           <>
-            <path d={`M ${x} ${front - inset} L ${x + width} ${front - inset}`} />
-            {Array.from({ length: divisions - 1 }, (_, i) => (
-              <path
-                d={`M ${x + (width * (i + 1)) / divisions} ${y} L ${
-                  x + (width * (i + 1)) / divisions
-                } ${front}`}
-              />
-            ))}
+            <path d={`M ${x} ${front - inset} L ${x + doorRun} ${front - inset}`} />
+            {cuts.map((at) => <path d={`M ${x + at} ${y} L ${x + at} ${front}`} />)}
           </>
         )}
 

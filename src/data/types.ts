@@ -156,9 +156,30 @@ export interface Furniture {
   /** North-west corner of the unrotated footprint, in room-local coordinates. */
   x: Mm;
   y: Mm;
+  /**
+   * A footprint that is not the whole rectangle: points inside the width × depth
+   * box, measured from its north-west corner, wound clockwise. Fitted carpentry is
+   * where this is needed — a run whose end is cut at an angle so it is not a corner
+   * to walk into is not a rectangle, and squaring it off on the plan would claim
+   * floor the room actually has.
+   *
+   * Must be convex. The overlap tests clip one footprint against another, and a
+   * concave clip window would silently return nothing.
+   */
+  outline?: Point[];
   /** Degrees clockwise about the footprint's centre. Usually 0, 90, 180 or 270. */
   rotation?: number;
   clearance?: Clearance;
+  /**
+   * Where a run is divided into separate carcasses, as distances along its width from
+   * its left edge before rotation. Left out, a run is divided at roughly 600
+   * intervals, which is a guess; given, it is what the joinery actually does.
+   *
+   * When the piece also has an outline, the last division is taken as the end of the
+   * cabinets, so anything beyond it — the cut corner of a run, say — is drawn as the
+   * filler panel it is rather than as another door.
+   */
+  divisions?: Mm[];
   symbol?: FurnitureSymbol;
   /** Height of the underside for a wall-hung piece; omitted when floor-standing. */
   mountedAt?: Mm;

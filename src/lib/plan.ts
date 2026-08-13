@@ -5,6 +5,7 @@ import {
   cornersOf,
   clearanceZonesOf,
   envelopeOf,
+  footprintPoints,
   grow,
   mergeBoxes,
   openingSegment,
@@ -210,8 +211,16 @@ export interface FurnitureRender {
   label: string;
   kind: Furniture['kind'];
   symbol?: Furniture['symbol'];
+  /** Explicit carcass divisions, and whether the piece has a cut end. */
+  divisions?: Mm[];
+  cut: boolean;
   /** Unrotated footprint, already in the shared space. */
   box: Box;
+  /**
+   * The unrotated footprint as a path — the box, or the piece's own outline where it
+   * has one. Drawn inside the rotate below, so a cut corner turns with the piece.
+   */
+  shape: string;
   /** SVG rotate() arguments, so the symbol turns with the piece. */
   transform: string;
   /** The floor it really covers, for hit areas and labels. */
@@ -254,7 +263,10 @@ export function furnitureRenders(room: Room, design: Design): FurnitureRender[] 
       label: item.short ?? item.name,
       kind: item.kind,
       symbol: item.symbol,
+      ...(item.divisions !== undefined && { divisions: item.divisions }),
+      cut: item.outline !== undefined,
       box,
+      shape: pathOf(footprintPoints({ ...item, x: box.x, y: box.y })),
       occupied: bbox(corners),
       transform: `rotate(${item.rotation ?? 0} ${round(centre.x)} ${round(centre.y)})`,
       corners: pathOf(corners),
