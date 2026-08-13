@@ -32,28 +32,34 @@ const FLOOR = { name: 'Existing floor, bare only at the door', colour: '#e2ded4'
 /**
  * The mat is not furniture that gets moved: it is the floor of the room, down all day
  * and all night. It reaches every wall except at the door, where a 900 by 1000 square
- * of bare floor is left as somewhere to stand and take shoes off. Two pieces rather
- * than one, because the shape wanted is a rectangle with the door's corner bitten out
- * of it and a footprint here is a rectangle.
+ * of bare floor is left as somewhere to stand and take shoes off.
+ *
+ * It is one piece of material. It takes two rectangles to describe here only because a
+ * footprint is a rectangle and the shape wanted has the door's corner bitten out of
+ * it; mats are drawn without an outline so the two meet invisibly, as the material
+ * does.
  */
 const MAT_PIECES: Furniture[] = [
   fromCatalogue('floor-mat', 0, 0, {
     id: 'mat-main',
-    name: 'Floor mat, main run',
+    name: 'Floor mat, cut to the room',
+    short: 'Mat',
     width: 2550,
     depth: 3500,
     colour: MAT,
     status: 'planned',
-    note: 'Wall to wall, and permanent. Everything in the room stands on it, which is why nothing in the room is heavy on a small foot.',
+    note: 'One piece, wall to wall, and permanent. It is listed as two rectangles because a footprint here is a rectangle and the shape wanted has the door’s corner cut out of it — the material and the order are one mat.',
   }),
   fromCatalogue('floor-mat', 0, 3500, {
     id: 'mat-door',
-    name: 'Floor mat, door end',
+    name: 'Floor mat, continued',
+    /** Empty, so the plan does not label one mat twice. */
+    short: '',
     width: 1650,
     depth: 1000,
     colour: MAT,
     status: 'planned',
-    note: 'Stops 900 mm short of the east wall, leaving the square inside the door bare. That square is where shoes come off, and it is the one part of the floor never sat on.',
+    note: 'The part that runs down beside the door. It stops 900 mm short of the east wall, leaving the square inside the door bare: that square is where shoes come off, and it is the one part of the floor never sat on.',
   }),
 ];
 
@@ -149,6 +155,7 @@ export const CHILDRENS_ROOM: Room = {
         'Where the air conditioner is has not been recorded, and it matters more in a room slept in on the floor than in one with beds, because the coldest air in a room is at floor level.',
         'A 1350 mm cupboard standing on 25 mm of foam will sink into it unevenly and can be rocked. It has to be screwed to the wall, and that is not optional in a room with a two-year-old in it.',
         'Every figure in this room except the sleeping bags is a typical size for its type rather than a measured one. The catalogue marks which is which; they are good enough to plan against and want confirming before anything is ordered.',
+        'There is nowhere in this room for clothes, and nothing has been assumed about where they go instead. A 600 mm wardrobe would have to come out of the 1.6 m aisle, which is the aisle the night layout depends on — so if clothes have to live in here, the sleeping arrangement is what pays for it.',
       ],
     },
     {
@@ -184,69 +191,6 @@ export const CHILDRENS_ROOM: Room = {
         'A 1400 mm bag suits a two-year-old and not a five-year-old. Two 1800 mm bags feet to feet come to 3.6 m, which this room still takes with 900 mm to spare — so the arrangement survives the children growing, and only the bags have to be replaced.',
         'Feet to feet puts one child’s head at the window end and the other’s at the door end. The one by the door will hear the household; the one by the window will get the morning light. Which child gets which is worth deciding on purpose rather than by which bag is laid out first.',
         'The play table stands 50 mm from the older child’s bag, level with their shoulders. Its top is well above a lying child but its legs are not, and a child in a bag rolls. Either the table moves 300 mm east at night, which defeats the point of nothing having to be moved, or its legs want to be the round ones.',
-      ],
-    },
-    {
-      id: 'fixed-beds',
-      name: 'Later, with fixed beds',
-      theme: 'What buying beds would cost, drawn so the choice can be made against something',
-      style: 'macaron',
-      floor: { name: 'Existing floor, mat lifted', colour: '#e2ded4' },
-      summary:
-        'The version of this room with two single beds and two desks in it. Everything fits: the beds run end to end along the west wall, using 4 m of its 4.5 m, and a 1.5 m spine down the east side takes both desks and the walking. But furniture then covers 52% of the floor, which the checks call crowded and which they are right about — the floor stops being a place and becomes the gaps between four large objects, and the mat comes up because there is no longer any floor worth covering. The point of drawing it is that sleeping on the floor is not a compromise made for now: it is what keeps the room from becoming this. If beds are ever wanted, the honest comparison is against a bunk and one shared desk, not against this.',
-      furniture: [
-        fromCatalogue('bed-single', 0, 400, {
-          id: 'bed-older',
-          name: 'Bed, older child',
-          short: 'Older child',
-          colour: OLDER,
-          status: 'considering',
-          note: 'Head to the north. Both beds run along the west wall end to end, and their feet meet in the middle.',
-        }),
-        fromCatalogue('bed-single', 0, 2450, {
-          id: 'bed-younger',
-          name: 'Bed, younger child',
-          short: 'Younger child',
-          /** Turned end for end, so this head is at the south wall. */
-          rotation: 180,
-          colour: YOUNGER,
-          status: 'considering',
-        }),
-        fromCatalogue('desk-1100', 1100, 0, {
-          id: 'desk-window',
-          name: 'Desk at the window',
-          short: 'Desk (window)',
-          status: 'considering',
-        }),
-        fromCatalogue('chair-desk', 1400, 700, {
-          id: 'chair-window',
-          name: 'Chair at the window',
-          colour: OLDER,
-          status: 'considering',
-        }),
-        fromCatalogue('desk-1100', 1950, 1700, {
-          id: 'desk-east',
-          name: 'Desk on the east wall',
-          short: 'Desk (east)',
-          rotation: 90,
-          status: 'considering',
-          note: 'Faces west into the room. No daylight of its own, so it needs a task lamp the other desk does not.',
-        }),
-        fromCatalogue('chair-desk', 1300, 1950, {
-          id: 'chair-east',
-          name: 'Chair on the east wall',
-          colour: YOUNGER,
-          status: 'considering',
-        }),
-        fromCatalogue('shelves-wall-1200', 2300, 2250, {
-          rotation: 90,
-          status: 'considering',
-          note: 'Stops 50 mm short of where the door leaf reaches.',
-        }),
-      ],
-      openQuestions: [
-        'A bunk and one shared desk would bring this back to about 30% covered, at the cost of one child sleeping in the air. That is the comparison worth drawing next, not this one against the floor.',
-        'Neither this nor the floor version has anywhere for clothes. If a wardrobe has to come into this room, 600 mm of the spine goes and the east desk goes with it.',
       ],
     },
   ],

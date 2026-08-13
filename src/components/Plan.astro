@@ -166,6 +166,8 @@ const pieceLabels =
     ? drawn
         .filter((entry) => entry.room.id === focused.id)
         .flatMap((entry) => entry.pieces)
+        /** An empty label is how a piece says it is a continuation of the one before it. */
+        .filter((piece) => piece.label.length > 0)
         .map((piece) => {
           const upright = piece.occupied.depth > piece.occupied.width * 1.35;
           const along = upright ? piece.occupied.depth : piece.occupied.width;

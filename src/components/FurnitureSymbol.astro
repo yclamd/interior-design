@@ -41,9 +41,13 @@ const dashed = `${px(3)} ${px(2)}`;
   {
     item.kind === 'rug' ? (
       /**
-       * Solid, and not dashed. Dashes on the floor mean a zone that has to be kept
-       * clear, and a mat is the opposite of that — the two read as the same thing
-       * from any distance when both are dashed.
+       * Fill only, with no outline at all. Dashes on the floor mean a zone that has
+       * to be kept clear and a mat is the opposite of that, so a dashed mat reads as
+       * a warning; and an outline puts a seam wherever two pieces of one mat meet.
+       * A mat cut to fit a room is one piece of material, and a footprint here is a
+       * rectangle, so a room like the children's takes two rectangles to describe a
+       * shape that has the door's corner bitten out of it. Without outlines they
+       * meet invisibly, which is what the material does.
        */
       <rect
         x={x}
@@ -51,10 +55,7 @@ const dashed = `${px(3)} ${px(2)}`;
         width={width}
         height={depth}
         fill={item.fill}
-        fill-opacity="0.45"
-        stroke={item.stroke}
-        stroke-opacity="0.4"
-        stroke-width={hairline}
+        fill-opacity="0.55"
       />
     ) : (
       <rect
