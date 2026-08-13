@@ -1,4 +1,8 @@
 import type { Project, Room, RoomKind } from './types';
+import {
+  PROJECT as CHILDRENS_ROOM,
+  ROOMS as CHILDRENS_ROOM_ROOMS,
+} from './projects/childrens-room/project';
 import { PROJECT as PLACEHOLDER_FLAT, ROOMS as PLACEHOLDER_FLAT_ROOMS } from './projects/placeholder-flat/project';
 import { PROJECT as STUDY_NOOK, ROOMS as STUDY_NOOK_ROOMS } from './projects/study-nook/project';
 
@@ -14,7 +18,9 @@ export interface Entry {
   rooms: Room[];
 }
 
+/** Real jobs first, placeholders after them. */
 export const PROJECTS: Entry[] = [
+  { project: CHILDRENS_ROOM, rooms: CHILDRENS_ROOM_ROOMS },
   { project: PLACEHOLDER_FLAT, rooms: PLACEHOLDER_FLAT_ROOMS },
   { project: STUDY_NOOK, rooms: STUDY_NOOK_ROOMS },
 ];
