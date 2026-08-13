@@ -40,17 +40,21 @@ const dashed = `${px(3)} ${px(2)}`;
 <g transform={item.transform} data-piece={item.id}>
   {
     item.kind === 'rug' ? (
+      /**
+       * Solid, and not dashed. Dashes on the floor mean a zone that has to be kept
+       * clear, and a mat is the opposite of that — the two read as the same thing
+       * from any distance when both are dashed.
+       */
       <rect
         x={x}
         y={y}
         width={width}
         height={depth}
         fill={item.fill}
-        fill-opacity="0.4"
+        fill-opacity="0.45"
         stroke={item.stroke}
-        stroke-opacity="0.5"
+        stroke-opacity="0.4"
         stroke-width={hairline}
-        stroke-dasharray={dashed}
       />
     ) : (
       <rect

@@ -30,12 +30,11 @@ const facing = (item: Furniture): string => {
     <caption class="border-b border-line px-4 py-3 text-left">
       <span class="font-serif text-base font-bold text-ink">Furniture schedule</span>
       <span class="ml-2 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-        {design.furniture.length} pieces · millimetres
+        {design.furniture.length} pieces · millimetres · named on the plan
       </span>
     </caption>
     <thead>
       <tr>
-        <th scope="col" class="w-10">#</th>
         <th scope="col">Piece</th>
         <th scope="col">W × D × H</th>
         <th scope="col">Faces</th>
@@ -44,9 +43,8 @@ const facing = (item: Furniture): string => {
     </thead>
     <tbody>
       {
-        design.furniture.map((item, index) => (
+        design.furniture.map((item) => (
           <tr>
-            <td class="font-mono text-2xs text-ink-faint">{index + 1}</td>
             <th scope="row">
               <span class="font-medium text-ink">{item.name}</span>
               {item.material && <span class="block text-2xs text-ink-faint">{item.material}</span>}

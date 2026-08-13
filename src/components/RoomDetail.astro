@@ -69,11 +69,11 @@ const legend = [
     note: `${project.walls.interior} mm inside, ${project.walls.exterior} mm at the perimeter`,
   },
   { swatch: design.floor.colour ?? style.palette.floor, label: 'This room', note: design.floor.name },
-  { swatch: style.palette.furniture, label: 'Furniture', note: 'Drawn at its catalogue footprint' },
+  { swatch: style.palette.furniture, label: 'Furniture', note: 'Drawn at its measured footprint, and named on the plan' },
   {
     swatch: PLAN_COLOURS.clearance,
-    label: 'Clearance',
-    note: 'Space a piece needs in front of it to be usable',
+    label: 'Dashed: clearance',
+    note: 'Floor that has to stay empty for the piece beside it to be usable — to open a door, pull a chair back, or kneel down',
   },
   {
     swatch: PLAN_COLOURS.glazing,
@@ -133,7 +133,7 @@ const legend = [
   rooms={rooms}
   focus={room.id}
   design={design.id}
-  labels="keys"
+  labels="names"
   dimensions
   clearance
   swept

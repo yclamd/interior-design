@@ -17,6 +17,7 @@ const FITTED = [
   placed(1950, 2500, {
     id: 'bedding-store',
     name: 'Bedding cupboard',
+    short: 'Bedding',
     kind: 'wardrobe',
     width: 900,
     depth: 600,
@@ -30,6 +31,7 @@ const FITTED = [
   placed(2150, 1450, {
     id: 'toy-bins',
     name: 'Low toy bins',
+    short: 'Toys',
     kind: 'shelving',
     width: 900,
     depth: 400,
@@ -43,6 +45,7 @@ const FITTED = [
   placed(2250, 500, {
     id: 'book-display',
     name: 'Picture book display',
+    short: 'Picture books',
     kind: 'shelving',
     width: 800,
     depth: 300,
@@ -56,6 +59,7 @@ const FITTED = [
   placed(100, 400, {
     id: 'floor-mat',
     name: 'Floor mat',
+    short: 'Mat',
     kind: 'rug',
     width: 1800,
     depth: 3000,
@@ -113,6 +117,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(300, 2700, {
           id: 'floor-cushion',
           name: 'Floor cushion',
+          short: 'Cushion',
           kind: 'armchair',
           width: 600,
           depth: 600,
@@ -140,6 +145,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(150, 1050, {
           id: 'mattress-older',
           name: 'Floor mattress, older child',
+          short: 'Older child',
           kind: 'bed',
           width: 700,
           depth: 1400,
@@ -151,6 +157,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(900, 1050, {
           id: 'mattress-younger',
           name: 'Floor mattress, younger child',
+          short: 'Younger child',
           kind: 'bed',
           width: 700,
           depth: 1400,
@@ -176,6 +183,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(0, 400, {
           id: 'bed-older',
           name: 'Bed, older child',
+          short: 'Older child',
           kind: 'bed',
           width: 1050,
           depth: 2000,
@@ -187,6 +195,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(0, 2450, {
           id: 'bed-younger',
           name: 'Bed, younger child',
+          short: 'Younger child',
           kind: 'bed',
           width: 1050,
           depth: 2000,
@@ -199,6 +208,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(1100, 0, {
           id: 'desk-window',
           name: 'Desk at the window',
+          short: 'Desk (window)',
           kind: 'desk',
           width: 1100,
           depth: 600,
@@ -210,6 +220,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(1400, 700, {
           id: 'chair-window',
           name: 'Chair at the window',
+          short: 'Chair',
           kind: 'chair',
           width: 450,
           depth: 450,
@@ -219,6 +230,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(1950, 1700, {
           id: 'desk-east',
           name: 'Desk on the east wall',
+          short: 'Desk (east)',
           kind: 'desk',
           width: 1100,
           depth: 600,
@@ -231,6 +243,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(1300, 1950, {
           id: 'chair-east',
           name: 'Chair on the east wall',
+          short: 'Chair',
           kind: 'chair',
           width: 450,
           depth: 450,
@@ -240,6 +253,7 @@ export const CHILDRENS_ROOM: Room = {
         placed(2300, 2250, {
           id: 'wall-shelves',
           name: 'Wall shelves',
+          short: 'Shelves',
           kind: 'shelving',
           width: 1200,
           depth: 250,

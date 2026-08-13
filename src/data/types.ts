@@ -136,6 +136,11 @@ export interface Clearance {
 export interface Furniture {
   id: string;
   name: string;
+  /**
+   * What the plan calls it, when the full name is too long to sit inside the piece.
+   * The schedule always uses the full name.
+   */
+  short?: string;
   kind: FurnitureKind;
   /** Footprint before rotation: width along x, depth along y. */
   width: Mm;

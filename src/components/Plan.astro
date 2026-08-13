@@ -41,7 +41,8 @@ interface Props {
    * preferred one, because a room being looked past is context and not a choice.
    */
   design?: string;
-  labels?: 'rooms' | 'keys' | 'none';
+  /** Room names on every room, piece names on the focused room, or nothing. */
+  labels?: 'rooms' | 'names' | 'none';
   furniture?: boolean;
   clearance?: boolean;
   /** The floor a door leaf sweeps, which is worth seeing on a room page. */
@@ -153,12 +154,28 @@ const roomLabels =
       }))
     : [];
 
-const keyed =
-  labels === 'keys' && focused ? designOf(focused).furniture.map((item) => item.id) : [];
-const keyOf = (id: string): number | null => {
-  const index = keyed.indexOf(id);
-  return index === -1 ? null : index + 1;
-};
+/**
+ * Names written on the pieces, rather than numbers to carry to a table. Each is set
+ * along the piece's longer side and drawn twice, outline then fill, so it reads over
+ * whatever it names. The type shrinks to fit the piece and then stops shrinking:
+ * below about 5.5 px nothing is gained by making it smaller, so a long name on a
+ * narrow piece is allowed to overrun rather than become unreadable.
+ */
+const pieceLabels =
+  labels === 'names' && focused
+    ? drawn
+        .filter((entry) => entry.room.id === focused.id)
+        .flatMap((entry) => entry.pieces)
+        .map((piece) => {
+          const upright = piece.occupied.depth > piece.occupied.width * 1.35;
+          const along = upright ? piece.occupied.depth : piece.occupied.width;
+          const size = Math.min(
+            px(9),
+            Math.max(px(5.5), (along * 0.94) / Math.max(1, piece.label.length * 0.56)),
+          );
+          return { text: piece.label, size, at: piece.at, upright };
+        })
+    : [];
 
 const dims = dimensions && focused
   ? (() => {
@@ -380,37 +397,35 @@ const descId = `plan-desc-${slug}`;
     }
 
     {
-      keyed.length > 0 &&
-        drawn
-          .filter((entry) => entry.strength === 1)
-          .flatMap((entry) => entry.pieces)
-          .map((piece) => {
-            const number = keyOf(piece.id);
-            return number === null ? null : (
-              <g pointer-events="none">
-                <circle
-                  cx={piece.label.x}
-                  cy={piece.label.y}
-                  r={px(8)}
-                  fill={PLAN_COLOURS.sheet}
-                  fill-opacity="0.92"
-                  stroke={PLAN_COLOURS.ink}
-                  stroke-opacity="0.5"
-                  stroke-width={px(0.6)}
-                />
-                <text
-                  x={piece.label.x}
-                  y={piece.label.y + px(3.6)}
-                  text-anchor="middle"
-                  font-size={px(10)}
-                  font-weight="700"
-                  fill={PLAN_COLOURS.ink}
-                >
-                  {number}
-                </text>
-              </g>
-            );
-          })
+      pieceLabels.map((label) => (
+        <g
+          pointer-events="none"
+          text-anchor="middle"
+          transform={label.upright ? `rotate(-90 ${label.at.x} ${label.at.y})` : undefined}
+        >
+          <text
+            x={label.at.x}
+            y={label.at.y + label.size * 0.34}
+            font-size={label.size}
+            font-weight="700"
+            fill="none"
+            stroke={PLAN_COLOURS.sheet}
+            stroke-width={label.size * 0.5}
+            stroke-linejoin="round"
+          >
+            {label.text}
+          </text>
+          <text
+            x={label.at.x}
+            y={label.at.y + label.size * 0.34}
+            font-size={label.size}
+            font-weight="700"
+            fill={PLAN_COLOURS.ink}
+          >
+            {label.text}
+          </text>
+        </g>
+      ))
     }
 
     <g>
