@@ -21,6 +21,23 @@ export function formatPing(mm2: number): string {
   return `${(mm2 / 1_000_000 / SQM_PER_PING).toFixed(2)} ping`;
 }
 
+/**
+ * A circle as a polygon, for the footprint of anything round. Given as an outline it
+ * makes the overlap tests use the circle rather than the square around it, which for a
+ * round table is 21% less floor than its box claims. Wound clockwise on screen and
+ * convex, as an outline has to be.
+ */
+export const circlePoints = (diameter: Mm, sides = 24): Point[] => {
+  const r = diameter / 2;
+  return Array.from({ length: sides }, (_, i) => {
+    const angle = (i / sides) * Math.PI * 2;
+    return {
+      x: Math.round(r + r * Math.sin(angle)),
+      y: Math.round(r - r * Math.cos(angle)),
+    };
+  });
+};
+
 export const rectPoints = (width: Mm, depth: Mm): Point[] => [
   { x: 0, y: 0 },
   { x: width, y: 0 },

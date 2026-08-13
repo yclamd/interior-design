@@ -125,7 +125,7 @@ const dashed = `${px(3)} ${px(2)}`;
 
         {item.kind === 'chair' && <rect x={x} y={y} width={width} height={Math.max(70, depth * 0.2)} />}
 
-        {(item.kind === 'table' || item.kind === 'desk') && (
+        {(item.kind === 'table' || item.kind === 'desk') && !item.cut && (
           <rect x={x + inset} y={y + inset} width={width - inset * 2} height={depth - inset * 2} />
         )}
 
