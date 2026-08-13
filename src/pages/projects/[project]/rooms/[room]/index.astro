@@ -1,0 +1,101 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import RoomDetail from '~/components/RoomDetail.astro';
+import { PROJECTS, projectById, roomById } from '~/data/projects';
+import { preferredDesign } from '~/data/types';
+import { withBase } from '~/consts';
+import { bbox, formatArea, outlineOf, roomArea } from '~/lib/geometry';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  PROJECTS.flatMap((entry) =>
+    entry.rooms.map((room) => ({
+      params: { project: entry.project.id, room: room.id },
+    })),
+  );
+
+const entry = projectById(Astro.params.project!)!;
+const room = roomById(entry, Astro.params.room!)!;
+const design = preferredDesign(room);
+const { project, rooms } = entry;
+
+const box = bbox(outlineOf(room));
+const area = roomArea(room);
+
+const index = rooms.findIndex((other) => other.id === room.id);
+const previous = rooms[index - 1];
+const next = rooms[index + 1];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Room',
+  name: room.name,
+  description: design.summary,
+  floorSize: {
+    '@type': 'QuantitativeValue',
+    unitCode: 'MTK',
+    value: Number((area / 1_000_000).toFixed(2)),
+  },
+};
+---
+
+<BaseLayout
+  title={`${room.name} — ${project.name}`}
+  description={`${room.name}: ${box.width} × ${box.depth} mm, ${formatArea(area)}, drawn to scale with its furniture at real sizes. ${design.theme}`}
+  schema={schema}
+>
+  <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
+    <nav aria-label="Breadcrumb" class="mb-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <span class="mx-2">/</span>
+      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+        {project.name}
+      </a>
+      {
+        rooms.length > 1 && (
+          <>
+            <span class="mx-2">/</span>
+            <a
+              href={withBase(`/projects/${project.id}/rooms`)}
+              class="transition-colors hover:text-brand"
+            >
+              Rooms
+            </a>
+          </>
+        )
+      }
+      <span class="mx-2">/</span>
+      <span class="text-ink-soft">{room.name}</span>
+    </nav>
+
+    <RoomDetail entry={entry} room={room} design={design} />
+  </section>
+
+  <nav
+    class="mx-auto mt-14 flex max-w-6xl flex-col gap-3 px-5 sm:flex-row sm:px-8"
+    aria-label="Other rooms"
+  >
+    {
+      previous && (
+        <a
+          href={withBase(`/projects/${project.id}/rooms/${previous.id}`)}
+          class="card flex-1 p-5 transition-colors hover:border-brand/40"
+        >
+          <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Previous</span>
+          <span class="mt-1 block font-serif text-lg font-bold text-ink">{previous.name}</span>
+        </a>
+      )
+    }
+    {
+      next && (
+        <a
+          href={withBase(`/projects/${project.id}/rooms/${next.id}`)}
+          class="card flex-1 p-5 text-right transition-colors hover:border-brand/40"
+        >
+          <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Next</span>
+          <span class="mt-1 block font-serif text-lg font-bold text-ink">{next.name}</span>
+        </a>
+      )
+    }
+  </nav>
+</BaseLayout>

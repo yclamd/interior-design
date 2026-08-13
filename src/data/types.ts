@@ -8,11 +8,12 @@
  *    the same unit means no figure on the site is ever a rounded version of a
  *    rounded version. Square metres and pings are derived at render time.
  *
- * 2. There is one plan coordinate space for the whole home: x runs right, y runs
- *    down, and the origin is the north-west corner of the building envelope. A
- *    room's own geometry is written relative to that room's origin, because that
- *    is what a person with a tape measure can actually produce, and the renderer
- *    translates it into the shared space.
+ * 2. Each project has one plan coordinate space: x runs right, y runs down, and the
+ *    origin is the north-west corner of the building. A room's own geometry is
+ *    written relative to that room's origin, because that is what a person with a
+ *    tape measure can actually produce, and the renderer translates it into the
+ *    project's space. Nothing is ever compared across projects, so two projects
+ *    may reuse room ids without either knowing about the other.
  */
 
 /** Millimetres. */
@@ -196,39 +197,84 @@ export interface FloorFinish {
   note?: string;
 }
 
+/**
+ * One way of fitting out a room. A room always has at least one, and may have
+ * several to be compared.
+ *
+ * The split between this and the room it belongs to is the split between what is
+ * true of the space and what has been decided about it. Walls, ceiling height and
+ * doorways are facts; the sofa, the palette and the argument for them are not.
+ * Keeping them apart is what lets two designs be drawn against the same room
+ * without either of them claiming to have moved a wall — and it is why comparing
+ * designs needs no change to the check that rooms do not overlap, since the room
+ * they share is still one room.
+ */
+export interface Design {
+  /** URL slug within the room. */
+  id: string;
+  /** How this option is referred to: 'Low and open', 'Option B', 'As built'. */
+  name: string;
+  /** What this design is trying to do that the others are not. */
+  theme: string;
+  /** A paragraph on how it is meant to work. */
+  summary: string;
+  style: StyleKey;
+  floor: FloorFinish;
+  furniture: Furniture[];
+  /** Decisions still open, printed as-is so they are not quietly forgotten. */
+  openQuestions?: string[];
+  /** Drawn wherever a page has to pick one. The first design is used if none says so. */
+  preferred?: boolean;
+}
+
 export interface Room {
-  /** URL slug, and the id other rooms refer to across an opening. */
+  /** URL slug, and the id other rooms refer to across an opening. Unique within a project. */
   id: string;
   name: string;
   kind: RoomKind;
-  /** The room's north-west corner in the shared plan space. */
+  /** The room's north-west corner in the project's plan space. */
   origin: Point;
   shape: RoomShape;
   /** Clear floor to ceiling. */
   ceiling: Mm;
-  /** What the room is for, in the owner's words. Shown as the room's premise. */
-  theme: string;
-  style: StyleKey;
-  floor: FloorFinish;
+  /**
+   * Doorways belong to the room and not to a design, because an opening is shared
+   * with whatever is on the other side of it and both sides are checked against
+   * each other. Comparing two positions for a door is a second project, not a
+   * second design.
+   */
   openings: Opening[];
-  furniture: Furniture[];
-  /** A paragraph on how the room is meant to work. */
-  summary: string;
-  /** Decisions still open, printed as-is so they are not quietly forgotten. */
-  openQuestions?: string[];
+  /** At least one. Use single() for a room with nothing to compare. */
+  designs: Design[];
 }
 
-export interface Home {
+/**
+ * A design job: a whole dwelling, one floor of one, or a single room. There is no
+ * separate shape for the single-room case — it is a project whose room list has one
+ * entry, and only the overview page reads differently.
+ */
+export interface Project {
+  /** URL slug. */
+  id: string;
   name: string;
   /** Where it is, as much as is worth publishing. */
   location: string;
+  /** What kind of job this is, for the reader. The pages key off the room count. */
+  scope: 'home' | 'floor' | 'room';
   /**
    * Compass bearing in degrees of the plan's up direction, so the north arrow
    * points where north actually is. 0 means plan-up is true north.
    */
   northOffset: number;
-  /** Outer face of the building envelope, in the shared plan space. */
-  envelope: Point[];
+  /**
+   * Outer face of the building, in the project's plan space. Optional: left out,
+   * it is taken as the rooms' outlines grown by the exterior wall thickness, which
+   * is right for a single room and for any rectangular plan. State it only when
+   * the real outline differs — a building that is not a rectangle, or a deed
+   * drawing to hold the plan against. A figure that can be computed should not be
+   * a second figure that can disagree with the first.
+   */
+  envelope?: Point[];
   walls: {
     exterior: Mm;
     interior: Mm;
@@ -236,13 +282,26 @@ export interface Home {
   /** Applies to any room that does not state its own. */
   ceiling: Mm;
   style: StyleKey;
-  /** The brief for the home as a whole. */
+  /** The brief for the job as a whole. */
   premise: string;
   /**
-   * Registered floor area from the deed, in square millimetres' worth of
-   * square metres — kept as a number of m² because that is how it is published,
-   * and shown next to the area the drawing measures so the two can disagree
-   * honestly.
+   * Registered floor area from the deed, in square metres because that is how it
+   * is published. Shown next to the area the drawing measures, so the two can
+   * disagree honestly.
    */
   registeredArea?: number;
 }
+
+/** Wraps a room's only design, so the common case stays short to write. */
+export function single(
+  design: Omit<Design, 'id' | 'name' | 'preferred'> & Partial<Pick<Design, 'id' | 'name'>>,
+): Design[] {
+  return [{ id: 'as-drawn', name: 'As drawn', preferred: true, ...design }];
+}
+
+/** The design a page draws when it has not been told which. */
+export const preferredDesign = (room: Room): Design =>
+  room.designs.find((design) => design.preferred) ?? room.designs[0]!;
+
+export const designById = (room: Room, id: string): Design | undefined =>
+  room.designs.find((design) => design.id === id);

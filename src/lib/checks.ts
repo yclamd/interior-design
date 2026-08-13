@@ -1,4 +1,13 @@
-import type { Furniture, FurnitureKind, Home, Mm, Opening, Point, Room } from '~/data/types';
+import type {
+  Design,
+  Furniture,
+  FurnitureKind,
+  Mm,
+  Opening,
+  Point,
+  Project,
+  Room,
+} from '~/data/types';
 import {
   boxCorners,
   clearanceZonesOf,
@@ -56,12 +65,18 @@ const PAIR_TOLERANCE: Mm = 50;
 /** Beyond this the two rooms are not on opposite sides of one wall at all. */
 const PAIR_WALL_LIMIT: Mm = 400;
 
-export function checkRoom(room: Room): Finding[] {
+/**
+ * Checks one design against the room it is drawn in. A room with several designs is
+ * checked once per design, because a conflict is a property of an arrangement and
+ * not of the space.
+ */
+export function checkDesign(room: Room, design: Design): Finding[] {
   const findings: Finding[] = [];
   const outline = outlineOf(room);
   const floor = roomArea(room);
+  const furniture = design.furniture;
 
-  for (const item of room.furniture) {
+  for (const item of furniture) {
     const corners = cornersOf(item);
     const own = item.width * item.depth;
     const inside = overlapArea(corners, outline);
@@ -74,10 +89,10 @@ export function checkRoom(room: Room): Finding[] {
     }
   }
 
-  for (let i = 0; i < room.furniture.length; i += 1) {
-    for (let j = i + 1; j < room.furniture.length; j += 1) {
-      const a = room.furniture[i]!;
-      const b = room.furniture[j]!;
+  for (let i = 0; i < furniture.length; i += 1) {
+    for (let j = i + 1; j < furniture.length; j += 1) {
+      const a = furniture[i]!;
+      const b = furniture[j]!;
       if (!canCollide(a, b)) continue;
       const area = overlapArea(cornersOf(a), cornersOf(b));
       if (area > SLIVER) {
@@ -93,7 +108,7 @@ export function checkRoom(room: Room): Finding[] {
   for (const opening of room.openings) {
     const swing = swingZone(room, opening);
     if (swing) {
-      for (const item of room.furniture) {
+      for (const item of furniture) {
         if (item.mountedAt !== undefined && item.mountedAt >= 1000) continue;
         if (item.kind === 'rug') continue;
         const area = overlapArea(cornersOf(item), swing);
@@ -109,7 +124,7 @@ export function checkRoom(room: Room): Finding[] {
 
     if (isDoor(opening)) {
       const approach = approachZone(room, opening, DOOR_APPROACH);
-      for (const item of room.furniture) {
+      for (const item of furniture) {
         if (item.mountedAt !== undefined) continue;
         if (item.kind === 'rug') continue;
         const area = overlapArea(cornersOf(item), approach);
@@ -125,7 +140,7 @@ export function checkRoom(room: Room): Finding[] {
 
     if (isWindow(opening)) {
       const reveal = approachZone(room, opening, 300);
-      for (const item of room.furniture) {
+      for (const item of furniture) {
         if (item.height <= opening.sill) continue;
         const area = overlapArea(cornersOf(item), reveal);
         if (area > SLIVER) {
@@ -139,9 +154,9 @@ export function checkRoom(room: Room): Finding[] {
     }
   }
 
-  for (const item of room.furniture) {
+  for (const item of furniture) {
     for (const zone of clearanceZonesOf(item)) {
-      for (const other of room.furniture) {
+      for (const other of furniture) {
         if (other.id === item.id) continue;
         if (other.kind === 'rug' || other.mountedAt !== undefined) continue;
         if (other.kind === 'chair' && SEATED_AT.has(item.kind)) continue;
@@ -166,7 +181,7 @@ export function checkRoom(room: Room): Finding[] {
     }
   }
 
-  const used = footprintArea(room);
+  const used = footprintArea(design);
   if (floor > 0 && used / floor > CROWDED) {
     findings.push({
       severity: 'note',
@@ -196,8 +211,12 @@ export function checkRoom(room: Room): Finding[] {
   return findings;
 }
 
-/** Checks that need more than one room to answer. */
-export function checkHome(home: Home, rooms: Room[]): Finding[] {
+/**
+ * Checks that need more than one room to answer. Designs do not enter into these:
+ * a room's shell is one shell however many ways it has been furnished, so two
+ * designs can never be reported as overlapping each other.
+ */
+export function checkProject(project: Project, rooms: Room[]): Finding[] {
   const findings: Finding[] = [];
   const ids = new Set(rooms.map((room) => room.id));
   const NON_ROOM = new Set(['outside', 'balcony', 'stairs', 'corridor', 'shaft', 'lift-lobby']);
@@ -231,14 +250,40 @@ export function checkHome(home: Home, rooms: Room[]): Finding[] {
 
   findings.push(...checkOpeningPairs(rooms));
 
-  if (home.registeredArea) {
+  if (project.registeredArea) {
     const drawn = rooms.reduce((sum, room) => sum + roomArea(room), 0) / 1_000_000;
-    const gap = home.registeredArea - drawn;
-    if (Math.abs(gap) / home.registeredArea > 0.25) {
+    const gap = project.registeredArea - drawn;
+    if (Math.abs(gap) / project.registeredArea > 0.25) {
       findings.push({
         severity: 'note',
         code: 'area-gap',
-        message: `The rooms drawn here add up to ${drawn.toFixed(2)} m², against ${home.registeredArea.toFixed(2)} m² on the deed. Walls, shafts and shared space account for some of the difference; a gap this size suggests a room is still missing.`,
+        message: `The rooms drawn here add up to ${drawn.toFixed(2)} m², against ${project.registeredArea.toFixed(2)} m² on the deed. Walls, shafts and shared space account for some of the difference; a gap this size suggests a room is still missing.`,
+      });
+    }
+  }
+
+  for (const room of rooms) {
+    if (room.designs.length === 0) {
+      findings.push({
+        severity: 'error',
+        code: 'no-design',
+        message: `${room.name} has no design. A room needs at least one, even if it is only the furniture already in it.`,
+      });
+      continue;
+    }
+    const ids = room.designs.map((design) => design.id);
+    if (new Set(ids).size !== ids.length) {
+      findings.push({
+        severity: 'error',
+        code: 'duplicate-design',
+        message: `${room.name} has two designs with the same id, so one of them has no address of its own.`,
+      });
+    }
+    if (room.designs.filter((design) => design.preferred).length > 1) {
+      findings.push({
+        severity: 'warning',
+        code: 'two-preferred',
+        message: `${room.name} marks more than one design as preferred. The plan can only draw one, and will take the first.`,
       });
     }
   }

@@ -1,0 +1,309 @@
+---
+import Plan from '~/components/Plan.astro';
+import Findings from '~/components/Findings.astro';
+import Schedule from '~/components/Schedule.astro';
+import { KIND_LABELS, roomById, type Entry } from '~/data/projects';
+import { STYLES } from '~/data/styles';
+import type { Design, Room } from '~/data/types';
+import { withBase } from '~/consts';
+import { checkDesign } from '~/lib/checks';
+import { PLAN_COLOURS, describe } from '~/lib/plan';
+import {
+  SQM_PER_PING,
+  bbox,
+  footprintArea,
+  formatArea,
+  formatLength,
+  outlineOf,
+  roomArea,
+} from '~/lib/geometry';
+
+/**
+ * A room, drawn and tabulated. Used both by a room's own page and, for a project
+ * that is one room, by the project page — so that a single-room job is not a second
+ * layout to keep in step with this one.
+ */
+
+interface Props {
+  entry: Entry;
+  room: Room;
+  design: Design;
+  /** Off on the project page of a one-room project, where the heading says it already. */
+  heading?: boolean;
+}
+
+const { entry, room, design, heading = true } = Astro.props;
+const { project, rooms } = entry;
+
+const findings = checkDesign(room, design);
+const area = roomArea(room);
+const box = bbox(outlineOf(room));
+const style = STYLES[design.style];
+const covered = area > 0 ? footprintArea(design) / area : 0;
+const volume = (area / 1_000_000) * (room.ceiling / 1000);
+
+const doors = room.openings.filter((opening) => opening.kind.startsWith('door'));
+const windows = room.openings.filter((opening) => opening.kind.startsWith('window'));
+
+const roomHref = `/projects/${project.id}/rooms/${room.id}`;
+const others = room.designs.filter((other) => other.id !== design.id);
+
+const specs = [
+  { label: 'Clear size', value: `${box.width} × ${box.depth} mm` },
+  {
+    label: 'Floor area',
+    value: `${formatArea(area)} · ${(area / 1_000_000 / SQM_PER_PING).toFixed(2)} ping`,
+  },
+  { label: 'Ceiling', value: formatLength(room.ceiling) },
+  { label: 'Volume', value: `${volume.toFixed(1)} m³` },
+  { label: 'Floor covered', value: `${Math.round(covered * 100)}% by furniture` },
+  { label: 'Floor finish', value: design.floor.name },
+  { label: 'Style', value: style.name },
+  { label: 'Openings', value: `${doors.length} doors, ${windows.length} windows` },
+];
+
+const legend = [
+  {
+    swatch: PLAN_COLOURS.structure,
+    label: 'Wall',
+    note: `${project.walls.interior} mm inside, ${project.walls.exterior} mm at the perimeter`,
+  },
+  { swatch: design.floor.colour ?? style.palette.floor, label: 'This room', note: design.floor.name },
+  { swatch: style.palette.furniture, label: 'Furniture', note: 'Drawn at its catalogue footprint' },
+  {
+    swatch: PLAN_COLOURS.clearance,
+    label: 'Clearance',
+    note: 'Space a piece needs in front of it to be usable',
+  },
+  {
+    swatch: PLAN_COLOURS.glazing,
+    label: 'Glazing',
+    note: 'Sill heights are in the openings table',
+  },
+];
+---
+
+{
+  heading && (
+    <div class="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+      <h1 class="font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+        {room.name}
+      </h1>
+      <span class="rounded-full bg-paper-deep px-3 py-1 text-2xs font-bold tracking-[0.14em] text-ink-soft uppercase">
+        {KIND_LABELS[room.kind]}
+      </span>
+    </div>
+  )
+}
+
+{
+  room.designs.length > 1 && (
+    <div class="mb-6 flex flex-wrap items-center gap-2">
+      <span class="text-2xs font-bold tracking-[0.15em] text-ink-faint uppercase">
+        {room.designs.length} designs
+      </span>
+      {room.designs.map((option) => (
+        <a
+          href={withBase(option.preferred ? roomHref : `${roomHref}/${option.id}`)}
+          aria-current={option.id === design.id ? 'page' : undefined}
+          class:list={[
+            'rounded-full border px-3.5 py-1.5 text-sm transition-colors',
+            option.id === design.id
+              ? 'border-brand bg-brand text-white'
+              : 'border-line bg-card text-ink-soft hover:bg-paper-deep hover:text-ink',
+          ]}
+        >
+          {option.name}
+        </a>
+      ))}
+      <a
+        href={withBase(`${roomHref}/compare`)}
+        class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
+      >
+        Side by side
+      </a>
+    </div>
+  )
+}
+
+<p class="lede mb-6 max-w-2xl">{design.theme}</p>
+
+<Plan
+  project={project}
+  rooms={rooms}
+  focus={room.id}
+  design={design.id}
+  labels="keys"
+  dimensions
+  clearance
+  swept
+  nominalWidth={1000}
+  title={`Plan of the ${room.name.toLowerCase()}`}
+  desc={`${room.name}, ${box.width} by ${box.depth} millimetres, ${formatArea(area)}, with ${design.furniture.length} pieces of furniture drawn at their measured footprints and numbered to match the schedule.`}
+/>
+
+<ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+  {
+    legend.map((item) => (
+      <li class="flex items-start gap-2 text-xs">
+        <span
+          class="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border border-line"
+          style={`background:${item.swatch}`}
+          aria-hidden="true"
+        />
+        <span>
+          <span class="font-bold text-ink">{item.label}</span>
+          <span class="ml-1.5 text-ink-faint">{item.note}</span>
+        </span>
+      </li>
+    ))
+  }
+</ul>
+
+<div class="mt-12 grid gap-8 lg:grid-cols-[1.35fr_1fr]">
+  <div>
+    <h2 class="font-serif text-2xl font-bold text-ink">How it is meant to work</h2>
+    <p class="prose-note mt-3">{design.summary}</p>
+
+    {
+      others.length > 0 && (
+        <div class="mt-6 rounded-xl border border-line bg-paper-deep/40 p-5">
+          <p class="eyebrow">The alternative{others.length > 1 ? 's' : ''}</p>
+          <ul class="mt-3 space-y-3">
+            {others.map((other) => (
+              <li class="text-sm leading-relaxed text-ink-soft">
+                <a
+                  href={withBase(other.preferred ? roomHref : `${roomHref}/${other.id}`)}
+                  class="font-bold text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
+                >
+                  {other.name}
+                </a>
+                <span class="ml-1.5">{other.theme}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <h3 class="mt-8 font-serif text-lg font-bold text-ink">The style it is drawn in</h3>
+    <p class="prose-note mt-2">{style.premise}</p>
+    <ul class="mt-3 flex flex-wrap gap-1.5">
+      {
+        style.materials.map((material) => (
+          <li class="rounded-full border border-line bg-card px-2.5 py-1 text-xs text-ink-soft">
+            {material}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="card table-scroll self-start">
+    <table class="spec">
+      <caption class="border-b border-line px-4 py-3 text-left">
+        <span class="font-serif text-base font-bold text-ink">Dimensions</span>
+      </caption>
+      <tbody>
+        {
+          specs.map((spec) => (
+            <tr>
+              <th scope="row" class="w-40">
+                {spec.label}
+              </th>
+              <td class="text-ink">{spec.value}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-12">
+  <Schedule design={design} />
+</div>
+
+<div class="mt-8 card table-scroll">
+  <table class="spec min-w-[40rem]">
+    <caption class="border-b border-line px-4 py-3 text-left">
+      <span class="font-serif text-base font-bold text-ink">Doors and windows</span>
+      <span class="ml-2 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+        of the room, not of this design · millimetres
+      </span>
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Opening</th>
+        <th scope="col">Offset</th>
+        <th scope="col">Width</th>
+        <th scope="col">Height</th>
+        <th scope="col">Sill</th>
+        <th scope="col">Leads to</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        room.openings.map((opening) => (
+          <tr>
+            <th scope="row">
+              <span class="font-medium text-ink">{describe(opening)}</span>
+              {opening.swing && (
+                <span class="block text-2xs text-ink-faint">
+                  Hinged {opening.swing.startsWith('left') ? 'left' : 'right'}, opens{' '}
+                  {opening.swing.endsWith('-in') ? 'into this room' : 'away from this room'}
+                </span>
+              )}
+              {opening.note && (
+                <span class="mt-1 block text-xs leading-relaxed text-ink-soft">{opening.note}</span>
+              )}
+            </th>
+            <td>{opening.offset}</td>
+            <td>{opening.width}</td>
+            <td>{opening.height}</td>
+            <td>{opening.sill === 0 ? '—' : opening.sill}</td>
+            <td class="text-ink-soft">
+              {opening.to && roomById(entry, opening.to) ? (
+                <a
+                  href={withBase(`/projects/${project.id}/rooms/${opening.to}`)}
+                  class="text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
+                >
+                  {roomById(entry, opening.to)!.name}
+                </a>
+              ) : (
+                (opening.to ?? '—')
+              )}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-2">
+  <Findings
+    findings={findings}
+    heading="What the checks found here"
+    clear="Nothing in this arrangement fouls anything else: every door opens fully, every piece has the space in front of it that it needs, and nothing sits outside the walls."
+  />
+
+  {
+    design.openQuestions && design.openQuestions.length > 0 && (
+      <section class="card p-5 sm:p-6">
+        <h2 class="font-serif text-lg font-bold text-ink">Still undecided</h2>
+        <p class="mt-1.5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+          printed so it is not quietly forgotten
+        </p>
+        <ul class="mt-4 space-y-3">
+          {design.openQuestions.map((question) => (
+            <li class="flex gap-3 text-sm leading-relaxed text-ink-soft">
+              <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" aria-hidden="true" />
+              <span>{question}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</div>

@@ -1,16 +1,25 @@
 ---
 import FurnitureSymbol from '~/components/FurnitureSymbol.astro';
-import { KIND_LABELS } from '~/data/home';
-import type { Home, Mm, Opening, Room } from '~/data/types';
-import { bbox, centroid, formatArea, formatLength, outlineInPlan, pathOf, roomArea } from '~/lib/geometry';
+import { KIND_LABELS } from '~/data/projects';
+import { preferredDesign, type Mm, type Opening, type Project, type Room } from '~/data/types';
+import {
+  bbox,
+  centroid,
+  envelopeOf,
+  formatArea,
+  formatLength,
+  outlineInPlan,
+  pathOf,
+  roomArea,
+} from '~/lib/geometry';
 import {
   PLAN_COLOURS,
   dimension,
   frameFor,
   furnitureRenders,
-  homeBox,
   isDoorway,
   openingRender,
+  projectBox,
   roomFill,
   roomPath,
 } from '~/lib/plan';
@@ -23,10 +32,15 @@ import {
  */
 
 interface Props {
-  home: Home;
+  project: Project;
   rooms: Room[];
   /** Room id to draw at full strength, with the rest held back as context. */
   focus?: string;
+  /**
+   * Which design to draw for the focused room. Every other room is drawn in its
+   * preferred one, because a room being looked past is context and not a choice.
+   */
+  design?: string;
   labels?: 'rooms' | 'keys' | 'none';
   furniture?: boolean;
   clearance?: boolean;
@@ -41,9 +55,10 @@ interface Props {
 }
 
 const {
-  home,
+  project,
   rooms,
   focus,
+  design: designId,
   labels = 'rooms',
   furniture = true,
   clearance = false,
@@ -57,7 +72,7 @@ const {
 } = Astro.props;
 
 const focused = focus ? rooms.find((room) => room.id === focus) : undefined;
-const extent = focused ? bbox(outlineInPlan(focused)) : homeBox(home);
+const extent = focused ? bbox(outlineInPlan(focused)) : projectBox(project, rooms);
 /**
  * Enough margin for the dimension strings and a wall's worth of neighbour, scaled
  * to the room: a fixed margin turns a bathroom into a small object in a large
@@ -81,21 +96,30 @@ for (const room of rooms) {
     if (!held || room.id === focus) seen.set(opening.id, { room, opening });
   }
 }
+const drawnRooms = new Set(rooms.map((room) => room.id));
+
+/** The design each room is drawn in: the asked-for one where it was asked for. */
+const designOf = (room: Room) =>
+  (room.id === focus && designId ? room.designs.find((d) => d.id === designId) : undefined) ??
+  preferredDesign(room);
+
 const openings = [...seen.values()].map(({ room, opening }) => ({
-  ...openingRender(home, room, opening),
-  fill: isDoorway(opening.kind) ? roomFill(room) : PLAN_COLOURS.sheet,
+  ...openingRender(project, drawnRooms, room, opening),
+  fill: isDoorway(opening.kind) ? roomFill(designOf(room)) : PLAN_COLOURS.sheet,
 }));
 
 const drawn = rooms.map((room) => {
   const outline = outlineInPlan(room);
+  const design = designOf(room);
   return {
     room,
+    design,
     path: roomPath(room),
-    fill: roomFill(room),
+    fill: roomFill(design),
     strength: !focus || room.id === focus ? 1 : 0.75,
     centre: centroid(outline),
     area: roomArea(room),
-    pieces: furniture ? furnitureRenders(room) : [],
+    pieces: furniture ? furnitureRenders(room, design) : [],
   };
 });
 
@@ -129,7 +153,8 @@ const roomLabels =
       }))
     : [];
 
-const keyed = labels === 'keys' && focused ? focused.furniture.map((item) => item.id) : [];
+const keyed =
+  labels === 'keys' && focused ? designOf(focused).furniture.map((item) => item.id) : [];
 const keyOf = (id: string): number | null => {
   const index = keyed.indexOf(id);
   return index === -1 ? null : index + 1;
@@ -169,8 +194,10 @@ const compass = {
   y: frame.box.y + px(26),
   r: px(15),
 };
-const titleId = `plan-title-${focus ?? 'home'}`;
-const descId = `plan-desc-${focus ?? 'home'}`;
+/** Unique per drawing, since a compare page puts several on one document. */
+const slug = [project.id, focus ?? 'all', designId].filter(Boolean).join('-');
+const titleId = `plan-title-${slug}`;
+const descId = `plan-desc-${slug}`;
 ---
 
 <div class={`table-scroll rounded-xl border border-line bg-[#f7f4ee] p-2`}>
@@ -192,7 +219,7 @@ const descId = `plan-desc-${focus ?? 'home'}`;
     />
 
     <path
-      d={pathOf(home.envelope)}
+      d={pathOf(envelopeOf(project, rooms))}
       fill={PLAN_COLOURS.structure}
       stroke={PLAN_COLOURS.structureEdge}
       stroke-width={px(1.4)}
@@ -260,11 +287,11 @@ const descId = `plan-desc-${focus ?? 'home'}`;
             <path
               d={zone.path}
               fill={PLAN_COLOURS.clearance}
-              fill-opacity="0.1"
+              fill-opacity="0.09"
               stroke={PLAN_COLOURS.clearance}
-              stroke-opacity="0.55"
-              stroke-width={px(0.6)}
-              stroke-dasharray={`${px(3)} ${px(2.5)}`}
+              stroke-opacity="0.75"
+              stroke-width={px(1)}
+              stroke-dasharray={`${px(4)} ${px(3)}`}
             />
           ))
     }
@@ -431,7 +458,7 @@ const descId = `plan-desc-${focus ?? 'home'}`;
       </text>
     </g>
 
-    <g transform={`rotate(${-home.northOffset} ${compass.x} ${compass.y})`}>
+    <g transform={`rotate(${-project.northOffset} ${compass.x} ${compass.y})`}>
       <circle
         cx={compass.x}
         cy={compass.y}

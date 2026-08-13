@@ -1,4 +1,4 @@
-import type { Box, Furniture, Mm, Opening, Point, Room, Side } from '~/data/types';
+import type { Box, Design, Furniture, Mm, Opening, Point, Project, Room, Side } from '~/data/types';
 
 /** Square metres in one ping, the unit floor area is sold in locally. */
 export const SQM_PER_PING = 3.305785;
@@ -329,7 +329,19 @@ export function placed(
 
 export const roomArea = (room: Room): number => polygonArea(outlineOf(room));
 
-export const footprintArea = (room: Room): number =>
-  room.furniture
+/** Floor actually stood on, so a rug and a wall-hung cupboard do not count. */
+export const footprintArea = (design: Design): number =>
+  design.furniture
     .filter((item) => item.mountedAt === undefined && item.kind !== 'rug')
     .reduce((sum, item) => sum + item.width * item.depth, 0);
+
+/**
+ * The building outline. Stated when the real one is known, and otherwise taken as
+ * the rooms grown by an exterior wall — which is exactly right for a single room,
+ * and right for any plan whose perimeter follows its rooms.
+ */
+export function envelopeOf(project: Project, rooms: Room[]): Point[] {
+  if (project.envelope) return project.envelope;
+  const outer = grow(mergeBoxes(rooms.map((room) => bbox(outlineInPlan(room)))), project.walls.exterior);
+  return boxCorners(outer);
+}

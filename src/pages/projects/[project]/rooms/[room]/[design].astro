@@ -1,0 +1,86 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import RoomDetail from '~/components/RoomDetail.astro';
+import { PROJECTS, projectById, roomById } from '~/data/projects';
+import { designById, preferredDesign } from '~/data/types';
+import { withBase } from '~/consts';
+import { bbox, formatArea, outlineOf, roomArea } from '~/lib/geometry';
+
+/**
+ * The designs that are not the preferred one. The preferred design already has the
+ * room's own address, so giving it a second one here would publish the same drawing
+ * at two URLs.
+ */
+export const getStaticPaths: GetStaticPaths = () =>
+  PROJECTS.flatMap((entry) =>
+    entry.rooms.flatMap((room) =>
+      room.designs
+        .filter((design) => design.id !== preferredDesign(room).id)
+        .map((design) => ({
+          params: { project: entry.project.id, room: room.id, design: design.id },
+        })),
+    ),
+  );
+
+const entry = projectById(Astro.params.project!)!;
+const room = roomById(entry, Astro.params.room!)!;
+const design = designById(room, Astro.params.design!)!;
+const { project, rooms } = entry;
+
+const box = bbox(outlineOf(room));
+const area = roomArea(room);
+---
+
+<BaseLayout
+  title={`${room.name}: ${design.name} — ${project.name}`}
+  description={`${design.name}, an alternative design for the ${room.name.toLowerCase()}: ${design.theme}`}
+>
+  <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
+    <nav aria-label="Breadcrumb" class="mb-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <span class="mx-2">/</span>
+      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+        {project.name}
+      </a>
+      {
+        rooms.length > 1 && (
+          <>
+            <span class="mx-2">/</span>
+            <a
+              href={withBase(`/projects/${project.id}/rooms`)}
+              class="transition-colors hover:text-brand"
+            >
+              Rooms
+            </a>
+          </>
+        )
+      }
+      <span class="mx-2">/</span>
+      <a
+        href={withBase(`/projects/${project.id}/rooms/${room.id}`)}
+        class="transition-colors hover:text-brand"
+      >
+        {room.name}
+      </a>
+      <span class="mx-2">/</span>
+      <span class="text-ink-soft">{design.name}</span>
+    </nav>
+
+    <div class="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+      <h1 class="font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+        {room.name}: {design.name}
+      </h1>
+      <span class="rounded-full bg-clay-soft px-3 py-1 text-2xs font-bold tracking-[0.14em] text-clay uppercase">
+        Alternative
+      </span>
+    </div>
+    <p class="prose-note mb-8 max-w-2xl">
+      One of {room.designs.length} designs against the same {box.width} × {box.depth} mm shell,
+      {' '}{formatArea(area)} of floor. The walls, the doorways and the windows are the same in all of
+      them; only what stands inside changes.
+    </p>
+
+    <RoomDetail entry={entry} room={room} design={design} heading={false} />
+  </section>
+</BaseLayout>

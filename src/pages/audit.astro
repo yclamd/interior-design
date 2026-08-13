@@ -1,19 +1,33 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Findings from '~/components/Findings.astro';
-import { HOME, ROOMS } from '~/data/home';
+import { PROJECTS } from '~/data/projects';
 import { withBase } from '~/consts';
-import { checkHome, checkRoom, type Severity } from '~/lib/checks';
+import { checkDesign, checkProject, type Severity } from '~/lib/checks';
 
 /**
- * Every finding in the home on one page. The room pages each carry their own, but
- * when a survey is being typed in what you want is one list you can work down
- * until it is empty.
+ * Every finding on the site, on one page. Room pages each carry their own, but when
+ * a survey is being typed in what you want is one list you can work down until it is
+ * empty. A room with several designs is listed once per design, because a conflict
+ * belongs to an arrangement rather than to a space.
  */
 
-const home = checkHome(HOME, ROOMS);
-const rooms = ROOMS.map((room) => ({ room, findings: checkRoom(room) }));
-const all = [...home, ...rooms.flatMap((entry) => entry.findings)];
+const audits = PROJECTS.map((entry) => ({
+  entry,
+  project: checkProject(entry.project, entry.rooms),
+  designs: entry.rooms.flatMap((room) =>
+    room.designs.map((design) => ({
+      room,
+      design,
+      findings: checkDesign(room, design),
+    })),
+  ),
+}));
+
+const all = audits.flatMap((audit) => [
+  ...audit.project,
+  ...audit.designs.flatMap((item) => item.findings),
+]);
 
 const counts: Record<Severity, number> = {
   error: all.filter((finding) => finding.severity === 'error').length,
@@ -22,18 +36,27 @@ const counts: Record<Severity, number> = {
 };
 
 const tally = [
-  { label: 'Conflicts', value: counts.error, note: 'two things cannot both be true', tone: 'text-flag' },
+  {
+    label: 'Conflicts',
+    value: counts.error,
+    note: 'two things cannot both be true',
+    tone: 'text-flag',
+  },
   { label: 'Tight', value: counts.warning, note: 'it fits, but only just', tone: 'text-clay' },
   { label: 'Notes', value: counts.note, note: 'worth knowing, not wrong', tone: 'text-ink-soft' },
 ];
+
+const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
 ---
 
 <BaseLayout
   title="Audit"
-  description="Every dimensional conflict, tight fit and note found across the whole home, on one page."
+  description="Every dimensional conflict, tight fit and note found across every project on the site, on one page."
 >
   <section class="mx-auto max-w-4xl px-5 pt-14 pb-8 sm:px-8 sm:pt-20">
-    <p class="eyebrow">{all.length} findings across {ROOMS.length} rooms</p>
+    <p class="eyebrow">
+      {all.length} findings across {drawings} drawings in {PROJECTS.length} projects
+    </p>
     <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
       Everything the checks found
     </h1>
@@ -45,47 +68,68 @@ const tally = [
 
     <dl class="mt-8 grid grid-cols-3 gap-3">
       {
-        tally.map((entry) => (
+        tally.map((item) => (
           <div class="card p-4">
-            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{entry.label}</dt>
-            <dd class:list={['mt-1 font-serif text-2xl font-bold tabular', entry.tone]}>
-              {entry.value}
+            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{item.label}</dt>
+            <dd class:list={['mt-1 font-serif text-2xl font-bold tabular', item.tone]}>
+              {item.value}
             </dd>
-            <dd class="mt-0.5 text-xs text-ink-faint">{entry.note}</dd>
+            <dd class="mt-0.5 text-xs text-ink-faint">{item.note}</dd>
           </div>
         ))
       }
     </dl>
   </section>
 
-  <section class="mx-auto max-w-4xl space-y-6 px-5 sm:px-8">
-    <Findings
-      findings={home}
-      heading="The plan as a whole"
-      clear="No rooms overlap, every shared door is recorded the same way by both rooms, and the drawn area is close enough to the deed."
-    />
+  {
+    audits.map((audit) => (
+      <section class="mx-auto mt-12 max-w-4xl px-5 sm:px-8">
+        <h2 class="font-serif text-2xl font-bold text-ink">
+          <a
+            href={withBase(`/projects/${audit.entry.project.id}`)}
+            class="transition-colors hover:text-brand"
+          >
+            {audit.entry.project.name}
+          </a>
+        </h2>
+        <p class="mt-1 text-sm text-ink-faint">{audit.entry.project.location}</p>
 
-    {
-      rooms.map((entry) => (
-        <div>
-          <h2 class="mb-3 flex flex-wrap items-baseline gap-x-3">
-            <a
-              href={withBase(`/rooms/${entry.room.id}`)}
-              class="font-serif text-xl font-bold text-ink transition-colors hover:text-brand"
-            >
-              {entry.room.name}
-            </a>
-            <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
-              {entry.findings.length === 0 ? 'clear' : `${entry.findings.length} findings`}
-            </span>
-          </h2>
+        <div class="mt-5 space-y-6">
           <Findings
-            findings={entry.findings}
-            heading="Findings"
-            clear="Every door opens fully, everything has the space in front of it that it needs, and nothing sits outside the walls."
+            findings={audit.project}
+            heading="The plan as a whole"
+            clear="No rooms overlap, every shared door is recorded the same way by both rooms, and every room has at least one design."
           />
+
+          {audit.designs.map((item) => (
+            <div>
+              <h3 class="mb-3 flex flex-wrap items-baseline gap-x-3">
+                <a
+                  href={withBase(
+                    `/projects/${audit.entry.project.id}/rooms/${item.room.id}${
+                      item.design.preferred ? '' : `/${item.design.id}`
+                    }`,
+                  )}
+                  class="font-serif text-xl font-bold text-ink transition-colors hover:text-brand"
+                >
+                  {item.room.name}
+                </a>
+                {item.room.designs.length > 1 && (
+                  <span class="text-sm text-ink-soft">{item.design.name}</span>
+                )}
+                <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+                  {item.findings.length === 0 ? 'clear' : `${item.findings.length} findings`}
+                </span>
+              </h3>
+              <Findings
+                findings={item.findings}
+                heading="Findings"
+                clear="Every door opens fully, everything has the space in front of it that it needs, and nothing sits outside the walls."
+              />
+            </div>
+          ))}
         </div>
-      ))
-    }
-  </section>
+      </section>
+    ))
+  }
 </BaseLayout>

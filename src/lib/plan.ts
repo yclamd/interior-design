@@ -1,9 +1,10 @@
-import type { Box, Home, Mm, Opening, Point, Room } from '~/data/types';
+import type { Box, Design, Furniture, Mm, Opening, Point, Project, Room } from '~/data/types';
 import { STYLES } from '~/data/styles';
 import {
   bbox,
   cornersOf,
   clearanceZonesOf,
+  envelopeOf,
   grow,
   mergeBoxes,
   openingSegment,
@@ -34,7 +35,11 @@ export const PLAN_COLOURS = {
   inkSoft: '#6b7280',
   dimension: '#0f5c56',
   glazing: '#7fa8c9',
-  clearance: '#c98a3f',
+  /**
+   * Dark enough to read over a warm floor. An ochre close to the timber colours
+   * disappeared on any room with an oiled parquet in it.
+   */
+  clearance: '#7a4410',
   focusEdge: '#15181d',
 } as const;
 
@@ -61,18 +66,19 @@ export function frameFor(box: Box, padding: Mm, nominalWidth = 960): PlanFrame {
   };
 }
 
-export const homeBox = (home: Home): Box => bbox(home.envelope);
+export const projectBox = (project: Project, rooms: Room[]): Box =>
+  bbox(envelopeOf(project, rooms));
 
 export const roomsBox = (rooms: Room[]): Box =>
   mergeBoxes(rooms.map((room) => bbox(outlineInPlan(room))));
 
-/** A room's own outline, placed in the shared space and ready for a path. */
+/** A room's own outline, placed in the project's plan space and ready for a path. */
 export function roomPath(room: Room): string {
   return pathOf(outlineInPlan(room));
 }
 
-export function roomFill(room: Room): string {
-  return room.floor.colour ?? STYLES[room.style].palette.floor;
+export function roomFill(design: Design): string {
+  return design.floor.colour ?? STYLES[design.style].palette.floor;
 }
 
 export interface OpeningRender {
@@ -97,16 +103,27 @@ export interface OpeningRender {
 }
 
 /**
- * Everything needed to draw one opening. The wall it cuts is exterior whenever
- * the far side is not another room, which is what decides how deep the hole is.
+ * Everything needed to draw one opening.
+ *
+ * The wall it cuts is a partition only when the room on the far side is drawn in
+ * this project; anything else is the perimeter of what is being designed, and gets
+ * the exterior thickness. That distinction matters because the hole has to punch
+ * all the way through whatever is there: judged by the far side merely not being
+ * `outside`, a door from a single-room project to an undrawn hallway would cut
+ * 100 mm of a 200 mm wall and leave a sliver of wall lying across the doorway.
  */
-export function openingRender(home: Home, room: Room, opening: Opening): OpeningRender {
+export function openingRender(
+  project: Project,
+  drawnRooms: Set<string>,
+  room: Room,
+  opening: Opening,
+): OpeningRender {
   const local = openingSegment(room, opening);
   const a = { x: local.a.x + room.origin.x, y: local.a.y + room.origin.y };
   const b = { x: local.b.x + room.origin.x, y: local.b.y + room.origin.y };
   const normal = outwardNormal(opening.side);
-  const interior = opening.to !== undefined && opening.to !== 'outside';
-  const thickness = interior ? home.walls.interior : home.walls.exterior;
+  const interior = opening.to !== undefined && drawnRooms.has(opening.to);
+  const thickness = interior ? project.walls.interior : project.walls.exterior;
 
   /** Overshoot, so the hole meets the wall it is cut in without a seam. */
   const bleed = 3;
@@ -182,8 +199,8 @@ export function openingRender(home: Home, room: Room, opening: Opening): Opening
 export interface FurnitureRender {
   id: string;
   name: string;
-  kind: Room['furniture'][number]['kind'];
-  symbol?: Room['furniture'][number]['symbol'];
+  kind: Furniture['kind'];
+  symbol?: Furniture['symbol'];
   /** Unrotated footprint, already in the shared space. */
   box: Box;
   /** SVG rotate() arguments, so the symbol turns with the piece. */
@@ -198,9 +215,9 @@ export interface FurnitureRender {
   clearance: { path: string; depth: Mm }[];
 }
 
-export function furnitureRenders(room: Room): FurnitureRender[] {
-  const palette = STYLES[room.style].palette;
-  return room.furniture.map((item) => {
+export function furnitureRenders(room: Room, design: Design): FurnitureRender[] {
+  const palette = STYLES[design.style].palette;
+  return design.furniture.map((item) => {
     const box: Box = {
       x: item.x + room.origin.x,
       y: item.y + room.origin.y,

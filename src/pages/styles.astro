@@ -1,12 +1,27 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import StyleCard from '~/components/StyleCard.astro';
-import { HOME, ROOMS } from '~/data/home';
+import { PROJECTS } from '~/data/projects';
 import { STYLES, STYLE_ORDER } from '~/data/styles';
 
+/**
+ * Styles are the one thing shared across projects: the palettes are a common
+ * vocabulary, and a room in any project can be moved to one of them by changing a
+ * single word. So the uses are gathered from every project rather than one.
+ */
 const cards = STYLE_ORDER.map((key) => ({
   style: STYLES[key],
-  usedBy: ROOMS.filter((room) => room.style === key).map((room) => room.name.toLowerCase()),
+  usedBy: PROJECTS.flatMap((entry) =>
+    entry.rooms.flatMap((room) =>
+      room.designs
+        .filter((design) => design.style === key)
+        .map((design) =>
+          room.designs.length > 1
+            ? `${room.name.toLowerCase()} (${design.name.toLowerCase()})`
+            : room.name.toLowerCase(),
+        ),
+    ),
+  ),
 }));
 
 const inUse = cards.filter((card) => card.usedBy.length > 0);
@@ -15,7 +30,7 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
 
 <BaseLayout
   title="Styles"
-  description="The palettes and material lists the rooms are drawn from. Naming a style on a room changes the colours in its drawing, so a style here is a decision rather than a mood."
+  description="The palettes and material lists the rooms are drawn from. Naming a style on a design changes the colours in its drawing, so a style here is a decision rather than a mood."
 >
   <section class="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
     <p class="eyebrow">{inUse.length} in use, {spare.length} on the shelf</p>
@@ -24,18 +39,22 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
     </h1>
     <p class="lede mt-5 max-w-2xl">
       A style here is two things and nothing more: the colours the plan is drawn in, and the short
-      list of materials the room is meant to be built out of. Naming a style on a room changes what
-      you see in its drawing, which is the only way to keep the word honest. The home as a whole is
-      set to {STYLES[HOME.style].name}.
+      list of materials the room is meant to be built out of. Naming a style on a design changes what
+      you see in its drawing, which is the only way to keep the word honest. They are shared across
+      every project, so the same palette can be tried in a different room by changing one word.
     </p>
   </section>
 
   <section class="mx-auto max-w-6xl px-5 sm:px-8">
     <h2 class="font-serif text-2xl font-bold text-ink">In use</h2>
     <ul class="mt-6 grid gap-6 lg:grid-cols-2">
-      {cards.filter((card) => card.usedBy.length > 0).map((card) => (
-        <li><StyleCard style={card.style} usedBy={card.usedBy} /></li>
-      ))}
+      {
+        inUse.map((card) => (
+          <li>
+            <StyleCard style={card.style} usedBy={card.usedBy} />
+          </li>
+        ))
+      }
     </ul>
   </section>
 
@@ -44,12 +63,14 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
       <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
         <h2 class="font-serif text-2xl font-bold text-ink">Defined but unused</h2>
         <p class="prose-note mt-2 max-w-2xl">
-          Kept in the dataset so a room can be moved to one of them by changing a single word, and
-          so the drawings can be compared under each before anything is bought.
+          Kept in the dataset so a room can be moved to one of them by changing a single word, and so
+          the drawings can be compared under each before anything is bought.
         </p>
         <ul class="mt-6 grid gap-6 lg:grid-cols-2">
           {spare.map((card) => (
-            <li><StyleCard style={card.style} /></li>
+            <li>
+              <StyleCard style={card.style} />
+            </li>
           ))}
         </ul>
       </section>

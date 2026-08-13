@@ -1,4 +1,4 @@
-import type { Room } from '../types';
+import { single, type Room } from '~/data/types';
 
 export const CORRIDOR: Room = {
   id: 'corridor',
@@ -7,11 +7,6 @@ export const CORRIDOR: Room = {
   origin: { x: 5100, y: 4800 },
   shape: { kind: 'rect', width: 3700, depth: 1200 },
   ceiling: 2400,
-  theme: 'Four doors and no furniture',
-  style: 'japandi',
-  floor: { name: 'Engineered white oak, continuous with the living room', colour: '#dfd0ba' },
-  summary:
-    'The only circulation in the flat, and it earns its 4.4 m² by serving four doors: the second bedroom, the bathroom, the utility room and the living room. It is 1.2 m deep, which is 300 mm more than a corridor needs, and that 300 mm is what lets two of those doors be open at once. Nothing is put here on purpose — a console 300 mm deep would leave 900 mm, and 900 mm is the width of the doors swinging into it.',
   openings: [
     {
       id: 'hall-arch',
@@ -56,5 +51,12 @@ export const CORRIDOR: Room = {
       to: 'bedroom-second',
     },
   ],
-  furniture: [],
+  designs: single({
+    theme: 'Four doors and no furniture',
+    style: 'japandi',
+    floor: { name: 'Engineered white oak, continuous with the living room', colour: '#dfd0ba' },
+    summary:
+      'The only circulation in the flat, and it earns its 4.4 m² by serving four doors: the second bedroom, the bathroom, the utility room and the living room. It is 1.2 m deep, which is 300 mm more than a corridor needs, and that 300 mm is what lets two of those doors be open at once. Nothing is put here on purpose — a console 300 mm deep would leave 900 mm, and 900 mm is the width of the doors swinging into it.',
+    furniture: [],
+  }),
 };

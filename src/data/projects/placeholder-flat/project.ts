@@ -1,4 +1,4 @@
-import type { Home, Room, RoomKind } from './types';
+import type { Project, Room } from '~/data/types';
 import { BALCONY } from './rooms/balcony';
 import { BATHROOM } from './rooms/bathroom';
 import { BEDROOM_MAIN } from './rooms/bedroom-main';
@@ -9,15 +9,20 @@ import { LIVING } from './rooms/living';
 import { UTILITY } from './rooms/utility';
 
 /**
- * PLACEHOLDER. Every figure below is a plausible flat, not this one. It is here
- * so the drawings, the checks and the pages can be seen working before the real
- * survey is typed in; see docs/measuring.md for what has to be measured, and
- * replace room by room.
+ * PLACEHOLDER. Every figure below is a plausible flat, not a real one. It is here
+ * so the drawings, the checks and the pages can be seen working before a survey is
+ * typed in; see docs/measuring.md for what has to be measured.
  */
-export const HOME: Home = {
+export const PROJECT: Project = {
+  id: 'placeholder-flat',
   name: 'The flat',
   location: 'Placeholder — a 9.0 × 9.2 m single-floor plan',
+  scope: 'home',
   northOffset: 0,
+  /**
+   * Stated rather than derived, because a real deed drawing would state it. Taking
+   * it out would give almost the same rectangle, from the rooms plus one wall.
+   */
   envelope: [
     { x: 0, y: 0 },
     { x: 9000, y: 0 },
@@ -43,22 +48,3 @@ export const ROOMS: Room[] = [
   BEDROOM_MAIN,
   BEDROOM_SECOND,
 ];
-
-export const roomById = (id: string): Room | undefined => ROOMS.find((room) => room.id === id);
-
-/** Rooms whose floor counts towards the living area, as against served space. */
-export const HABITABLE: RoomKind[] = ['living', 'dining', 'kitchen', 'bedroom', 'study'];
-
-export const KIND_LABELS: Record<RoomKind, string> = {
-  living: 'Living',
-  dining: 'Dining',
-  kitchen: 'Kitchen',
-  bedroom: 'Bedroom',
-  study: 'Study',
-  bathroom: 'Bathroom',
-  entry: 'Entry',
-  corridor: 'Circulation',
-  balcony: 'Balcony',
-  utility: 'Utility',
-  storage: 'Storage',
-};

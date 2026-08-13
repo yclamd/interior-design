@@ -1,187 +1,128 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
-import Findings from '~/components/Findings.astro';
-import { HABITABLE, HOME, KIND_LABELS, ROOMS } from '~/data/home';
+import { PROJECTS, SCOPE_LABELS } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import { SITE, withBase } from '~/consts';
-import { checkHome } from '~/lib/checks';
-import {
-  SQM_PER_PING,
-  bbox,
-  formatArea,
-  formatLength,
-  outlineOf,
-  polygonArea,
-  roomArea,
-} from '~/lib/geometry';
+import { checkDesign, checkProject } from '~/lib/checks';
+import { preferredDesign } from '~/data/types';
+import { bbox, envelopeOf, formatArea, formatLength, roomArea } from '~/lib/geometry';
 
-const findings = checkHome(HOME, ROOMS);
-
-const drawnArea = ROOMS.reduce((sum, room) => sum + roomArea(room), 0);
-const habitableArea = ROOMS.filter((room) => HABITABLE.includes(room.kind)).reduce(
-  (sum, room) => sum + roomArea(room),
-  0,
-);
-const grossArea = polygonArea(HOME.envelope);
-const envelope = bbox(HOME.envelope);
-const bedrooms = ROOMS.filter((room) => room.kind === 'bedroom').length;
-
-const rows = ROOMS.map((room) => {
-  const box = bbox(outlineOf(room));
+const cards = PROJECTS.map((entry) => {
+  const drawn = entry.rooms.reduce((sum, room) => sum + roomArea(room), 0);
+  const envelope = bbox(envelopeOf(entry.project, entry.rooms));
+  const findings = [
+    ...checkProject(entry.project, entry.rooms),
+    ...entry.rooms.flatMap((room) => room.designs.flatMap((design) => checkDesign(room, design))),
+  ];
   return {
-    room,
-    area: roomArea(room),
-    dimensions:
-      room.shape.kind === 'rect'
-        ? `${room.shape.width} × ${room.shape.depth}`
-        : `${box.width} × ${box.depth} overall`,
+    ...entry,
+    drawn,
+    envelope,
+    conflicts: findings.filter((finding) => finding.severity === 'error').length,
+    designs: entry.rooms.reduce((sum, room) => sum + room.designs.length, 0),
   };
 });
 
-const stats = [
-  { label: 'Rooms drawn', value: String(ROOMS.length), note: `${bedrooms} bedrooms` },
-  {
-    label: 'Floor drawn',
-    value: formatArea(drawnArea),
-    note: `${(drawnArea / 1_000_000 / SQM_PER_PING).toFixed(1)} ping`,
-  },
-  {
-    label: 'Habitable of it',
-    value: formatArea(habitableArea),
-    note: `${Math.round((habitableArea / drawnArea) * 100)}% of the floor`,
-  },
-  {
-    label: 'Envelope',
-    value: `${formatLength(envelope.width)} × ${formatLength(envelope.depth)}`,
-    note: `${formatArea(grossArea)} gross`,
-  },
-  { label: 'Ceiling', value: formatLength(HOME.ceiling), note: 'unless a room says otherwise' },
-  {
-    label: 'Registered',
-    value: HOME.registeredArea ? `${HOME.registeredArea.toFixed(1)} m²` : '—',
-    note: HOME.registeredArea ? 'from the deed' : 'not recorded',
-  },
-];
-
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'CreativeWork',
-  name: SITE.name,
-  description: SITE.description,
-  about: { '@type': 'Residence', name: HOME.name, floorSize: {
-    '@type': 'QuantitativeValue',
-    unitCode: 'MTK',
-    value: Number((drawnArea / 1_000_000).toFixed(2)),
-  } },
-};
+const totalRooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
+const totalDesigns = cards.reduce((sum, card) => sum + card.designs, 0);
 ---
 
-<BaseLayout title={SITE.name} description={SITE.description} schema={schema}>
+<BaseLayout title={SITE.name} description={SITE.description}>
   <section class="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
-    <p class="eyebrow">{HOME.location}</p>
+    <p class="eyebrow">
+      {PROJECTS.length} projects · {totalRooms} rooms · {totalDesigns} designs
+    </p>
     <h1 class="mt-3 max-w-3xl font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.6rem]">
-      {HOME.name}, set out at full size
+      Interiors, drawn from their dimensions
     </h1>
-    <p class="lede mt-5 max-w-2xl">{HOME.premise}</p>
+    <p class="lede mt-5 max-w-2xl">{SITE.description}</p>
+    <p class="prose-note mt-4 max-w-2xl">
+      A project here is one job: a whole dwelling, a floor of one, or a single room. They are all the
+      same thing in the data — a list of rooms with real sizes in millimetres — so a one-room job gets
+      the same drawings and the same checks as a flat.
+    </p>
   </section>
 
   <section class="mx-auto max-w-6xl px-5 sm:px-8">
-    <Plan
-      home={HOME}
-      rooms={ROOMS}
-      labels="rooms"
-      title={`Floor plan of ${HOME.name}`}
-      desc={`A scaled floor plan of the whole home: ${ROOMS.length} rooms totalling ${formatArea(drawnArea)}, drawn inside a ${formatLength(envelope.width)} by ${formatLength(envelope.depth)} envelope with ${HOME.walls.exterior} mm exterior and ${HOME.walls.interior} mm interior walls.`}
-      nominalWidth={1100}
-    />
-    <p class="mt-3 text-xs leading-relaxed text-ink-faint">
-      Walls are not drawn as lines. The envelope is filled and each room is filled on top of it, so
-      every partition comes out at exactly the thickness the room positions imply — {HOME.walls.interior} mm
-      inside, {HOME.walls.exterior} mm at the perimeter.
-    </p>
-  </section>
-
-  <section class="mx-auto mt-12 max-w-6xl px-5 sm:px-8">
-    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <ul class="grid gap-6 lg:grid-cols-2">
       {
-        stats.map((stat) => (
-          <div class="card p-4">
-            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{stat.label}</dt>
-            <dd class="mt-1.5 font-serif text-lg font-bold text-ink tabular">{stat.value}</dd>
-            <dd class="mt-0.5 text-xs text-ink-faint">{stat.note}</dd>
-          </div>
+        cards.map((card) => (
+          <li class="card overflow-hidden">
+            <a href={withBase(`/projects/${card.project.id}`)} class="group block">
+              <div class="border-b border-line bg-[#f7f4ee] p-2">
+                <Plan
+                  project={card.project}
+                  rooms={card.rooms}
+                  labels="none"
+                  nominalWidth={620}
+                  minWidth="min-w-0"
+                  title={`Floor plan of ${card.project.name}`}
+                  desc={`${card.project.name}: ${card.rooms.length} rooms totalling ${formatArea(card.drawn)}.`}
+                />
+              </div>
+              <div class="p-5 sm:p-6">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+                    {SCOPE_LABELS[card.project.scope]}
+                  </span>
+                  {card.conflicts > 0 && (
+                    <span class="rounded-full bg-flag-soft px-2 py-0.5 text-2xs font-bold text-flag">
+                      {card.conflicts} conflicts
+                    </span>
+                  )}
+                  {card.designs > card.rooms.length && (
+                    <span class="rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
+                      {card.designs} designs to compare
+                    </span>
+                  )}
+                </div>
+                <h2 class="mt-2 font-serif text-2xl font-bold text-ink transition-colors group-hover:text-brand">
+                  {card.project.name}
+                </h2>
+                <p class="mt-1 text-sm text-ink-faint">{card.project.location}</p>
+                <p class="mt-3 text-sm leading-relaxed text-ink-soft">{card.project.premise}</p>
+                <dl class="mt-5 grid grid-cols-3 gap-3 border-t border-line-soft pt-4">
+                  <div>
+                    <dt class="text-2xs text-ink-faint uppercase">Rooms</dt>
+                    <dd class="mt-0.5 text-sm font-bold text-ink tabular">{card.rooms.length}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-2xs text-ink-faint uppercase">Floor</dt>
+                    <dd class="mt-0.5 text-sm font-bold text-ink tabular">{formatArea(card.drawn)}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-2xs text-ink-faint uppercase">Envelope</dt>
+                    <dd class="mt-0.5 text-sm font-bold text-ink tabular">
+                      {formatLength(card.envelope.width)} × {formatLength(card.envelope.depth)}
+                    </dd>
+                  </div>
+                </dl>
+                <p class="mt-3 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+                  {[...new Set(card.rooms.map((room) => STYLES[preferredDesign(room).style].name))].join(' · ')}
+                </p>
+              </div>
+            </a>
+          </li>
         ))
       }
-    </dl>
-  </section>
-
-  <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
-    <h2 class="font-serif text-2xl font-bold text-ink">Every room, with its figures</h2>
-    <p class="prose-note mt-2 max-w-2xl">
-      Sizes are the clear internal dimensions between finished wall faces, which is what furniture
-      has to fit inside — not the structural grid.
-    </p>
-
-    <div class="card table-scroll mt-6">
-      <table class="spec min-w-[44rem]">
-        <thead>
-          <tr>
-            <th scope="col">Room</th>
-            <th scope="col">Use</th>
-            <th scope="col">Size (mm)</th>
-            <th scope="col">Floor</th>
-            <th scope="col">Ceiling</th>
-            <th scope="col">Style</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            rows.map((row) => (
-              <tr>
-                <th scope="row">
-                  <a
-                    href={withBase(`/rooms/${row.room.id}`)}
-                    class="font-medium text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
-                  >
-                    {row.room.name}
-                  </a>
-                </th>
-                <td class="text-ink-soft">{KIND_LABELS[row.room.kind]}</td>
-                <td class="whitespace-nowrap">{row.dimensions}</td>
-                <td class="whitespace-nowrap">{formatArea(row.area)}</td>
-                <td class="whitespace-nowrap">{row.room.ceiling}</td>
-                <td class="text-ink-soft">{STYLES[row.room.style].name}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
-    <Findings
-      findings={findings}
-      heading="What the whole-plan checks found"
-      clear="No rooms overlap, every door leads somewhere real, and the drawn area is close enough to the deed to be explained by walls and shafts."
-    />
+    </ul>
   </section>
 
   <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
     <div class="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
       <div>
-        <h2 class="font-serif text-xl font-bold text-ink">Room by room</h2>
+        <h2 class="font-serif text-xl font-bold text-ink">Adding one of your own</h2>
         <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">
-          Each room has its own drawing at a closer scale, a furniture schedule in millimetres, and
-          the list of what its dimensions rule out.
+          Every drawing is generated from a list of measurements, so the work is the surveying. The
+          method page is the sheet to fill in, field by field, with what to measure and from where.
         </p>
       </div>
       <a
-        href={withBase('/rooms')}
+        href={withBase('/method')}
         class="shrink-0 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-deep"
       >
-        See the rooms
+        The survey sheet
       </a>
     </div>
   </section>

@@ -1,15 +1,14 @@
 export const SITE = {
   name: 'Measured Interiors',
-  tagline: 'One home, drawn from its dimensions',
+  tagline: 'Interiors drawn from their dimensions',
   description:
-    'The interior design of a single home, published as drawings rather than mood boards. Every room is set out from measured dimensions in millimetres, so a piece of furniture that does not fit is visibly not fitting.',
+    'Interior design published as drawings rather than mood boards. Every room is set out from measured dimensions in millimetres, so a piece of furniture that does not fit is visibly not fitting.',
   locale: 'en',
   author: 'The owner',
 } as const;
 
 export const NAV_LINKS = [
-  { label: 'The plan', href: '/' },
-  { label: 'Rooms', href: '/rooms' },
+  { label: 'Projects', href: '/' },
   { label: 'Styles', href: '/styles' },
   { label: 'Audit', href: '/audit' },
   { label: 'Method', href: '/method' },

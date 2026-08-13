@@ -1,12 +1,12 @@
 ---
-import type { Furniture, FurnitureStatus, Room } from '~/data/types';
+import type { Design, Furniture, FurnitureStatus } from '~/data/types';
 import { formatLength } from '~/lib/geometry';
 
 interface Props {
-  room: Room;
+  design: Design;
 }
 
-const { room } = Astro.props;
+const { design } = Astro.props;
 
 const STATUS: Record<FurnitureStatus, { label: string; chip: string }> = {
   owned: { label: 'Have it', chip: 'bg-brand-soft text-brand-deep' },
@@ -30,7 +30,7 @@ const facing = (item: Furniture): string => {
     <caption class="border-b border-line px-4 py-3 text-left">
       <span class="font-serif text-base font-bold text-ink">Furniture schedule</span>
       <span class="ml-2 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-        {room.furniture.length} pieces · millimetres
+        {design.furniture.length} pieces · millimetres
       </span>
     </caption>
     <thead>
@@ -44,7 +44,7 @@ const facing = (item: Furniture): string => {
     </thead>
     <tbody>
       {
-        room.furniture.map((item, index) => (
+        design.furniture.map((item, index) => (
           <tr>
             <td class="font-mono text-2xs text-ink-faint">{index + 1}</td>
             <th scope="row">

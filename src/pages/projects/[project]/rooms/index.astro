@@ -1,23 +1,35 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
-import { HOME, KIND_LABELS, ROOMS } from '~/data/home';
+import { KIND_LABELS, PROJECTS, projectById } from '~/data/projects';
 import { STYLES } from '~/data/styles';
+import { preferredDesign } from '~/data/types';
 import { withBase } from '~/consts';
-import { checkRoom, worst } from '~/lib/checks';
-import { bbox, formatArea, footprintArea, outlineOf, roomArea } from '~/lib/geometry';
+import { checkDesign, worst } from '~/lib/checks';
+import { bbox, footprintArea, formatArea, outlineOf, roomArea } from '~/lib/geometry';
 
-const cards = ROOMS.map((room) => {
-  const findings = checkRoom(room);
+/** Only projects with something to index; a one-room project is its own room page. */
+export const getStaticPaths: GetStaticPaths = () =>
+  PROJECTS.filter((entry) => entry.rooms.length > 1).map((entry) => ({
+    params: { project: entry.project.id },
+  }));
+
+const entry = projectById(Astro.params.project!)!;
+const { project, rooms } = entry;
+
+const cards = rooms.map((room) => {
+  const design = preferredDesign(room);
+  const findings = checkDesign(room, design);
   const area = roomArea(room);
-  const box = bbox(outlineOf(room));
   return {
     room,
+    design,
     area,
-    box,
+    box: bbox(outlineOf(room)),
     findings,
     severity: worst(findings),
-    covered: area > 0 ? Math.round((footprintArea(room) / area) * 100) : 0,
+    covered: area > 0 ? Math.round((footprintArea(design) / area) * 100) : 0,
   };
 });
 
@@ -29,17 +41,26 @@ const TONE = {
 ---
 
 <BaseLayout
-  title="Rooms"
-  description="Every room in the home, each drawn to scale from its measured dimensions, with its furniture set out at real sizes."
+  title={`Rooms — ${project.name}`}
+  description={`Every room in ${project.name}, each drawn to scale from its measured dimensions, with its furniture set out at real sizes.`}
 >
-  <section class="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
-    <p class="eyebrow">{ROOMS.length} rooms</p>
-    <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+  <section class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-8 sm:pt-14">
+    <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <span class="mx-2">/</span>
+      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+        {project.name}
+      </a>
+      <span class="mx-2">/</span>
+      <span class="text-ink-soft">Rooms</span>
+    </nav>
+
+    <h1 class="mt-5 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
       Room by room
     </h1>
     <p class="lede mt-5 max-w-2xl">
-      The same plan as the front page, framed one room at a time. Each drawing keeps the walls, doors
-      and windows of the flat around it, because a room's problems are usually on its boundary.
+      The same plan as the project page, framed one room at a time. Each drawing keeps the walls, doors
+      and windows around it, because a room's problems are usually on its boundary.
     </p>
   </section>
 
@@ -48,11 +69,14 @@ const TONE = {
       {
         cards.map((card) => (
           <li class="card overflow-hidden">
-            <a href={withBase(`/rooms/${card.room.id}`)} class="group block">
+            <a
+              href={withBase(`/projects/${project.id}/rooms/${card.room.id}`)}
+              class="group block"
+            >
               <div class="border-b border-line bg-[#f7f4ee] p-2">
                 <Plan
-                  home={HOME}
-                  rooms={ROOMS}
+                  project={project}
+                  rooms={rooms}
                   focus={card.room.id}
                   labels="none"
                   padding={700}
@@ -67,6 +91,11 @@ const TONE = {
                   <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
                     {KIND_LABELS[card.room.kind]}
                   </span>
+                  {card.room.designs.length > 1 && (
+                    <span class="rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
+                      {card.room.designs.length} designs
+                    </span>
+                  )}
                   {card.severity && (
                     <span
                       class:list={[
@@ -81,7 +110,7 @@ const TONE = {
                 <h2 class="mt-2 font-serif text-xl font-bold text-ink transition-colors group-hover:text-brand">
                   {card.room.name}
                 </h2>
-                <p class="mt-2 text-sm leading-relaxed text-ink-soft">{card.room.theme}</p>
+                <p class="mt-2 text-sm leading-relaxed text-ink-soft">{card.design.theme}</p>
                 <dl class="mt-4 grid grid-cols-3 gap-3 border-t border-line-soft pt-4">
                   <div>
                     <dt class="text-2xs text-ink-faint uppercase">Floor</dt>
@@ -99,7 +128,7 @@ const TONE = {
                   </div>
                 </dl>
                 <p class="mt-3 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-                  {STYLES[card.room.style].name}
+                  {STYLES[card.design.style].name}
                 </p>
               </div>
             </a>

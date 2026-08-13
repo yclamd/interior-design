@@ -1,0 +1,221 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Plan from '~/components/Plan.astro';
+import { PROJECTS, projectById, roomById } from '~/data/projects';
+import { STYLES } from '~/data/styles';
+import { preferredDesign } from '~/data/types';
+import { withBase } from '~/consts';
+import { checkDesign, worst } from '~/lib/checks';
+import { bbox, footprintArea, formatArea, outlineOf, roomArea } from '~/lib/geometry';
+
+/** Only rooms with something to compare. */
+export const getStaticPaths: GetStaticPaths = () =>
+  PROJECTS.flatMap((entry) =>
+    entry.rooms
+      .filter((room) => room.designs.length > 1)
+      .map((room) => ({ params: { project: entry.project.id, room: room.id } })),
+  );
+
+const entry = projectById(Astro.params.project!)!;
+const room = roomById(entry, Astro.params.room!)!;
+const { project, rooms } = entry;
+
+const box = bbox(outlineOf(room));
+const area = roomArea(room);
+const preferred = preferredDesign(room);
+
+const columns = room.designs.map((design) => {
+  const findings = checkDesign(room, design);
+  return {
+    design,
+    findings,
+    severity: worst(findings),
+    covered: Math.round((footprintArea(design) / area) * 100),
+    pieces: design.furniture.filter((item) => item.kind !== 'rug').length,
+    href: withBase(
+      design.id === preferred.id
+        ? `/projects/${project.id}/rooms/${room.id}`
+        : `/projects/${project.id}/rooms/${room.id}/${design.id}`,
+    ),
+  };
+});
+
+/** Pieces that appear in some designs and not others, which is the interesting part. */
+const everyPiece = [...new Set(room.designs.flatMap((d) => d.furniture.map((f) => f.name)))].sort();
+const contested = everyPiece.filter(
+  (name) => room.designs.some((d) => d.furniture.some((f) => f.name === name)) &&
+    room.designs.some((d) => !d.furniture.some((f) => f.name === name)),
+);
+
+const TONE = {
+  error: { label: 'Conflict', chip: 'bg-flag-soft text-flag' },
+  warning: { label: 'Tight', chip: 'bg-clay-soft text-clay' },
+  note: { label: 'Noted', chip: 'bg-paper-deep text-ink-soft' },
+} as const;
+---
+
+<BaseLayout
+  title={`${room.name}, side by side — ${project.name}`}
+  description={`The ${room.designs.length} designs for the ${room.name.toLowerCase()} drawn against the same shell, with what each one costs and gains.`}
+>
+  <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
+    <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <span class="mx-2">/</span>
+      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+        {project.name}
+      </a>
+      <span class="mx-2">/</span>
+      <a
+        href={withBase(`/projects/${project.id}/rooms/${room.id}`)}
+        class="transition-colors hover:text-brand"
+      >
+        {room.name}
+      </a>
+      <span class="mx-2">/</span>
+      <span class="text-ink-soft">Side by side</span>
+    </nav>
+
+    <h1 class="mt-5 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+      {room.name}, {room.designs.length} ways
+    </h1>
+    <p class="lede mt-5 max-w-2xl">
+      The same {box.width} × {box.depth} mm shell and the same {formatArea(area)} of floor in every
+      column. The walls, the front door, the glazing and the openings do not move between them —
+      what changes is what stands inside, and therefore what the room can be used for.
+    </p>
+  </section>
+
+  <section class="mx-auto mt-10 max-w-6xl px-5 sm:px-8">
+    <div class:list={['grid gap-6', room.designs.length === 2 ? 'lg:grid-cols-2' : 'lg:grid-cols-3']}>
+      {
+        columns.map((column) => (
+          <article class="card overflow-hidden">
+            <div class="border-b border-line bg-[#f7f4ee] p-2">
+              <Plan
+                project={project}
+                rooms={rooms}
+                focus={room.id}
+                design={column.design.id}
+                labels="none"
+                clearance
+                swept
+                padding={700}
+                nominalWidth={560}
+                minWidth="min-w-0"
+                title={`${room.name}, ${column.design.name}`}
+                desc={`${column.design.name}: ${column.pieces} pieces covering ${column.covered}% of the floor.`}
+              />
+            </div>
+            <div class="p-5">
+              <div class="flex flex-wrap items-center gap-2">
+                {column.design.preferred && (
+                  <span class="rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
+                    Preferred
+                  </span>
+                )}
+                {column.severity && (
+                  <span
+                    class:list={[
+                      'rounded-full px-2 py-0.5 text-2xs font-bold',
+                      TONE[column.severity].chip,
+                    ]}
+                  >
+                    {TONE[column.severity].label} · {column.findings.length}
+                  </span>
+                )}
+              </div>
+              <h2 class="mt-2 font-serif text-xl font-bold text-ink">
+                <a href={column.href} class="transition-colors hover:text-brand">
+                  {column.design.name}
+                </a>
+              </h2>
+              <p class="mt-2 text-sm leading-relaxed text-ink-soft">{column.design.theme}</p>
+
+              <dl class="mt-4 grid grid-cols-3 gap-3 border-t border-line-soft pt-4">
+                <div>
+                  <dt class="text-2xs text-ink-faint uppercase">Pieces</dt>
+                  <dd class="mt-0.5 text-sm font-bold text-ink tabular">{column.pieces}</dd>
+                </div>
+                <div>
+                  <dt class="text-2xs text-ink-faint uppercase">Covered</dt>
+                  <dd class="mt-0.5 text-sm font-bold text-ink tabular">{column.covered}%</dd>
+                </div>
+                <div>
+                  <dt class="text-2xs text-ink-faint uppercase">Style</dt>
+                  <dd class="mt-0.5 text-sm font-bold text-ink">{STYLES[column.design.style].name}</dd>
+                </div>
+              </dl>
+
+              <p class="prose-note mt-4">{column.design.summary}</p>
+
+              {column.design.openQuestions && column.design.openQuestions.length > 0 && (
+                <>
+                  <p class="mt-5 eyebrow">What it costs</p>
+                  <ul class="mt-2 space-y-2">
+                    {column.design.openQuestions.map((question) => (
+                      <li class="flex gap-2 text-xs leading-relaxed text-ink-soft">
+                        <span
+                          class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-clay"
+                          aria-hidden="true"
+                        />
+                        <span>{question}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+
+              <a
+                href={column.href}
+                class="mt-5 inline-block rounded-full border border-line bg-card px-4 py-2 text-sm text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
+              >
+                This design in full
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    contested.length > 0 && (
+      <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
+        <h2 class="font-serif text-2xl font-bold text-ink">What the designs disagree about</h2>
+        <p class="prose-note mt-2 max-w-2xl">
+          Pieces that are in some of these designs and not others. Anything in all of them is settled
+          and is left out of this table.
+        </p>
+        <div class="card table-scroll mt-6">
+          <table class="spec min-w-[34rem]">
+            <thead>
+              <tr>
+                <th scope="col">Piece</th>
+                {room.designs.map((design) => (
+                  <th scope="col">{design.name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {contested.map((name) => (
+                <tr>
+                  <th scope="row">{name}</th>
+                  {room.designs.map((design) => {
+                    const piece = design.furniture.find((item) => item.name === name);
+                    return (
+                      <td class={piece ? 'text-ink' : 'text-ink-faint'}>
+                        {piece ? `${piece.width} × ${piece.depth}` : 'not in this one'}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

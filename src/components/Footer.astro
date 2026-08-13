@@ -1,6 +1,8 @@
 ---
 import { NAV_LINKS, SITE, withBase } from '~/consts';
-import { HOME } from '~/data/home';
+import { PROJECTS } from '~/data/projects';
+
+const rooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
 ---
 
 <footer class="mt-20 border-t border-line bg-paper-deep/40">
@@ -10,7 +12,7 @@ import { HOME } from '~/data/home';
         <p class="font-serif text-lg font-bold text-ink">{SITE.name}</p>
         <p class="mt-2 text-sm leading-relaxed text-ink-soft">{SITE.description}</p>
         <p class="mt-4 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-          All dimensions in millimetres · {HOME.location}
+          All dimensions in millimetres · {PROJECTS.length} projects · {rooms} rooms
         </p>
       </div>
       <nav class="flex flex-col gap-2" aria-label="Footer">

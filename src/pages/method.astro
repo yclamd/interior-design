@@ -1,32 +1,44 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import { HOME } from '~/data/home';
+import { PROJECTS } from '~/data/projects';
 
 /**
- * The page that makes the dataset legible: what has to be measured, in what
- * unit, and from where. It doubles as the survey sheet, so anyone holding a tape
- * measure can work down it.
+ * The page that makes the dataset legible: what has to be measured, in what unit,
+ * and from where. It doubles as the survey sheet, so anyone holding a tape measure
+ * can work down it.
  */
 
-const homeFields = [
-  ['name, location', 'text', 'Whatever is worth publishing. The location can be as vague as you like.'],
-  ['envelope', 'mm polygon', 'Outer face of the building, clockwise from its north-west corner. For a rectangle, four points.'],
-  ['walls.exterior', 'mm', 'Thickness of the perimeter wall, finish to finish.'],
-  ['walls.interior', 'mm', 'Thickness of a partition. Used wherever two rooms sit apart on the plan.'],
-  ['ceiling', 'mm', 'Floor to ceiling, clear. Rooms with a bulkhead or a dropped slab state their own.'],
-  ['northOffset', 'degrees', 'How far the plan is turned from true north, so the compass points where north is.'],
-  ['registeredArea', 'm²', 'The figure on the deed. Shown next to the area the drawing measures, so the two can disagree in public.'],
+const projectFields = [
+  ['id, name, location', 'text', 'The id is the URL. The location can be as vague as you like.'],
+  ['scope', 'home / floor / room', 'What kind of job it is, for the reader. The pages key off the room count, not this.'],
+  ['walls.exterior', 'mm', 'Thickness of the perimeter wall, finish to finish. For a single-room job, the walls around that room.'],
+  ['walls.interior', 'mm', 'Thickness of a partition. Used wherever two rooms of this project sit apart on the plan.'],
+  ['ceiling', 'mm', 'Floor to ceiling, clear. Rooms with a bulkhead or dropped slab state their own.'],
+  ['northOffset', 'degrees', 'How far plan-up is from true north, so the compass points where north is.'],
+  ['envelope', 'mm polygon, optional', 'Outer face of the building. Leave it out and it is taken as the rooms grown by one exterior wall, which is right for a single room and for any plan whose perimeter follows its rooms. State it only when the real outline differs.'],
+  ['registeredArea', 'm², optional', 'The figure on the deed. Shown next to the area the drawing measures, so the two can disagree in public. A single room has none.'],
+  ['premise', 'text', 'The brief for the job as a whole.'],
 ];
 
 const roomFields = [
-  ['id', 'slug', 'Lower case, hyphenated. It is the room’s URL and the name other rooms use across a door.'],
-  ['origin', 'mm point', 'The room’s north-west inside corner, in the shared plan space. This is what puts the room in the flat.'],
+  ['id', 'slug', 'The room’s URL, and the name other rooms use across a door. Unique within the project only.'],
+  ['name, kind', 'text, enum', 'Bedroom, kitchen, circulation and so on. Kind decides whether the floor counts as habitable.'],
+  ['origin', 'mm point', 'The room’s north-west inside corner, in the project’s coordinates. This is what puts the room in the plan.'],
   ['shape', 'mm', 'Either width × depth for a rectangle, or a clockwise polygon of inside corners for anything else.'],
   ['ceiling', 'mm', 'Clear floor to ceiling in this room.'],
-  ['theme, summary', 'text', 'What the room is for, and how it is meant to work. The summary is the paragraph on its page.'],
-  ['style', 'key', 'One of the styles, which sets the colours the room is drawn in.'],
+  ['openings', 'list', 'Doors and windows. They belong to the room and not to a design, because they are shared with the far side.'],
+  ['designs', 'list', 'At least one. Use single({ … }) when there is nothing to compare.'],
+];
+
+const designFields = [
+  ['id, name', 'slug, text', 'The id is the URL under the room. The name is what the switcher shows: ‘Turned to the balcony’.'],
+  ['preferred', 'boolean', 'The one drawn wherever a page has to pick: the whole-plan view, the room’s own address, the project card.'],
+  ['theme', 'text', 'What this design is trying to do that the others are not. One line.'],
+  ['summary', 'text', 'How it is meant to work. A paragraph; it is the text on the page.'],
+  ['style', 'key', 'One of the styles, which sets the colours the drawing is coloured from.'],
   ['floor', 'text + hex', 'The finish, and the colour to fill the room with.'],
-  ['openQuestions', 'text[]', 'Decisions still open. Printed as-is so they are not quietly dropped.'],
+  ['furniture', 'list', 'Everything that stands in the room, at real sizes.'],
+  ['openQuestions', 'text[]', 'Decisions still open. Printed as-is, and used as the ‘what it costs’ column when designs are compared.'],
 ];
 
 const openingFields = [
@@ -36,14 +48,14 @@ const openingFields = [
   ['sill', 'mm', 'Floor to the underside. Zero for a door or floor-to-ceiling glazing.'],
   ['kind', 'enum', 'Swing, sliding, pocket, folding or french door; window, full-height window, or a cased opening with no door at all.'],
   ['swing', 'left/right + in/out', 'Hinge side first, then whether the leaf comes into this room or goes away from it, seen standing in the room the opening is listed under.'],
-  ['to', 'room id or label', 'What is on the other side. A door shared by two rooms is listed by both, and the checks confirm the two entries land in the same place.'],
+  ['to', 'room id or label', 'What is on the other side. A door shared by two rooms of the project is listed by both, under the same id, and the checks confirm the two entries land in the same place. Anything that is not a room in this project — ‘outside’, a hallway that is not being designed — makes the wall count as the perimeter.'],
 ];
 
 const furnitureFields = [
   ['width, depth, height', 'mm', 'The piece’s own dimensions, in the order every catalogue quotes. Depth is front to back before it is turned.'],
   ['x, y', 'mm', 'North-west corner of the floor it covers, measured from the room’s own north-west corner.'],
-  ['rotation', 'degrees', 'Clockwise. A piece faces south at zero, so 90 turns it to face west.'],
-  ['clearance', 'mm per face', 'What has to stay empty for the piece to be usable: a drawer’s travel, a chair pushed back, room to stand and open a wardrobe door.'],
+  ['rotation', 'degrees', 'Clockwise. A piece faces south at zero, so 90 faces west, 180 north and 270 east.'],
+  ['clearance', 'mm per face', 'What has to stay empty for the piece to be usable: a drawer’s travel, a chair pushed back, room to stand and open a wardrobe. Turned with the piece.'],
   ['mountedAt', 'mm', 'Underside height for anything wall-hung. Such a piece is drawn but takes no floor.'],
   ['symbol', 'enum', 'Overrides the glyph for fittings whose plan symbol is conventional: wc, basin, shower, tub, sink, hob, drum.'],
   ['status', 'enum', 'Have it, ordered, to buy, or maybe. Drives the tag in the schedule.'],
@@ -54,7 +66,13 @@ const checks = [
   ['outside-room', 'A piece’s footprint is not entirely inside the room outline.'],
   ['pieces-overlap', 'Two pieces of furniture claim the same floor.'],
   ['rooms-overlap', 'Two room outlines overlap on the plan, which means an origin is wrong.'],
-  ['dangling-opening', 'A door leads to a room that is not in the dataset.'],
+  ['dangling-opening', 'A door leads to a room that is not in the project.'],
+  ['unpaired-opening', 'One room records a door to another, and that room does not record it back.'],
+  ['opening-drift', 'The two sides of one door disagree about where along the wall it is.'],
+  ['opening-gap', 'The two sides of one door are further apart than any wall, so the rooms are probably not neighbours there.'],
+  ['no-design', 'A room has no design at all.'],
+  ['duplicate-design', 'Two designs of one room share an id, so one has no address of its own.'],
+  ['two-preferred', 'More than one design is marked preferred, and only one can be drawn.'],
   ['door-swing', 'A swinging leaf sweeps through something and will stop before it is open.'],
   ['door-approach', 'Something stands in the 900 mm of landing space inside a doorway.'],
   ['clearance', 'A piece eats into the space another piece needs to be used.'],
@@ -67,16 +85,37 @@ const checks = [
 ];
 
 const tables = [
-  { heading: 'The home', intro: 'Measured once, and it decides where every room sits.', fields: homeFields },
-  { heading: 'Each room', intro: 'Eight fields, of which two are geometry.', fields: roomFields },
-  { heading: 'Each door and window', intro: 'Take these with the tape held flat against the wall.', fields: openingFields },
-  { heading: 'Each piece of furniture', intro: 'From the catalogue for the sizes, from the floor for the position.', fields: furnitureFields },
+  {
+    heading: 'The project',
+    intro: 'Measured once. A whole home, a floor of one, or a single room — the fields are the same, and two of them can be left out for a single room.',
+    fields: projectFields,
+  },
+  {
+    heading: 'Each room',
+    intro: 'What is true of the space, and cannot differ between designs.',
+    fields: roomFields,
+  },
+  {
+    heading: 'Each design',
+    intro: 'What has been decided about the space. A room can carry several, to be compared side by side.',
+    fields: designFields,
+  },
+  {
+    heading: 'Each door and window',
+    intro: 'Take these with the tape held flat against the wall.',
+    fields: openingFields,
+  },
+  {
+    heading: 'Each piece of furniture',
+    intro: 'From the catalogue for the sizes, from the floor for the position.',
+    fields: furnitureFields,
+  },
 ];
 ---
 
 <BaseLayout
   title="Method"
-  description="What has to be measured to draw a home this way: units, the shared coordinate space, and every field of the dataset, with the checks that run over it."
+  description="What has to be measured to draw a room this way: units, the shared coordinate space, the split between a room and a design, and every field of the dataset."
 >
   <section class="mx-auto max-w-4xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
     <p class="eyebrow">Survey sheet</p>
@@ -85,10 +124,10 @@ const tables = [
     </h1>
     <p class="lede mt-5">
       Nothing on this site is drawn freehand. Each drawing is generated from a list of dimensions, so
-      the work of designing is the work of measuring first. Two conventions hold everywhere.
+      the work of designing is the work of measuring first. Three conventions hold everywhere.
     </p>
 
-    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+    <div class="mt-8 grid gap-4 sm:grid-cols-3">
       <div class="card p-5">
         <p class="eyebrow">One</p>
         <h2 class="mt-2 font-serif text-lg font-bold text-ink">Millimetres, as integers</h2>
@@ -100,12 +139,22 @@ const tables = [
       </div>
       <div class="card p-5">
         <p class="eyebrow">Two</p>
-        <h2 class="mt-2 font-serif text-lg font-bold text-ink">One space for the whole home</h2>
+        <h2 class="mt-2 font-serif text-lg font-bold text-ink">One space per project</h2>
         <p class="mt-2 text-sm leading-relaxed text-ink-soft">
           x runs right, y runs down, and the origin is the north-west corner of the building. A room
-          states where its own north-west inside corner falls, and everything within the room —
-          furniture, doors, windows — is measured from that corner. This is why the whole-flat plan
-          and the room plans can never disagree: they are the same drawing at two framings.
+          states where its own north-west inside corner falls, and everything within it is measured
+          from that corner. This is why the whole plan and the room plans can never disagree: they are
+          the same drawing at two framings.
+        </p>
+      </div>
+      <div class="card p-5">
+        <p class="eyebrow">Three</p>
+        <h2 class="mt-2 font-serif text-lg font-bold text-ink">Rooms are facts, designs are not</h2>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+          Walls, ceiling height and doorways belong to the room. The palette, the floor and the
+          furniture belong to a design, and a room can carry several to be compared. Keeping them
+          apart is what lets two arrangements be drawn against one room without either claiming to
+          have moved a wall.
         </p>
       </div>
     </div>
@@ -128,7 +177,9 @@ const tables = [
             <tbody>
               {table.fields.map(([field, unit, how]) => (
                 <tr>
-                  <th scope="row"><code class="font-mono text-xs text-ink">{field}</code></th>
+                  <th scope="row">
+                    <code class="font-mono text-xs text-ink">{field}</code>
+                  </th>
                   <td class="text-ink-soft">{unit}</td>
                   <td class="text-ink-soft">{how}</td>
                 </tr>
@@ -144,8 +195,9 @@ const tables = [
     <h2 class="font-serif text-2xl font-bold text-ink">What is checked, and against what</h2>
     <p class="prose-note mt-2">
       A plan can be handsome and still put a wardrobe where the door lands. These run over the
-      dimensions on every build and print what they find on the room’s page. None of them has an
-      opinion about taste.
+      dimensions on every build and print what they find on the room’s page and on the audit. None of
+      them has an opinion about taste. A room with several designs is checked once per design, because
+      a conflict belongs to an arrangement rather than to a space.
     </p>
     <div class="card table-scroll mt-5">
       <table class="spec min-w-[34rem]">
@@ -169,13 +221,15 @@ const tables = [
     <div class="rounded-xl border border-clay/30 bg-clay-soft p-6">
       <p class="eyebrow text-clay">Standing in for the real thing</p>
       <h2 class="mt-2 font-serif text-xl font-bold text-ink">
-        The figures published now are a placeholder
+        The {PROJECTS.length} projects published now are placeholders
       </h2>
       <p class="mt-2 text-sm leading-relaxed text-ink-soft">
-        Everything drawn on this site at the moment is {HOME.location.toLowerCase()} — a plausible
-        flat, not the one being designed. It is here so the drawings, the checks and the pages can be
-        seen working before the survey is typed in. Rooms can be replaced one at a time: each is a
-        single file, and the whole-plan checks will report the moment two of them disagree.
+        Everything drawn on this site at the moment is invented — a plausible flat and a plausible
+        single room, not real ones. They are here so the drawings, the checks and the pages can be
+        seen working before a survey is typed in, and because between them they exercise every part of
+        the model: a multi-room plan with a stated envelope, a one-room job with a derived one, and one
+        room carried in two competing designs. Rooms can be replaced one file at a time, and the
+        whole-plan checks will report the moment two of them disagree.
       </p>
     </div>
   </section>

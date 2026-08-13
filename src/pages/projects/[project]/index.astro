@@ -1,0 +1,233 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Plan from '~/components/Plan.astro';
+import Findings from '~/components/Findings.astro';
+import RoomDetail from '~/components/RoomDetail.astro';
+import { HABITABLE, KIND_LABELS, PROJECTS, SCOPE_LABELS, projectById } from '~/data/projects';
+import { STYLES } from '~/data/styles';
+import { preferredDesign } from '~/data/types';
+import { withBase } from '~/consts';
+import { checkProject } from '~/lib/checks';
+import {
+  SQM_PER_PING,
+  bbox,
+  envelopeOf,
+  formatArea,
+  formatLength,
+  outlineOf,
+  polygonArea,
+  roomArea,
+} from '~/lib/geometry';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  PROJECTS.map((entry) => ({ params: { project: entry.project.id } }));
+
+const entry = projectById(Astro.params.project!)!;
+const { project, rooms } = entry;
+
+/**
+ * A project of one room has nothing to overview: the plan, the schedule and the
+ * checks are the room's. So the page becomes the room, rather than a summary that
+ * would be a shorter copy of it.
+ */
+const only = rooms.length === 1 ? rooms[0]! : undefined;
+
+const findings = checkProject(project, rooms);
+const drawnArea = rooms.reduce((sum, room) => sum + roomArea(room), 0);
+const habitableArea = rooms
+  .filter((room) => HABITABLE.includes(room.kind))
+  .reduce((sum, room) => sum + roomArea(room), 0);
+const envelope = bbox(envelopeOf(project, rooms));
+const grossArea = polygonArea(envelopeOf(project, rooms));
+const bedrooms = rooms.filter((room) => room.kind === 'bedroom').length;
+const designCount = rooms.reduce((sum, room) => sum + room.designs.length, 0);
+
+const rows = rooms.map((room) => {
+  const box = bbox(outlineOf(room));
+  return {
+    room,
+    design: preferredDesign(room),
+    area: roomArea(room),
+    dimensions:
+      room.shape.kind === 'rect'
+        ? `${room.shape.width} × ${room.shape.depth}`
+        : `${box.width} × ${box.depth} overall`,
+  };
+});
+
+const stats = [
+  { label: 'Rooms drawn', value: String(rooms.length), note: `${bedrooms} bedrooms` },
+  {
+    label: 'Floor drawn',
+    value: formatArea(drawnArea),
+    note: `${(drawnArea / 1_000_000 / SQM_PER_PING).toFixed(1)} ping`,
+  },
+  {
+    label: 'Habitable of it',
+    value: formatArea(habitableArea),
+    note: `${Math.round((habitableArea / drawnArea) * 100)}% of the floor`,
+  },
+  {
+    label: 'Envelope',
+    value: `${formatLength(envelope.width)} × ${formatLength(envelope.depth)}`,
+    note: project.envelope ? `${formatArea(grossArea)} gross` : 'taken from the rooms',
+  },
+  { label: 'Ceiling', value: formatLength(project.ceiling), note: 'unless a room says otherwise' },
+  {
+    label: 'Registered',
+    value: project.registeredArea ? `${project.registeredArea.toFixed(1)} m²` : '—',
+    note: project.registeredArea ? 'from the deed' : 'not recorded',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: project.name,
+  description: project.premise,
+  about: {
+    '@type': project.scope === 'room' ? 'Room' : 'Residence',
+    name: project.name,
+    floorSize: {
+      '@type': 'QuantitativeValue',
+      unitCode: 'MTK',
+      value: Number((drawnArea / 1_000_000).toFixed(2)),
+    },
+  },
+};
+---
+
+<BaseLayout title={project.name} description={project.premise} schema={schema}>
+  <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
+    <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <span class="mx-2">/</span>
+      <span class="text-ink-soft">{project.name}</span>
+    </nav>
+
+    <div class="mt-5 flex flex-wrap items-center gap-3">
+      <p class="eyebrow">{project.location}</p>
+      <span class="rounded-full bg-paper-deep px-2.5 py-1 text-2xs font-bold tracking-[0.14em] text-ink-soft uppercase">
+        {SCOPE_LABELS[project.scope]}
+      </span>
+    </div>
+    <h1 class="mt-3 max-w-3xl font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.6rem]">
+      {project.name}, set out at full size
+    </h1>
+    <p class="lede mt-5 max-w-2xl">{project.premise}</p>
+  </section>
+
+  {
+    only ? (
+      <section class="mx-auto mt-10 max-w-6xl px-5 sm:px-8">
+        <RoomDetail entry={entry} room={only} design={preferredDesign(only)} heading={false} />
+      </section>
+    ) : (
+      <>
+        <section class="mx-auto mt-10 max-w-6xl px-5 sm:px-8">
+          <Plan
+            project={project}
+            rooms={rooms}
+            labels="rooms"
+            title={`Floor plan of ${project.name}`}
+            desc={`A scaled floor plan of the whole project: ${rooms.length} rooms totalling ${formatArea(drawnArea)}, drawn inside a ${formatLength(envelope.width)} by ${formatLength(envelope.depth)} envelope with ${project.walls.exterior} mm exterior and ${project.walls.interior} mm interior walls.`}
+            nominalWidth={1100}
+          />
+          <p class="mt-3 text-xs leading-relaxed text-ink-faint">
+            Walls are not drawn as lines. The envelope is filled and each room is filled on top of it,
+            so every partition comes out at exactly the thickness the room positions imply — {project.walls.interior} mm
+            inside, {project.walls.exterior} mm at the perimeter. Rooms with more than one design are
+            shown in the preferred one.
+          </p>
+        </section>
+
+        <section class="mx-auto mt-12 max-w-6xl px-5 sm:px-8">
+          <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {stats.map((stat) => (
+              <div class="card p-4">
+                <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{stat.label}</dt>
+                <dd class="mt-1.5 font-serif text-lg font-bold text-ink tabular">{stat.value}</dd>
+                <dd class="mt-0.5 text-xs text-ink-faint">{stat.note}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
+          <h2 class="font-serif text-2xl font-bold text-ink">Every room, with its figures</h2>
+          <p class="prose-note mt-2 max-w-2xl">
+            Sizes are the clear internal dimensions between finished wall faces, which is what
+            furniture has to fit inside — not the structural grid.
+          </p>
+
+          <div class="card table-scroll mt-6">
+            <table class="spec min-w-[44rem]">
+              <thead>
+                <tr>
+                  <th scope="col">Room</th>
+                  <th scope="col">Use</th>
+                  <th scope="col">Size (mm)</th>
+                  <th scope="col">Floor</th>
+                  <th scope="col">Ceiling</th>
+                  <th scope="col">Style</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr>
+                    <th scope="row">
+                      <a
+                        href={withBase(`/projects/${project.id}/rooms/${row.room.id}`)}
+                        class="font-medium text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
+                      >
+                        {row.room.name}
+                      </a>
+                      {row.room.designs.length > 1 && (
+                        <span class="ml-2 rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
+                          {row.room.designs.length} designs
+                        </span>
+                      )}
+                    </th>
+                    <td class="text-ink-soft">{KIND_LABELS[row.room.kind]}</td>
+                    <td class="whitespace-nowrap">{row.dimensions}</td>
+                    <td class="whitespace-nowrap">{formatArea(row.area)}</td>
+                    <td class="whitespace-nowrap">{row.room.ceiling}</td>
+                    <td class="text-ink-soft">{STYLES[row.design.style].name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
+          <Findings
+            findings={findings}
+            heading="What the whole-plan checks found"
+            clear="No rooms overlap, every shared door is recorded the same way by both rooms, and the drawn area is close enough to the deed to be explained by walls and shafts."
+          />
+        </section>
+
+        <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
+          <div class="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-ink">Room by room</h2>
+              <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">
+                {rooms.length} rooms and {designCount} designs, each with its own drawing at a closer
+                scale, a furniture schedule in millimetres, and the list of what its dimensions rule
+                out.
+              </p>
+            </div>
+            <a
+              href={withBase(`/projects/${project.id}/rooms`)}
+              class="shrink-0 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-deep"
+            >
+              See the rooms
+            </a>
+          </div>
+        </section>
+      </>
+    )
+  }
+</BaseLayout>
