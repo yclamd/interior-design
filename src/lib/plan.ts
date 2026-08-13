@@ -182,12 +182,19 @@ export function openingRender(
   if (zone && opening.swing) {
     const world = zone.map((p) => ({ x: p.x + room.origin.x, y: p.y + room.origin.y }));
     const [hinge, closed, open] = world as [Point, Point, Point];
-    const cross =
-      (closed.x - hinge.x) * (open.y - hinge.y) - (closed.y - hinge.y) * (open.x - hinge.x);
+    /**
+     * The arc runs from the leaf standing open to the leaf shut, around the hinge,
+     * so it has to bulge away from the hinge. Which of the two arcs SVG draws is set
+     * by the sweep flag, and that follows the turn from open to shut — taken the
+     * other way round it draws the arc that curves back towards the hinge, which is
+     * not a door.
+     */
+    const turn =
+      (open.x - hinge.x) * (closed.y - hinge.y) - (open.y - hinge.y) * (closed.x - hinge.x);
     render.swing = {
       leaf: line(hinge, open),
       arc: `M ${round(open.x)} ${round(open.y)} A ${opening.width} ${opening.width} 0 0 ${
-        cross > 0 ? 1 : 0
+        turn > 0 ? 1 : 0
       } ${round(closed.x)} ${round(closed.y)}`,
     };
     render.sweptZone = pathOf(world);
@@ -199,6 +206,8 @@ export function openingRender(
 export interface FurnitureRender {
   id: string;
   name: string;
+  /** What to write on the drawing, which may be shorter than the name. */
+  label: string;
   kind: Furniture['kind'];
   symbol?: Furniture['symbol'];
   /** Unrotated footprint, already in the shared space. */
@@ -207,7 +216,9 @@ export interface FurnitureRender {
   transform: string;
   /** The floor it really covers, for hit areas and labels. */
   corners: string;
-  label: Point;
+  /** Extent of that floor, so a label can be set along the piece's longer side. */
+  occupied: Box;
+  at: Point;
   fill: string;
   stroke: string;
   mounted: boolean;
@@ -240,12 +251,14 @@ export function furnitureRenders(room: Room, design: Design): FurnitureRender[] 
     return {
       id: item.id,
       name: item.name,
+      label: item.short ?? item.name,
       kind: item.kind,
       symbol: item.symbol,
       box,
+      occupied: bbox(corners),
       transform: `rotate(${item.rotation ?? 0} ${round(centre.x)} ${round(centre.y)})`,
       corners: pathOf(corners),
-      label: rotatePoint(anchor, centre, item.rotation ?? 0),
+      at: rotatePoint(anchor, centre, item.rotation ?? 0),
       fill: item.colour ?? (item.kind === 'rug' ? palette.textile : palette.furniture),
       stroke: PLAN_COLOURS.ink,
       mounted: item.mountedAt !== undefined,
