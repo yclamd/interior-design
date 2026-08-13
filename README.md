@@ -6,7 +6,7 @@ Every room is set out from measured dimensions in millimetres. The plans are
 generated from those figures, not sketched, so a piece of furniture that does not
 fit is visibly not fitting — and a set of checks says so in words as well.
 
-Deploys to **https://yclamd.github.io/interior-design/**
+Published at **https://yclamd.github.io/interior-design/**
 
 **The figures currently published are a placeholder**: a plausible 9.0 × 9.2 m flat,
 not the one being designed. It is there so the drawings, the checks and the pages can
@@ -117,9 +117,9 @@ GitHub Actions builds on every push and deploys `main` to GitHub Pages. The work
 passes the deployed origin and sub-path in as `SITE_URL` and `BASE_PATH`, so the same
 source builds correctly for a project page, a user page or a custom domain.
 
-For the first deploy, set **Settings → Pages → Build and deployment → Source** to
-**GitHub Actions**. Without that the workflow builds and then fails to publish.
-
-Pages will not serve a private repository on a free account. Either make the
-repository public or be on a plan that allows private Pages; until then the build
-job will pass and the deploy job will not.
+Two settings this depends on, worth knowing if it is ever set up again elsewhere.
+**Settings → Pages → Build and deployment → Source** has to be **GitHub Actions**;
+with it left on `Deploy from a branch`, `configure-pages` cannot find a Pages site
+and the build fails at `Resolve Pages URL` before it ever reaches the build step.
+And Pages will not serve a private repository on a free account, so publishing this
+means the home's dimensions are public too.
