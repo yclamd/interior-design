@@ -9,6 +9,7 @@ export const SITE = {
 
 export const NAV_LINKS = [
   { label: 'Projects', href: '/' },
+  { label: 'Catalogue', href: '/catalogue' },
   { label: 'Styles', href: '/styles' },
   { label: 'Audit', href: '/audit' },
   { label: 'Method', href: '/method' },

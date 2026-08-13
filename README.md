@@ -43,6 +43,7 @@ positions is a second project.
 | `/projects/<p>/rooms/<room>` | The room at a closer scale, in its preferred design |
 | `/projects/<p>/rooms/<room>/<design>` | An alternative design for the same room |
 | `/projects/<p>/rooms/<room>/compare` | Every design for that room, side by side, with what each costs |
+| `/catalogue` | Every object the site knows the size of, and which rooms it is standing in |
 | `/styles` | The palettes and material lists, shared across projects |
 | `/audit` | Every dimensional conflict on the site, on one page |
 | `/method` | The survey sheet: what has to be measured, and what is checked |
@@ -62,6 +63,13 @@ on top of it, and what is left showing is the wall. Interior partitions therefor
 come out at exactly the thickness the room origins imply and can never disagree with
 them. Doors and windows are holes punched back through that fill, and the wall a
 hole cuts counts as perimeter unless the far side is a room in the same project.
+
+**A dimension is written down once.** Objects live in `src/data/catalogue.ts` with
+their sizes, their usual clearances, and a note on whether the figures were measured
+or are merely typical for the type. A room names an object and says where it goes; it
+states no dimensions of its own. So the same sofa is the same sofa in two rooms, and
+when a real product is chosen its figures replace the catalogue's and every room using
+it is redrawn and rechecked at once.
 
 **Figures that can be computed are not stored.** The building outline is optional:
 left out, it is taken as the rooms grown by one exterior wall, which is right for a
@@ -107,6 +115,7 @@ src/
 │   └── BaseHead / Header / Footer.astro
 ├── data/
 │   ├── types.ts               # Mm, Project, Room, Design, Opening, Furniture, StylePreset
+│   ├── catalogue.ts           # every object's dimensions, and fromCatalogue()
 │   ├── projects.ts            # the registry, and labels shared across projects
 │   ├── styles.ts              # palettes and material lists
 │   └── projects/

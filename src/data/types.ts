@@ -135,6 +135,12 @@ export interface Clearance {
 
 export interface Furniture {
   id: string;
+  /**
+   * The catalogue entry this came from, set by fromCatalogue(). It is what lets the
+   * catalogue say which rooms each object is standing in, even where the room has
+   * renamed it.
+   */
+  from?: string;
   name: string;
   /**
    * What the plan calls it, when the full name is too long to sit inside the piece.

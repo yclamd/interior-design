@@ -1,0 +1,175 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { CATALOGUE_IDS, GROUP_LABELS, catalogueItem, type CatalogueGroup } from "~/data/catalogue";
+import { PROJECTS } from '~/data/projects';
+import { withBase } from '~/consts';
+import { formatLength } from '~/lib/geometry';
+
+/**
+ * The object database, listed. Every dimension the site draws with is here, and this
+ * page exists so that the figures which are still typical rather than measured are
+ * visible instead of assumed.
+ */
+
+/** Which rooms and designs each object is actually standing in. */
+const usage = new Map<string, string[]>();
+for (const { rooms } of PROJECTS) {
+  for (const room of rooms) {
+    for (const design of room.designs) {
+      for (const piece of design.furniture) {
+        if (!piece.from) continue;
+        const where = `${room.name}, ${design.name.toLowerCase()}`;
+        const held = usage.get(piece.from) ?? [];
+        if (!held.includes(where)) usage.set(piece.from, [...held, where]);
+      }
+    }
+  }
+}
+
+const groups: CatalogueGroup[] = [
+  'sleeping',
+  'seating',
+  'tables',
+  'storage',
+  'kitchen',
+  'bathroom',
+  'laundry',
+  'floor',
+];
+
+const rows = CATALOGUE_IDS.map((id) => ({ id, item: catalogueItem(id) }));
+const measured = rows.filter((row) => row.item.measured).length;
+const madeToSize = rows.filter((row) => row.item.madeToSize).length;
+---
+
+<BaseLayout
+  title="Catalogue"
+  description="Every object this site knows the size of, with where its figures came from and which rooms it is standing in."
+>
+  <section class="mx-auto max-w-5xl px-5 pt-14 pb-8 sm:px-8 sm:pt-20">
+    <p class="eyebrow">{rows.length} objects · {groups.length} groups</p>
+    <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+      Everything the site knows the size of
+    </h1>
+    <p class="lede mt-5 max-w-2xl">
+      A room does not state dimensions. It names an object from this list and says where it goes, so
+      the same sofa is the same sofa in two rooms and a figure is only ever written down once. It is
+      also what a picker needs: given a room's measurements, the useful thing to offer is a list of
+      objects whose sizes are already known.
+    </p>
+
+    <dl class="mt-8 grid grid-cols-3 gap-3">
+      <div class="card p-4">
+        <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Objects</dt>
+        <dd class="mt-1 font-serif text-2xl font-bold text-ink tabular">{rows.length}</dd>
+        <dd class="mt-0.5 text-xs text-ink-faint">each with a real footprint</dd>
+      </div>
+      <div class="card p-4">
+        <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Measured</dt>
+        <dd class="mt-1 font-serif text-2xl font-bold text-brand tabular">{measured}</dd>
+        <dd class="mt-0.5 text-xs text-ink-faint">
+          the rest are typical for the type, and want confirming
+        </dd>
+      </div>
+      <div class="card p-4">
+        <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Made to size</dt>
+        <dd class="mt-1 font-serif text-2xl font-bold text-clay tabular">{madeToSize}</dd>
+        <dd class="mt-0.5 text-xs text-ink-faint">cut to the room, so the size is a start</dd>
+      </div>
+    </dl>
+  </section>
+
+  {
+    groups.map((group) => {
+      const items = rows.filter((row) => row.item.group === group);
+      return items.length === 0 ? null : (
+        <section class="mx-auto mt-10 max-w-5xl px-5 sm:px-8">
+          <h2 class="font-serif text-2xl font-bold text-ink">{GROUP_LABELS[group]}</h2>
+          <div class="card table-scroll mt-4">
+            <table class="spec min-w-[46rem]">
+              <thead>
+                <tr>
+                  <th scope="col">Object</th>
+                  <th scope="col">W × D × H</th>
+                  <th scope="col">Needs clear</th>
+                  <th scope="col">Figures</th>
+                  <th scope="col">Standing in</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(({ id, item }) => (
+                  <tr>
+                    <th scope="row">
+                      <span class="font-medium text-ink">{item.name}</span>
+                      <code class="mt-0.5 block font-mono text-2xs text-ink-faint">{id}</code>
+                      {item.material && (
+                        <span class="mt-0.5 block text-2xs text-ink-faint">{item.material}</span>
+                      )}
+                      {item.note && (
+                        <span class="mt-1 block text-xs leading-relaxed text-ink-soft">
+                          {item.note}
+                        </span>
+                      )}
+                    </th>
+                    <td class="whitespace-nowrap">
+                      {item.width} × {item.depth} × {item.height}
+                      {item.mountedAt !== undefined && (
+                        <span class="block text-2xs text-clay">
+                          wall-hung at {formatLength(item.mountedAt)}
+                        </span>
+                      )}
+                    </td>
+                    <td class="text-ink-soft">
+                      {item.clearance
+                        ? Object.entries(item.clearance)
+                            .map(([side, depth]) => `${depth} ${side}`)
+                            .join(', ')
+                        : '—'}
+                    </td>
+                    <td>
+                      {item.measured ? (
+                        <span class="inline-block rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
+                          Measured
+                        </span>
+                      ) : (
+                        <span class="inline-block rounded-full bg-clay-soft px-2 py-0.5 text-2xs font-bold text-clay">
+                          Typical
+                        </span>
+                      )}
+                      {item.madeToSize && (
+                        <span class="mt-1 block text-2xs text-ink-faint">cut to the room</span>
+                      )}
+                    </td>
+                    <td class="text-ink-soft">
+                      {(usage.get(id) ?? []).length === 0 ? (
+                        <span class="text-ink-faint">not used yet</span>
+                      ) : (
+                        (usage.get(id) ?? []).join('; ')
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })
+  }
+
+  <section class="mx-auto mt-14 max-w-5xl px-5 sm:px-8">
+    <div class="rounded-xl border border-clay/30 bg-clay-soft p-6">
+      <p class="eyebrow text-clay">What Typical means</p>
+      <h2 class="mt-2 font-serif text-xl font-bold text-ink">
+        {rows.length - measured} of these figures have not been measured
+      </h2>
+      <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+        They are ordinary sizes for the type: near enough to plan against, and near enough that a
+        conflict found on the plan is a real conflict. They are not near enough to order against. When
+        a real product is chosen, its figures replace the ones here and every room using it is redrawn
+        and rechecked at once — which is the reason for keeping them in one place rather than in the
+        rooms. The <a href={withBase('/method')} class="text-brand underline decoration-brand/30 underline-offset-4">method page</a> is where the fields are described.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
