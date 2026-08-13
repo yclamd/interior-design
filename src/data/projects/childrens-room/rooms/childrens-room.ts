@@ -10,9 +10,19 @@ import type { Furniture, Room } from '~/data/types';
  * bought for it, drawn to price that decision rather than to propose it.
  */
 
-/** One colour per child, so a two-year-old can find their own things before they can read a label. */
-const OLDER = '#4f8bc4';
-const YOUNGER = '#e2574c';
+/**
+ * One colour per child, so a two-year-old can find their own things before they can
+ * read a label. Macaron rather than primary: at this chroma the colours still tell
+ * two children's belongings apart, and none of them competes with what is put on it
+ * — a room whose walls and furniture shout has nothing left to give a toy.
+ */
+const OLDER = '#a9cbe8';
+const YOUNGER = '#f4b6ae';
+const MINT = '#b7dbc9';
+const BUTTER = '#f6e2a3';
+const LAVENDER = '#d6c3e6';
+const PISTACHIO = '#cfe2b2';
+const BIRCH = '#ecdcc4';
 /** Milk tea. Warm enough that everything standing on it reads as an object on a floor. */
 const MAT = '#d5bfa3';
 
@@ -64,7 +74,7 @@ const FITTED: Furniture[] = [
     height: 1350,
     rotation: 90,
     clearance: { south: 900 },
-    colour: '#4f9d8b',
+    colour: MINT,
     status: 'planned',
     material: 'Birch ply, two doors, soft-close',
     note: 'Holds both sleeping bags and nothing else it needs to. Next to the door because it is opened twice a day, and kept to 1350 mm so an adult reaches the top and a toddler cannot climb it.',
@@ -79,7 +89,7 @@ const FITTED: Furniture[] = [
     height: 600,
     rotation: 90,
     clearance: { south: 500 },
-    colour: '#f2b93b',
+    colour: BUTTER,
     status: 'planned',
     material: 'Open frame, four canvas bins',
     note: 'Open bins rather than a lidded chest: no lid to drop on fingers, and a two-year-old can put things away without help.',
@@ -94,7 +104,7 @@ const FITTED: Furniture[] = [
     height: 700,
     rotation: 90,
     clearance: { south: 500 },
-    colour: '#e2574c',
+    colour: LAVENDER,
     status: 'planned',
     material: 'Birch ply, sloped front-facing shelves',
     note: 'At the north end where the light is. Covers face out and the top shelf is at 700 mm, because a two-year-old chooses a book by its picture and only from a shelf they can reach.',
@@ -108,7 +118,7 @@ const FITTED: Furniture[] = [
     depth: 500,
     height: 480,
     clearance: { north: 400, south: 400 },
-    colour: '#e3cba3',
+    colour: BIRCH,
     status: 'planned',
     material: 'Birch ply, rounded corners, wipeable top',
     note: 'A 480 mm top for 280 mm seats: the height a two-year-old can get onto unaided, which is the whole point of having one rather than using the floor. Set at the window end and off the east wall, so both children can be at it and neither is in the way of the shelves.',
@@ -145,7 +155,7 @@ const FITTED: Furniture[] = [
     width: 600,
     depth: 600,
     height: 400,
-    colour: '#8fb96a',
+    colour: PISTACHIO,
     status: 'considering',
     material: 'Washable cover',
     note: 'For an adult to sit at child height and read. Kept at the door end, which is the one part of the floor no bag is laid on, so it never has to be moved.',
@@ -190,8 +200,8 @@ export const CHILDRENS_ROOM: Room = {
       name: 'Morning and afternoon',
       preferred: true,
       theme: 'A floor to play on, a table to sit at, and no beds in the room at all',
-      style: 'playful',
-      floor: { name: 'Existing floor, bare only at the door', colour: '#e8dcc8' },
+      style: 'macaron',
+      floor: { name: 'Existing floor, bare only at the door', colour: '#e2ded4' },
       summary:
         'Nothing sleeps here by day. Both bags are folded into the cupboard by the door and what is left is the whole floor: mat to every wall except the 900 by 1000 square inside the door where shoes come off. Furniture covers 18% of it, all of it standing on the mat and all of it low — the tallest thing in the room is the bedding cupboard at 1350 mm, which an adult can reach over and a toddler cannot climb. The table is the piece that was missing from the first version of this room: at 480 mm with 280 mm seats it is a height a two-year-old gets onto without help, which is what makes it get used instead of the floor. Colour does a job here rather than decorating: one flat colour per object, and one per child on the things that are theirs.',
       furniture: [...FITTED],
@@ -206,8 +216,8 @@ export const CHILDRENS_ROOM: Room = {
       id: 'night',
       name: 'Midday and night',
       theme: 'Two bags down the middle, feet to feet',
-      style: 'playful',
-      floor: { name: 'Existing floor, bare only at the door', colour: '#e8dcc8' },
+      style: 'macaron',
+      floor: { name: 'Existing floor, bare only at the door', colour: '#e2ded4' },
       summary:
         'Two sleeping bags, 1400 by 700 each, laid end to end down the room with the children’s feet meeting in the middle — so neither is breathing on the other and neither can reach the other’s face, which is what settles two children a year apart in one room. Head to head they would take the same 2.8 m; feet to feet they get 700 mm of separation for nothing. The pair sits against the west side, which leaves a 1.6 m aisle down the east for an adult to walk in, reach either child, and get to the cupboard without stepping over anybody. Nothing has to be moved to lay them out: the table, the shelves and the cushion all stand clear of the 700 mm strip the bags need. That is the test this design exists to pass.',
       furniture: [
@@ -251,8 +261,8 @@ export const CHILDRENS_ROOM: Room = {
       id: 'fixed-beds',
       name: 'Later, with fixed beds',
       theme: 'What buying beds would cost, drawn so the choice can be made against something',
-      style: 'playful',
-      floor: { name: 'Existing floor, mat lifted', colour: '#e8dcc8' },
+      style: 'macaron',
+      floor: { name: 'Existing floor, mat lifted', colour: '#e2ded4' },
       summary:
         'The version of this room with two single beds and two desks in it. Everything fits: the beds run end to end along the west wall, using 4 m of its 4.5 m, and a 1.5 m spine down the east side takes both desks and the walking. But furniture then covers 52% of the floor, which the checks call crowded and which they are right about — the floor stops being a place and becomes the gaps between four large objects, and the mat comes up because there is no longer any floor worth covering. The point of drawing it is that sleeping on the floor is not a compromise made for now: it is what keeps the room from becoming this. If beds are ever wanted, the honest comparison is against a bunk and one shared desk, not against this.',
       furniture: [

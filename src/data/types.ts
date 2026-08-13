@@ -172,7 +172,7 @@ export type StyleKey =
   | 'muji'
   | 'industrial'
   | 'classic'
-  | 'playful';
+  | 'macaron';
 
 /**
  * A style is a palette plus a short list of materials. Both the swatches on the
