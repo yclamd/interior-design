@@ -5,10 +5,11 @@ import type { Furniture, Room } from '~/data/types';
  * 2550 east–west by 4500 north–south, window at the north end, door at the south
  * end of the east wall.
  *
- * Nothing here states a dimension. Every object is pulled from the catalogue, which
- * holds its size, and this file says only which object, where it goes, and why. Three
- * designs: the first two are the same room in the morning and at night, and both are
- * checked; the third is the room with beds bought for it, drawn to price that.
+ * Every object in it now has measured dimensions rather than typical ones, and that
+ * changed the layout: the storage family is 440 deep where the assumed pieces were
+ * 600, which gives back 160 mm of a room only 2550 wide, and the table is 830 where
+ * the assumed one was 700. Nothing here states a size — each piece names a catalogue
+ * entry, and this file says only which, where and why.
  */
 
 /**
@@ -21,7 +22,6 @@ const YOUNGER = '#f4b6ae';
 const MINT = '#b7dbc9';
 const BUTTER = '#f6e2a3';
 const LAVENDER = '#d6c3e6';
-const PISTACHIO = '#cfe2b2';
 const BIRCH = '#ecdcc4';
 /** Milk tea. Warm enough that everything standing on it reads as an object on a floor. */
 const MAT = '#d5bfa3';
@@ -35,9 +35,8 @@ const FLOOR = { name: 'Existing floor, bare only at the door', colour: '#e2ded4'
  * of bare floor is left as somewhere to stand and take shoes off.
  *
  * It is one piece of material. It takes two rectangles to describe here only because a
- * footprint is a rectangle and the shape wanted has the door's corner bitten out of
- * it; mats are drawn without an outline so the two meet invisibly, as the material
- * does.
+ * footprint is a rectangle and the shape wanted has the door's corner cut out of it;
+ * mats are drawn without an outline so the two meet invisibly, as the material does.
  */
 const MAT_PIECES: Furniture[] = [
   fromCatalogue('floor-mat', 0, 0, {
@@ -63,47 +62,59 @@ const MAT_PIECES: Furniture[] = [
   }),
 ];
 
-/** Storage, the table and the mat stand in the same places whatever time of day it is. */
+/**
+ * Everything except the bedding stands in the same place all day and all night.
+ *
+ * All three storage units go on the east wall in one line. They are 440 deep and the
+ * bookshelf is 280, so the run intrudes less than half a metre into a room 2.55 m
+ * across, and their order runs by height: the bookshelf at 410 nearest the window,
+ * the toy cabinet at 560, then the tall one at 910 by the door. That puts the lowest
+ * thing where the light is and the only adult-height thing where an adult comes in.
+ */
 const FITTED: Furniture[] = [
   ...MAT_PIECES,
-  fromCatalogue('cupboard-bedding', 1950, 2500, {
-    rotation: 90,
-    colour: MINT,
-    status: 'planned',
-    note: 'Holds both sleeping bags and nothing else it needs to. Next to the door because it is opened twice a day.',
-  }),
-  fromCatalogue('shelving-toy-bins', 2150, 1450, {
-    rotation: 90,
-    colour: BUTTER,
-    status: 'planned',
-  }),
-  fromCatalogue('shelving-book-display', 2250, 500, {
+  fromCatalogue('bookshelf-490', 2270, 400, {
+    id: 'book-display',
+    name: 'Picture books',
     rotation: 90,
     colour: LAVENDER,
-    status: 'planned',
-    note: 'At the north end, where the light is.',
+    status: 'owned',
+    note: 'At the north end where the light is, and at 410 mm high a two-year-old reaches every shelf in it.',
   }),
-  fromCatalogue('table-play-toddler', 1000, 650, {
+  fromCatalogue('cabinet-990-low', 2110, 1200, {
+    id: 'toy-cabinet',
+    name: 'Toy cabinet',
+    short: 'Toys',
+    rotation: 90,
+    colour: BUTTER,
+    status: 'owned',
+    note: 'The widest of the family and one of the lowest, which is what makes it the toy one: at 560 mm a child can reach the top and put things away without help.',
+  }),
+  fromCatalogue('cabinet-930-tall', 2110, 2290, {
+    id: 'bedding-cabinet',
+    name: 'Bedding cabinet',
+    short: 'Bedding',
+    rotation: 90,
+    colour: MINT,
+    status: 'owned',
+    note: 'Both sleeping bags live here, and it is by the door because it is opened twice a day. The 910 height is the only one in the family an adult can use without crouching — and the only one that has to be screwed to the wall.',
+  }),
+  fromCatalogue('table-play-830', 900, 550, {
     colour: BIRCH,
-    status: 'planned',
-    note: 'Set at the window end and off the east wall, so both children can be at it and neither is in the way of the shelves.',
+    status: 'owned',
+    note: 'Held 900 mm off the west wall so it clears the sleeping bags, and 140 mm off the bookshelf’s reach, which leaves it standing free with a child on each long side.',
   }),
-  fromCatalogue('chair-toddler', 1100, 300, {
+  fromCatalogue('chair-toddler-320', 1200, 200, {
     id: 'chair-older',
     name: 'Chair, older child',
     colour: OLDER,
-    status: 'planned',
+    status: 'owned',
   }),
-  fromCatalogue('chair-toddler', 1300, 1200, {
+  fromCatalogue('chair-toddler-320', 1250, 1160, {
     id: 'chair-younger',
     name: 'Chair, younger child',
     colour: YOUNGER,
-    status: 'planned',
-  }),
-  fromCatalogue('floor-cushion', 250, 3700, {
-    colour: PISTACHIO,
-    status: 'considering',
-    note: 'Kept at the door end, which is the one part of the floor no bag is laid on, so it never has to be moved.',
+    status: 'owned',
   }),
 ];
 
@@ -148,35 +159,35 @@ export const CHILDRENS_ROOM: Room = {
       style: 'macaron',
       floor: FLOOR,
       summary:
-        'Nothing sleeps here by day. Both bags are folded into the cupboard by the door and what is left is the whole floor: mat to every wall except the 900 by 1000 square inside the door where shoes come off. Furniture covers 18% of it, all of it standing on the mat and all of it low — the tallest thing in the room is the bedding cupboard at 1350 mm, which an adult can reach over and a toddler cannot climb. The table is what was missing from the first version of this room: at 480 mm with 280 mm seats it is a height a two-year-old gets onto without help, which is what makes it get used instead of the floor. Colour does a job here rather than decorating: one flat pastel per object, and one per child on the things that are theirs.',
+        'Nothing sleeps here by day. Both bags are folded into the cabinet by the door and what is left is the whole floor: mat to every wall except the 900 by 1000 square inside the door where shoes come off. Furniture covers 15% of it. All three storage units stand in one line on the east wall — they are 440 deep, which is 160 mm less than the pieces this room was first drawn with, and in a room 2.55 m across that is most of what makes the table able to stand free rather than against a wall. They run by height, lowest at the window: bookshelf at 410, toy cabinet at 560, then the 910 one by the door. The tallest thing is therefore where an adult comes in, and the shortest is where the light is.',
       furniture: [...FITTED],
       openQuestions: [
-        'The window figures are assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. Worth measuring, because at a sill of 900 nothing climbable may stand under it.',
+        'The window figures are still assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. At a sill of 910 the tall cabinet would begin to cross it; it stands 85 mm clear of the glass as drawn, which is not much of a margin to be holding on an assumed figure.',
         'Where the air conditioner is has not been recorded, and it matters more in a room slept in on the floor than in one with beds, because the coldest air in a room is at floor level.',
-        'A 1350 mm cupboard standing on 25 mm of foam will sink into it unevenly and can be rocked. It has to be screwed to the wall, and that is not optional in a room with a two-year-old in it.',
-        'Every figure in this room except the sleeping bags is a typical size for its type rather than a measured one. The catalogue marks which is which; they are good enough to plan against and want confirming before anything is ordered.',
-        'There is nowhere in this room for clothes, and nothing has been assumed about where they go instead. A 600 mm wardrobe would have to come out of the 1.6 m aisle, which is the aisle the night layout depends on — so if clothes have to live in here, the sleeping arrangement is what pays for it.',
+        'The 910 cabinet stands on 25 mm of foam and is the one thing here tall enough to go over. It has to be screwed to the wall, and that is not optional in a room with a two-year-old in it.',
+        'There is nowhere in this room for clothes, and nothing has been assumed about where they go instead. A wardrobe would have to come out of the 1.5 m of clear floor the night layout depends on — so if clothes have to live in here, the sleeping arrangement is what pays for it.',
+        'The chair height was given as 280 mm, which is a seat height and pairs correctly with the 480 table. If the chairs have backs, their overall height is nearer 560, which changes nothing in plan.',
       ],
     },
     {
       id: 'night',
       name: 'Midday and night',
-      theme: 'Two bags down the middle, feet to feet',
+      theme: 'Two bags down the west side, feet to feet',
       style: 'macaron',
       floor: FLOOR,
       summary:
-        'Two sleeping bags, 1400 by 700 each, laid end to end down the room with the children’s feet meeting in the middle — so neither is breathing on the other and neither can reach the other’s face, which is what settles two children a year apart in one room. Head to head they would take the same 2.8 m; feet to feet they get 700 mm of separation for nothing. The pair sits against the west side, which leaves a 1.6 m aisle down the east for an adult to walk in, reach either child, and get to the cupboard without stepping over anybody. Nothing has to be moved to lay them out: the table, the shelves and the cushion all stand clear of the 700 mm strip the bags need. That is the test this design exists to pass.',
+        'Two sleeping bags, 1400 by 700 each, laid end to end against the west wall with the children’s feet meeting in the middle — so neither is breathing on the other and neither can reach the other’s face, which is what settles two children a year apart in one room. Head to head they would take the same 2.8 m; feet to feet they get 700 mm of separation for nothing. Everything else stays exactly where it stands by day: the bags clear the table by 50 mm and the storage run by more than half a metre, so laying them out is a matter of taking them out of the cabinet and unrolling them. Furniture and bedding together cover 32% of the floor, and the aisle between the bags and the storage is 1.26 m — enough to walk in at night, kneel beside either child, and open the bedding cabinet without stepping over anybody.',
       furniture: [
         ...FITTED,
-        fromCatalogue('sleeping-bag-toddler', 250, 700, {
+        fromCatalogue('sleeping-bag-toddler', 150, 700, {
           id: 'bag-older',
           name: 'Sleeping bag, older child',
           short: 'Older child',
           colour: OLDER,
           status: 'owned',
-          note: 'Head to the north. Folded into the cupboard every morning.',
+          note: 'Head to the north. Folded into the cabinet every morning.',
         }),
-        fromCatalogue('sleeping-bag-toddler', 250, 2100, {
+        fromCatalogue('sleeping-bag-toddler', 150, 2100, {
           id: 'bag-younger',
           name: 'Sleeping bag, younger child',
           short: 'Younger child',
@@ -188,9 +199,10 @@ export const CHILDRENS_ROOM: Room = {
         }),
       ],
       openQuestions: [
+        'The bedding cabinet is 440 deep, not 600. That is enough for two sleeping bags and not enough for folded floor mattresses, so the choice of bags over mattresses is now a consequence of the furniture rather than a preference. If mattresses are ever wanted, they have to be stored somewhere else.',
         'A 1400 mm bag suits a two-year-old and not a five-year-old. Two 1800 mm bags feet to feet come to 3.6 m, which this room still takes with 900 mm to spare — so the arrangement survives the children growing, and only the bags have to be replaced.',
-        'Feet to feet puts one child’s head at the window end and the other’s at the door end. The one by the door will hear the household; the one by the window will get the morning light. Which child gets which is worth deciding on purpose rather than by which bag is laid out first.',
-        'The play table stands 50 mm from the older child’s bag, level with their shoulders. Its top is well above a lying child but its legs are not, and a child in a bag rolls. Either the table moves 300 mm east at night, which defeats the point of nothing having to be moved, or its legs want to be the round ones.',
+        'Feet to feet puts one child’s head at the window end and the other’s at the door end. The one by the door will hear the household; the one by the window will get the morning light. Which child gets which is worth deciding on purpose rather than by which bag is unrolled first.',
+        'The table stands 50 mm from the older child’s bag, level with their chest. Its top is well above a lying child but its legs are not, and a child in a bag rolls. Either the table moves at night, which defeats the point of nothing having to be moved, or its legs want to be the round ones.',
       ],
     },
   ],

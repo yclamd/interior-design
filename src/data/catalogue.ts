@@ -150,6 +150,18 @@ export const CATALOGUE = {
     note: 'For an adult to sit at child height.',
     group: 'seating',
   },
+  'chair-toddler-320': {
+    name: 'Toddler chair, 320',
+    short: 'Chair',
+    kind: 'chair',
+    width: 320,
+    depth: 320,
+    height: 280,
+    measured: true,
+    source: OWNER,
+    note: 'The 280 mm given is a seat height, and it pairs with the 830 table. If the chair has a back, its overall height is nearer 560 and only the window checks would notice.',
+    group: 'seating',
+  },
   'chair-toddler': {
     name: 'Toddler chair',
     short: 'Chair',
@@ -198,6 +210,20 @@ export const CATALOGUE = {
   },
 
   // ── Tables and desks ──────────────────────────────────────────────────────
+  'table-play-830': {
+    name: 'Play table, 830',
+    short: 'Play table',
+    kind: 'table',
+    width: 830,
+    depth: 580,
+    height: 480,
+    clearance: { north: 400, south: 400 },
+    measured: true,
+    source: OWNER,
+    material: 'Wipeable top',
+    note: 'A 480 mm top over a 280 mm seat leaves 200 mm of knee room, which is the right gap at this age. Big enough for two children opposite each other, at 415 mm of table each.',
+    group: 'tables',
+  },
   'table-play-toddler': {
     name: 'Toddler play table',
     short: 'Play table',
@@ -273,6 +299,76 @@ export const CATALOGUE = {
   },
 
   // ── Storage ───────────────────────────────────────────────────────────────
+  /**
+   * One family, five units, and every one of them 440 deep. That shared depth is the
+   * useful fact: any combination of them stands in a single line against a wall with
+   * their fronts flush, so they can be swapped and reordered without the plan
+   * changing shape. The widths come to 990, 930, 930, 320 and 930.
+   */
+  'cabinet-990-low': {
+    name: 'Storage cabinet, 990 × 560',
+    short: 'Cabinet',
+    kind: 'shelving',
+    width: 990,
+    depth: 440,
+    height: 560,
+    clearance: { south: 500 },
+    measured: true,
+    source: OWNER,
+    note: 'The widest and one of the lowest. At 560 high a two-year-old can reach the top of it, which makes it the one to put toys in.',
+    group: 'storage',
+  },
+  'cabinet-930-low': {
+    name: 'Storage cabinet, 930 × 530',
+    short: 'Cabinet',
+    kind: 'shelving',
+    width: 930,
+    depth: 440,
+    height: 530,
+    clearance: { south: 500 },
+    measured: true,
+    source: OWNER,
+    group: 'storage',
+  },
+  'cabinet-930-tall': {
+    name: 'Storage cabinet, 930 × 910',
+    short: 'Cabinet',
+    kind: 'shelving',
+    width: 930,
+    depth: 440,
+    height: 910,
+    clearance: { south: 700 },
+    measured: true,
+    source: OWNER,
+    note: 'Two of these were measured. At 910 it is the tallest of the family and the only one an adult can use without crouching, so it is the one for things adults fetch — bedding, spare clothes. It is also the only one tall enough to be worth screwing to the wall.',
+    group: 'storage',
+  },
+  'cabinet-320-low': {
+    name: 'Storage cabinet, 320 × 530',
+    short: 'Cabinet',
+    kind: 'shelving',
+    width: 320,
+    depth: 440,
+    height: 530,
+    clearance: { south: 500 },
+    measured: true,
+    source: OWNER,
+    note: 'The narrow one. Useful for closing a run to the length of a wall, since 320 is close to the difference between two 930s and a 2.2 m wall.',
+    group: 'storage',
+  },
+  'bookshelf-490': {
+    name: 'Bookshelf, 490',
+    short: 'Books',
+    kind: 'shelving',
+    width: 490,
+    depth: 280,
+    height: 410,
+    clearance: { south: 400 },
+    measured: true,
+    source: OWNER,
+    note: 'Small and low enough that a child gets to every shelf in it. 280 deep, so it is the one thing in the family that does not line up with the 440 cabinets.',
+    group: 'storage',
+  },
   'cupboard-bedding': {
     name: 'Bedding cupboard',
     short: 'Bedding',
