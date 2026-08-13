@@ -17,7 +17,7 @@ export const PROJECT: Project = {
   ceiling: 2600,
   style: 'muji',
   premise:
-    'One room, two children both under three, and three things it has to do: sleep, play on the floor, and hold picture books where a small person can reach them. The room is 2.55 m across and 4.5 m deep, which is narrow enough that almost nothing has a second possible position — the west wall is the only long unbroken run, so it takes whatever is longest. Two designs are drawn against it: the one needed now, and the one the same room has to become when both children are at school, so that today’s decisions can be checked against what they cost later.',
+    'One room, two children both under three, and it has to be two different rooms in the same day: somewhere to play and read on the floor in the morning and afternoon, and somewhere for both of them to sleep at midday and at night. The answer is to own no beds. Bedding folds into a cupboard by the door, and the floor — 1.8 by 3 metres of it, in one piece — is the mat by day and the bed by night. At 2.55 m across, that decision is what separates a room with a floor in it from a room with gaps between furniture. The first two designs here are not alternatives to choose between: they are the same room at two times of day, and both are checked.',
 };
 
 export const ROOMS: Room[] = [CHILDRENS_ROOM];

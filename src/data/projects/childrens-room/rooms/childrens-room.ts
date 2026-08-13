@@ -2,12 +2,70 @@ import { placed } from '~/lib/geometry';
 import type { Room } from '~/data/types';
 
 /**
- * 2550 east–west by 4500 north–south: narrow and long, with the window at the far
- * north end and the door at the near south end of the east wall. Those two facts
- * decide both designs. Everything that wants light goes north, everything that has
- * to be walked past goes south, and the west wall — the only long unbroken run in
- * the room — takes whatever is longest, which is cots now and beds later.
+ * 2550 east–west by 4500 north–south, window at the north end, door at the south
+ * end of the east wall.
+ *
+ * Three designs, and the first two are not alternatives. They are the same room at
+ * two times of day: cleared for play in the morning and afternoon, and with the beds
+ * down at midday and at night. Both have to work, and the checks are run on both.
+ * The third is the room several years from now, drawn to price what fixed beds would
+ * cost if they were ever bought.
  */
+
+/** Storage, books and toys stand in the same places whatever time of day it is. */
+const FITTED = [
+  placed(1950, 2500, {
+    id: 'bedding-store',
+    name: 'Bedding cupboard',
+    kind: 'wardrobe',
+    width: 900,
+    depth: 600,
+    height: 1350,
+    rotation: 90,
+    clearance: { south: 900 },
+    status: 'planned',
+    material: 'Birch ply, two doors, soft-close',
+    note: 'The piece the whole design depends on. 600 mm deep takes two floor mattresses folded in three and both sleeping bags, and it is next to the door because it is opened twice a day. Kept to 1350 mm so an adult can reach the top shelf and a toddler cannot climb it.',
+  }),
+  placed(2150, 1450, {
+    id: 'toy-bins',
+    name: 'Low toy bins',
+    kind: 'shelving',
+    width: 900,
+    depth: 400,
+    height: 600,
+    rotation: 90,
+    clearance: { south: 500 },
+    status: 'planned',
+    material: 'Open frame, four fabric bins',
+    note: 'Open bins rather than a lidded chest: no lid to drop on fingers, and a two-year-old can put things away without help.',
+  }),
+  placed(2250, 500, {
+    id: 'book-display',
+    name: 'Picture book display',
+    kind: 'shelving',
+    width: 800,
+    depth: 300,
+    height: 700,
+    rotation: 90,
+    clearance: { south: 500 },
+    status: 'planned',
+    material: 'Birch ply, sloped front-facing shelves',
+    note: 'At the north end where the light is. Covers face out and the top shelf is at 700 mm, because a two-year-old chooses a book by its picture and only from a shelf they can reach.',
+  }),
+  placed(100, 400, {
+    id: 'floor-mat',
+    name: 'Floor mat',
+    kind: 'rug',
+    width: 1800,
+    depth: 3000,
+    height: 25,
+    status: 'planned',
+    material: 'Washable, one piece rather than interlocking tiles',
+    note: 'Not a rug but the floor of the room: played on all day and slept on at night, so it is one piece with no seams for crumbs and no tiles for a toddler to lift.',
+  }),
+];
+
 export const CHILDRENS_ROOM: Room = {
   id: 'childrens-room',
   name: "Children's room",
@@ -42,78 +100,17 @@ export const CHILDRENS_ROOM: Room = {
   ],
   designs: [
     {
-      id: 'both-in-cots',
-      name: 'Both in cots',
+      id: 'day',
+      name: 'Morning and afternoon',
       preferred: true,
-      theme: 'Two cots on one wall, and the whole north end left as floor',
+      theme: 'No beds in it at all, which is what makes the floor worth having',
       style: 'muji',
-      floor: { name: 'Existing floor with a washable play mat over the north end', colour: '#e6dcc9' },
+      floor: { name: 'One-piece washable mat over the existing floor', colour: '#e6dcc9' },
       summary:
-        'A north window is the best thing this room has. It never takes direct sun, which means the light is the same all afternoon and a nap is not ended by a sunbeam — so the north end is given to being awake in, and the cots go as far from it as they can. Both cots stand end to end against the west wall, which is the only run long enough to take 2.48 m of cot without interruption, and both are reached from their east side, where the 700 mm to stand and lift a child out is the same floor the children play on. They touch rather than sit 60 mm apart, because a gap that size is a place to trap a hand and nothing else. What is left is 5 m² of unbroken floor at the window, which at this age is the most useful thing in the room.',
+        'Nothing sleeps here by day. The bedding is folded into the cupboard by the door, and what is left is 1.8 by 3 metres of continuous mat with no bed to walk around — which in a room 2.55 m across is the difference between a floor that can be played on and a set of gaps between furniture. All the storage is on one wall, the east, in a single run, so that the other two thirds of the room is one shape rather than three. Furniture covers 13% of the floor. That figure is the design: nothing here is tall, nothing has a corner at the height a toddler falls from, and the only thing worth buying well is the cupboard, because it is opened twice a day for the next three years.',
       furniture: [
-        placed(0, 1960, {
-          id: 'cot-older',
-          name: 'Cot, older child',
-          kind: 'bed',
-          width: 1240,
-          depth: 660,
-          height: 950,
-          rotation: 90,
-          clearance: { north: 700 },
-          status: 'owned',
-          material: 'Birch, drop side',
-          note: 'Turned so its long side faces east. 700 mm is what it takes to bend over a cot rail and lift a child out without twisting.',
-        }),
-        placed(0, 3200, {
-          id: 'cot-younger',
-          name: 'Cot, younger child',
-          kind: 'bed',
-          width: 1240,
-          depth: 660,
-          height: 950,
-          rotation: 90,
-          clearance: { north: 700 },
-          status: 'owned',
-          material: 'Birch, drop side',
-          note: 'Butted against the other cot. Siblings a year or two apart settle better in sight of each other, and it saves the gap.',
-        }),
-        placed(2250, 400, {
-          id: 'book-display',
-          name: 'Picture book display',
-          kind: 'shelving',
-          width: 800,
-          depth: 300,
-          height: 700,
-          rotation: 90,
-          clearance: { south: 500 },
-          status: 'planned',
-          material: 'Birch ply, sloped front-facing shelves',
-          note: 'Covers face out and the top shelf is at 700 mm, because a two-year-old chooses a book by its picture and only from a shelf they can reach.',
-        }),
-        placed(2150, 1400, {
-          id: 'toy-bins',
-          name: 'Low toy bins',
-          kind: 'shelving',
-          width: 900,
-          depth: 400,
-          height: 600,
-          rotation: 90,
-          clearance: { south: 500 },
-          status: 'planned',
-          material: 'Open frame, four fabric bins',
-          note: 'Open bins rather than a lidded chest: no lid to drop on fingers, and a child can put things away without help.',
-        }),
-        placed(400, 200, {
-          id: 'play-mat',
-          name: 'Play mat',
-          kind: 'rug',
-          width: 1800,
-          depth: 1500,
-          height: 15,
-          status: 'planned',
-          material: 'Washable, single piece rather than interlocking tiles',
-        }),
-        placed(200, 1100, {
+        ...FITTED,
+        placed(300, 2700, {
           id: 'floor-cushion',
           name: 'Floor cushion',
           kind: 'armchair',
@@ -121,24 +118,60 @@ export const CHILDRENS_ROOM: Room = {
           depth: 600,
           height: 400,
           status: 'considering',
-          note: 'Somewhere for an adult to sit at child height to read, at the south end of the mat so it is within reach of both cots. First thing to remove if the floor turns out to feel tight.',
+          note: 'Somewhere for an adult to sit at child height to read. Put away at night, which is why it is in this design and not the other.',
         }),
       ],
       openQuestions: [
-        'The window figures are assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. Worth measuring, because the sill height decides whether anything can be stood under it — at 900 nothing climbable may go there.',
-        'The door is drawn 100 mm off the south wall. If it is tighter than that the leaf will foul the skirting rather than anything in the room, so it changes nothing here.',
-        'Where the air conditioner is has not been recorded. A cot must not sit in its direct airflow, and both cots are on the west wall — if the indoor unit is on the east wall blowing west, this layout is wrong and both cots have to move.',
-        'Neither cot has anywhere to put a folded blanket. The nearest surface is the toy bins at 600 mm, three steps away.',
+        'The window figures are assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. Worth measuring, because at a sill of 900 nothing climbable may be put under it — and the mat reaches to within 400 mm of that wall.',
+        'Where the air conditioner is has not been recorded. It matters more here than in a room with cots, because the children sleep on the floor and the coldest air in a room is at floor level.',
+        'A mat that is slept on needs to be liftable to dry. At 1.8 by 3 m in one piece it is a two-person job; two pieces of 1.8 by 1.5 would not be.',
       ],
     },
     {
-      id: 'two-desks',
-      name: 'Two desks, later',
-      theme: 'What the same room has to become when they are both at school',
+      id: 'night',
+      name: 'Midday and night',
+      theme: 'The same room with the beds down, to prove they fit',
+      style: 'muji',
+      floor: { name: 'One-piece washable mat over the existing floor', colour: '#e6dcc9' },
+      summary:
+        'Two floor mattresses, 700 by 1400 each, laid side by side on the mat with 50 mm between them. They sit 1050 mm off the window wall, so no head is against cold glass, and they stop 2050 mm short of the south wall, which leaves the whole area inside the door clear — an adult can come in at night, close the door fully behind them, and kneel beside either child without stepping over the other. Nothing has to be moved to lay them out except the floor cushion. The checks are run on this layout as well as the daytime one, because a room that only works when it is empty does not work.',
+      furniture: [
+        ...FITTED,
+        placed(150, 1050, {
+          id: 'mattress-older',
+          name: 'Floor mattress, older child',
+          kind: 'bed',
+          width: 700,
+          depth: 1400,
+          height: 60,
+          status: 'planned',
+          material: 'Folds in three, with a sleeping bag',
+          note: 'Folded away every morning into the cupboard by the door. Nothing about it is fixed, which is why the room can be two things.',
+        }),
+        placed(900, 1050, {
+          id: 'mattress-younger',
+          name: 'Floor mattress, younger child',
+          kind: 'bed',
+          width: 700,
+          depth: 1400,
+          height: 60,
+          status: 'planned',
+          material: 'Folds in three, with a sleeping bag',
+        }),
+      ],
+      openQuestions: [
+        'A 700 mm mattress suits a two-year-old and not a five-year-old. When they outgrow these, two 900 mm mattresses come to 1850 mm across including the gap, which this room still takes — but they will no longer both fit north of the cupboard.',
+        'Sleeping bags rather than loose bedding is the right answer at this age, and it stops being one at about four, when a duvet starts sliding off a floor mattress with nothing to tuck under.',
+      ],
+    },
+    {
+      id: 'fixed-beds',
+      name: 'Later, with fixed beds',
+      theme: 'What buying beds would cost, drawn so the choice can be made against something',
       style: 'warm-minimal',
       floor: { name: 'Existing floor, mat removed', colour: '#e0d3c2' },
       summary:
-        'Drawn now to find out what today’s decisions cost later. Two single beds fit end to end along the west wall — 4 m of the 4.5 m — which is the one thing this narrow room is generous about, and it leaves a 1.5 m spine down the east side for two desks and the walking. One desk takes the window; the second cannot, because the window wall is only 2.55 m wide, so it goes on the east wall and gets a lamp instead. Storage goes on the wall rather than on the floor: at 2.55 m across, a 350 mm bookcase would take a fifth of the width of the only circulation route in the room. The checks call this room crowded at 52% of the floor covered, and they are right — two children, two beds and two desks in 11.5 m² is crowded. It is drawn so that the alternative, which is a bunk bed and one shared desk, can be argued against something rather than imagined.',
+        'The version of this room with two single beds and two desks in it. Everything fits: the beds run end to end along the west wall, using 4 m of its 4.5 m, and a 1.5 m spine down the east side takes both desks and the walking. But furniture then covers 52% of the floor, which the checks call crowded and which they are right about — the floor stops being a place and becomes the gaps between four large objects. The point of drawing it is that sleeping on the floor is not a compromise made for now: it is what keeps this room from becoming this. If beds are ever wanted, the honest comparison is against a bunk and one shared desk, not against this.',
       furniture: [
         placed(0, 400, {
           id: 'bed-older',
@@ -147,9 +180,9 @@ export const CHILDRENS_ROOM: Room = {
           width: 1050,
           depth: 2000,
           height: 850,
-          status: 'planned',
+          status: 'considering',
           material: 'Single, drawers under',
-          note: 'Head to the north. Both beds run along the west wall end to end, which uses 4 m of its 4.5 m, and their feet meet in the middle.',
+          note: 'Head to the north. Both beds run along the west wall end to end, and their feet meet in the middle.',
         }),
         placed(0, 2450, {
           id: 'bed-younger',
@@ -160,7 +193,7 @@ export const CHILDRENS_ROOM: Room = {
           height: 850,
           /** Turned end for end, so this head is at the south wall. */
           rotation: 180,
-          status: 'planned',
+          status: 'considering',
           material: 'Single, drawers under',
         }),
         placed(1100, 0, {
@@ -171,7 +204,7 @@ export const CHILDRENS_ROOM: Room = {
           depth: 600,
           height: 740,
           clearance: { south: 750 },
-          status: 'planned',
+          status: 'considering',
           note: 'Top at 740 against a sill at 900, so the desk passes under the glass instead of blocking it.',
         }),
         placed(1400, 700, {
@@ -181,7 +214,7 @@ export const CHILDRENS_ROOM: Room = {
           width: 450,
           depth: 450,
           height: 820,
-          status: 'planned',
+          status: 'considering',
         }),
         placed(1950, 1700, {
           id: 'desk-east',
@@ -192,7 +225,7 @@ export const CHILDRENS_ROOM: Room = {
           height: 740,
           rotation: 90,
           clearance: { south: 750 },
-          status: 'planned',
+          status: 'considering',
           note: 'Faces west into the room. No daylight of its own, so it needs a task lamp the other desk does not.',
         }),
         placed(1300, 1950, {
@@ -202,7 +235,7 @@ export const CHILDRENS_ROOM: Room = {
           width: 450,
           depth: 450,
           height: 820,
-          status: 'planned',
+          status: 'considering',
         }),
         placed(2300, 2250, {
           id: 'wall-shelves',
@@ -213,14 +246,14 @@ export const CHILDRENS_ROOM: Room = {
           height: 250,
           rotation: 90,
           mountedAt: 1200,
-          status: 'planned',
+          status: 'considering',
           material: 'Two boards, wall-fixed',
-          note: 'On the wall rather than on the floor: a 350 mm bookcase here would take a fifth of the width of the only route through the room. Stops 50 mm short of where the door leaf reaches, and sits over the east desk so the books are above the person using them.',
+          note: 'On the wall rather than on the floor: a 350 mm bookcase here would take a fifth of the width of the only route through the room. Stops 50 mm short of where the door leaf reaches.',
         }),
       ],
       openQuestions: [
-        'A bunk bed and one shared desk would take the room from 52% covered to about 30%, at the cost of one child sleeping in the air and no second desk. Worth drawing as a third design before either is bought.',
-        'Neither design has anywhere for clothes. If a wardrobe has to come into this room rather than live elsewhere, 600 mm of the 1.5 m spine goes, and the east desk goes with it.',
+        'A bunk and one shared desk would bring this back to about 30% covered, at the cost of one child sleeping in the air. That is the comparison worth drawing next, not this one against the floor.',
+        'Neither this nor the floor version has anywhere for clothes. If a wardrobe has to come into this room, 600 mm of the spine goes and the east desk goes with it.',
       ],
     },
   ],
