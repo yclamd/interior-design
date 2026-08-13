@@ -185,8 +185,25 @@ export function polygonsOverlap(a: Point[], b: Point[]): boolean {
 
 /** Square millimetres of overlap, which is worth reporting when there is any. */
 export function overlapArea(a: Point[], b: Point[]): number {
-  const clipped = clip(a, b);
+  const clipped = clip(wound(a), wound(b));
   return clipped.length < 3 ? 0 : polygonArea(clipped);
+}
+
+/**
+ * Sutherland–Hodgman decides what is inside its clip window from the direction the
+ * window's edges run, so a polygon wound the other way clips to nothing at all.
+ * Every footprint here comes from a box and is wound the right way already; a door's
+ * swept triangle is wound whichever way the door happens to open, which silently
+ * cost every door-swing check on half the doors in the dataset.
+ */
+function wound(points: Point[]): Point[] {
+  let sum = 0;
+  for (let i = 0; i < points.length; i += 1) {
+    const a = points[i]!;
+    const b = points[(i + 1) % points.length]!;
+    sum += a.x * b.y - b.x * a.y;
+  }
+  return sum < 0 ? [...points].reverse() : points;
 }
 
 const EPSILON = 1;

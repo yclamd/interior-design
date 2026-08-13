@@ -109,7 +109,13 @@ export function checkDesign(room: Room, design: Design): Finding[] {
     const swing = swingZone(room, opening);
     if (swing) {
       for (const item of furniture) {
-        if (item.mountedAt !== undefined && item.mountedAt >= 1000) continue;
+        /**
+         * A leaf sweeps the full height of its opening, so a wall-hung piece is
+         * only out of its way when its underside clears the head of the door.
+         * Judged against a fixed metre instead, shelves at 1200 mm read as safe
+         * from a 2 m door that would in fact hit them.
+         */
+        if (item.mountedAt !== undefined && item.mountedAt >= opening.height) continue;
         if (item.kind === 'rug') continue;
         const area = overlapArea(cornersOf(item), swing);
         if (area > SLIVER) {
