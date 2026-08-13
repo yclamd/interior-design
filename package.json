@@ -1,0 +1,25 @@
+{
+  "name": "interior-design",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "A measured interior design of one home, drawn to scale from real dimensions.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "plans": "python3 scripts/render-plans.py"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.1.6",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
+  }
+}

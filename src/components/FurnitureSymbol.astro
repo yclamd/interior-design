@@ -1,0 +1,230 @@
+---
+import { PLAN_COLOURS, type FurnitureRender } from '~/lib/plan';
+
+/**
+ * One piece of furniture, drawn in the plan. Everything is set out in the
+ * piece's unrotated footprint and then turned as a group, so a symbol always
+ * faces the way the piece does: a sofa's back stays behind its seat and a bed's
+ * pillows stay at its head.
+ *
+ * Pre-rotation a piece faces south. Clearances use the same convention, which is
+ * why a sofa turned 90° asks for its legroom on what it calls its south face.
+ */
+
+interface Props {
+  item: FurnitureRender;
+  /** Pixels-to-millimetres, from the frame the plan is drawn in. */
+  px: (pixels: number) => number;
+  /** Off in the whole-flat view, where the detail would only be noise. */
+  detail: boolean;
+}
+
+const { item, px, detail } = Astro.props;
+const { x, y, width, depth } = item.box;
+
+const hairline = px(0.7);
+const outline = px(item.mounted ? 0.8 : 1.1);
+const inset = Math.min(px(2.6), Math.min(width, depth) * 0.14);
+const short = Math.min(width, depth);
+const front = y + depth;
+const centre = { x: x + width / 2, y: y + depth / 2 };
+
+const pillowWidth = width >= 1400 ? width / 2 - 120 : width - 160;
+const divisions = Math.max(1, Math.round(width / 600));
+const glyph = item.symbol;
+const cased = ['wardrobe', 'sideboard', 'shelving', 'counter', 'appliance'].includes(item.kind);
+const seats = Math.max(1, Math.round(width / 700));
+const dashed = `${px(3)} ${px(2)}`;
+---
+
+<g transform={item.transform} data-piece={item.id}>
+  {
+    item.kind === 'rug' ? (
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={depth}
+        fill={item.fill}
+        fill-opacity="0.4"
+        stroke={item.stroke}
+        stroke-opacity="0.5"
+        stroke-width={hairline}
+        stroke-dasharray={dashed}
+      />
+    ) : (
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={depth}
+        fill={item.fill}
+        fill-opacity={item.mounted ? 0.3 : 0.92}
+        stroke={item.stroke}
+        stroke-opacity={item.mounted ? 0.5 : 0.85}
+        stroke-width={outline}
+        stroke-dasharray={item.mounted ? dashed : undefined}
+      />
+    )
+  }
+
+  {
+    detail && !item.mounted && (
+      <g fill="none" stroke={PLAN_COLOURS.ink} stroke-opacity="0.55" stroke-width={hairline}>
+        {item.kind === 'bed' && (
+          <>
+            <rect
+              x={x + 80}
+              y={y + 80}
+              width={pillowWidth}
+              height={320}
+              fill={PLAN_COLOURS.sheet}
+              fill-opacity="0.75"
+            />
+            {width >= 1400 && (
+              <rect
+                x={x + width - 80 - pillowWidth}
+                y={y + 80}
+                width={pillowWidth}
+                height={320}
+                fill={PLAN_COLOURS.sheet}
+                fill-opacity="0.75"
+              />
+            )}
+            <path d={`M ${x} ${y + 620} L ${x + width} ${y + 620}`} />
+          </>
+        )}
+
+        {(item.kind === 'sofa' || item.kind === 'armchair') && (
+          <>
+            <rect x={x} y={y} width={width} height={Math.min(220, depth * 0.3)} />
+            <rect x={x} y={y} width={Math.min(130, width * 0.18)} height={depth} />
+            <rect
+              x={x + width - Math.min(130, width * 0.18)}
+              y={y}
+              width={Math.min(130, width * 0.18)}
+              height={depth}
+            />
+            {Array.from({ length: seats - 1 }, (_, i) => (
+              <path
+                d={`M ${x + (width * (i + 1)) / seats} ${y + Math.min(220, depth * 0.3)} L ${
+                  x + (width * (i + 1)) / seats
+                } ${front}`}
+              />
+            ))}
+          </>
+        )}
+
+        {item.kind === 'chair' && <rect x={x} y={y} width={width} height={Math.max(70, depth * 0.2)} />}
+
+        {(item.kind === 'table' || item.kind === 'desk') && (
+          <rect x={x + inset} y={y + inset} width={width - inset * 2} height={depth - inset * 2} />
+        )}
+
+        {cased && !glyph && (
+          <>
+            <path d={`M ${x} ${front - inset} L ${x + width} ${front - inset}`} />
+            {Array.from({ length: divisions - 1 }, (_, i) => (
+              <path
+                d={`M ${x + (width * (i + 1)) / divisions} ${y} L ${
+                  x + (width * (i + 1)) / divisions
+                } ${front}`}
+              />
+            ))}
+          </>
+        )}
+
+        {glyph === 'drum' && (
+          <>
+            <circle cx={centre.x} cy={centre.y} r={short * 0.3} />
+            <path d={`M ${x} ${front - inset} L ${x + width} ${front - inset}`} />
+          </>
+        )}
+
+        {glyph === 'wc' && (
+          <>
+            <rect x={x} y={y} width={width} height={depth * 0.16} />
+            <ellipse
+              cx={centre.x}
+              cy={y + depth * 0.62}
+              rx={width * 0.42}
+              ry={depth * 0.32}
+              fill={PLAN_COLOURS.sheet}
+              fill-opacity="0.6"
+            />
+          </>
+        )}
+
+        {glyph === 'basin' && (
+          <>
+            <ellipse
+              cx={centre.x}
+              cy={y + depth * 0.55}
+              rx={width * 0.36}
+              ry={depth * 0.34}
+              fill={PLAN_COLOURS.sheet}
+              fill-opacity="0.6"
+            />
+            <circle cx={centre.x} cy={y + depth * 0.14} r={Math.max(20, depth * 0.06)} />
+          </>
+        )}
+
+        {glyph === 'shower' && (
+          <>
+            <path d={`M ${x} ${y} L ${x + width} ${front}`} stroke-opacity="0.3" />
+            <path d={`M ${x + width} ${y} L ${x} ${front}`} stroke-opacity="0.3" />
+            <circle cx={centre.x} cy={centre.y} r={Math.max(25, short * 0.06)} />
+          </>
+        )}
+
+        {glyph === 'tub' && (
+          <>
+            <rect
+              x={x + inset}
+              y={y + inset}
+              width={width - inset * 2}
+              height={depth - inset * 2}
+              rx={Math.min(120, short * 0.2)}
+            />
+            <circle cx={x + width * 0.16} cy={centre.y} r={Math.max(25, short * 0.06)} />
+          </>
+        )}
+
+        {glyph === 'sink' && (
+          <>
+            <rect
+              x={x + width * 0.12}
+              y={y + depth * 0.2}
+              width={width * 0.5}
+              height={depth * 0.6}
+              rx={px(1)}
+            />
+            <circle cx={x + width * 0.78} cy={y + depth * 0.3} r={Math.max(20, depth * 0.07)} />
+          </>
+        )}
+
+        {glyph === 'hob' && (
+          <>
+            {Array.from({ length: 4 }, (_, i) => (
+              <circle
+                cx={x + width * (i % 2 === 0 ? 0.28 : 0.72)}
+                cy={y + depth * (i < 2 ? 0.3 : 0.7)}
+                r={short * 0.14}
+              />
+            ))}
+          </>
+        )}
+
+        {item.kind === 'plant' && <circle cx={centre.x} cy={centre.y} r={short * 0.46} />}
+
+        {item.kind === 'lighting' && (
+          <>
+            <circle cx={centre.x} cy={centre.y} r={short * 0.4} />
+            <path d={`M ${x} ${centre.y} L ${x + width} ${centre.y}`} />
+            <path d={`M ${centre.x} ${y} L ${centre.x} ${front}`} />
+          </>
+        )}
+      </g>
+    )
+  }
+</g>

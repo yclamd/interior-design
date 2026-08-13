@@ -1,0 +1,72 @@
+import { placed } from '~/lib/geometry';
+import type { Room } from '../types';
+
+export const UTILITY: Room = {
+  id: 'utility',
+  name: 'Utility room',
+  kind: 'utility',
+  origin: { x: 7100, y: 2600 },
+  shape: { kind: 'rect', width: 1700, depth: 2100 },
+  ceiling: 2400,
+  theme: 'The room that keeps the laundry out of the bathroom',
+  style: 'warm-minimal',
+  floor: { name: 'Porcelain, same tile as the bathroom', colour: '#d9d2c8' },
+  summary:
+    'Washer and dryer stack, which turns 1.2 m of wall into 600 mm and buys the west wall for shelving. A folding door instead of a swing one, because a 800 mm leaf opening into a 1.7 m room would take a third of the floor to open.',
+  openings: [
+    {
+      id: 'utility-door',
+      kind: 'door-folding',
+      side: 'south',
+      offset: 400,
+      width: 800,
+      height: 2100,
+      sill: 0,
+      to: 'corridor',
+    },
+    {
+      id: 'east-window',
+      kind: 'window',
+      side: 'east',
+      offset: 600,
+      width: 900,
+      height: 1100,
+      sill: 1000,
+      to: 'outside',
+    },
+  ],
+  furniture: [
+    placed(100, 0, {
+      id: 'washer',
+      name: 'Washing machine',
+      kind: 'appliance',
+      width: 600,
+      depth: 600,
+      height: 850,
+      symbol: 'drum',
+      status: 'owned',
+    }),
+    placed(100, 0, {
+      id: 'dryer',
+      name: 'Dryer, stacked',
+      kind: 'appliance',
+      width: 600,
+      depth: 600,
+      height: 850,
+      mountedAt: 900,
+      status: 'planned',
+      note: 'Sits on the washer on a stacking kit, so its footprint is the washer’s.',
+    }),
+    placed(0, 750, {
+      id: 'utility-shelving',
+      name: 'Open shelving',
+      kind: 'shelving',
+      width: 1200,
+      depth: 350,
+      height: 2000,
+      rotation: 90,
+      status: 'planned',
+      material: 'Painted MDF, five shelves',
+    }),
+  ],
+};

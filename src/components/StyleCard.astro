@@ -1,0 +1,71 @@
+---
+import type { StylePreset } from '~/data/types';
+
+interface Props {
+  style: StylePreset;
+  /** Rooms drawn in this style, so a palette is never shown without its use. */
+  usedBy?: string[];
+}
+
+const { style, usedBy = [] } = Astro.props;
+
+const SWATCHES: { key: keyof StylePreset['palette']; label: string }[] = [
+  { key: 'wall', label: 'Wall' },
+  { key: 'floor', label: 'Floor' },
+  { key: 'furniture', label: 'Furniture' },
+  { key: 'textile', label: 'Textile' },
+  { key: 'accent', label: 'Accent' },
+  { key: 'metal', label: 'Metal' },
+];
+---
+
+<article class="card overflow-hidden">
+  <div class="flex h-16" aria-hidden="true">
+    {
+      SWATCHES.map((swatch) => (
+        <span class="flex-1" style={`background:${style.palette[swatch.key]}`} />
+      ))
+    }
+  </div>
+  <div class="p-5 sm:p-6">
+    <h3 class="font-serif text-lg font-bold text-ink">{style.name}</h3>
+    <p class="mt-2 text-sm leading-relaxed text-ink-soft">{style.premise}</p>
+
+    <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+      {
+        SWATCHES.map((swatch) => (
+          <div class="flex items-center gap-2">
+            <span
+              class="h-4 w-4 shrink-0 rounded-sm border border-line"
+              style={`background:${style.palette[swatch.key]}`}
+              aria-hidden="true"
+            />
+            <div class="min-w-0">
+              <dt class="text-2xs tracking-wide text-ink-faint uppercase">{swatch.label}</dt>
+              <dd class="font-mono text-2xs text-ink-soft">{style.palette[swatch.key]}</dd>
+            </div>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="mt-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">Materials</p>
+    <ul class="mt-2 flex flex-wrap gap-1.5">
+      {
+        style.materials.map((material) => (
+          <li class="rounded-full border border-line bg-paper px-2.5 py-1 text-xs text-ink-soft">
+            {material}
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      usedBy.length > 0 && (
+        <p class="mt-5 border-t border-line-soft pt-4 text-sm text-ink-soft">
+          Used in {usedBy.join(', ')}.
+        </p>
+      )
+    }
+  </div>
+</article>

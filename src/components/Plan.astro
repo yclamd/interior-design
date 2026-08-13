@@ -1,0 +1,466 @@
+---
+import FurnitureSymbol from '~/components/FurnitureSymbol.astro';
+import { KIND_LABELS } from '~/data/home';
+import type { Home, Mm, Opening, Room } from '~/data/types';
+import { bbox, centroid, formatArea, formatLength, outlineInPlan, pathOf, roomArea } from '~/lib/geometry';
+import {
+  PLAN_COLOURS,
+  dimension,
+  frameFor,
+  furnitureRenders,
+  homeBox,
+  isDoorway,
+  openingRender,
+  roomFill,
+  roomPath,
+} from '~/lib/plan';
+
+/**
+ * The plan. The same component draws the whole flat and a single room, because
+ * both are the same geometry seen through a different frame — a room page is the
+ * flat with the viewBox pulled in around one outline. Nothing is redrawn for the
+ * close-up, so the two views cannot disagree.
+ */
+
+interface Props {
+  home: Home;
+  rooms: Room[];
+  /** Room id to draw at full strength, with the rest held back as context. */
+  focus?: string;
+  labels?: 'rooms' | 'keys' | 'none';
+  furniture?: boolean;
+  clearance?: boolean;
+  /** The floor a door leaf sweeps, which is worth seeing on a room page. */
+  swept?: boolean;
+  dimensions?: boolean;
+  padding?: Mm;
+  nominalWidth?: number;
+  minWidth?: string;
+  title: string;
+  desc: string;
+}
+
+const {
+  home,
+  rooms,
+  focus,
+  labels = 'rooms',
+  furniture = true,
+  clearance = false,
+  swept = false,
+  dimensions = false,
+  padding,
+  nominalWidth = 960,
+  minWidth = 'min-w-[42rem]',
+  title,
+  desc,
+} = Astro.props;
+
+const focused = focus ? rooms.find((room) => room.id === focus) : undefined;
+const extent = focused ? bbox(outlineInPlan(focused)) : homeBox(home);
+/**
+ * Enough margin for the dimension strings and a wall's worth of neighbour, scaled
+ * to the room: a fixed margin turns a bathroom into a small object in a large
+ * field, and leaves a living room looking cropped.
+ */
+const margin = focused
+  ? Math.min(1600, Math.max(800, Math.max(extent.width, extent.depth) * 0.32))
+  : 500;
+const frame = frameFor(extent, padding ?? margin, nominalWidth);
+const px = frame.px;
+
+/**
+ * A shared door is listed by both rooms it serves, so that each room's own plan
+ * is complete. Drawn from both sides it would double every arc, so each is drawn
+ * once, from the room being looked at where there is one.
+ */
+const seen = new Map<string, { room: Room; opening: Opening }>();
+for (const room of rooms) {
+  for (const opening of room.openings) {
+    const held = seen.get(opening.id);
+    if (!held || room.id === focus) seen.set(opening.id, { room, opening });
+  }
+}
+const openings = [...seen.values()].map(({ room, opening }) => ({
+  ...openingRender(home, room, opening),
+  fill: isDoorway(opening.kind) ? roomFill(room) : PLAN_COLOURS.sheet,
+}));
+
+const drawn = rooms.map((room) => {
+  const outline = outlineInPlan(room);
+  return {
+    room,
+    path: roomPath(room),
+    fill: roomFill(room),
+    strength: !focus || room.id === focus ? 1 : 0.75,
+    centre: centroid(outline),
+    area: roomArea(room),
+    pieces: furniture ? furnitureRenders(room) : [],
+  };
+});
+
+/**
+ * Room names sit over whatever the room contains, so each is drawn twice: once as
+ * a sheet-coloured outline and once filled on top. paint-order would say this in
+ * one pass, but not every renderer honours it.
+ */
+const roomLabels =
+  labels === 'rooms'
+    ? drawn.map((entry) => ({
+        lines: [
+          {
+            text: entry.room.name,
+            y: entry.centre.y,
+            size: px(12),
+            weight: 700,
+            fill: PLAN_COLOURS.ink,
+            opacity: entry.strength === 1 ? 0.9 : 0.55,
+          },
+          {
+            text: `${formatArea(entry.area)} · ${KIND_LABELS[entry.room.kind]}`,
+            y: entry.centre.y + px(13),
+            size: px(9.5),
+            weight: 400,
+            fill: PLAN_COLOURS.inkSoft,
+            opacity: entry.strength === 1 ? 0.95 : 0.55,
+          },
+        ],
+        x: entry.centre.x,
+      }))
+    : [];
+
+const keyed = labels === 'keys' && focused ? focused.furniture.map((item) => item.id) : [];
+const keyOf = (id: string): number | null => {
+  const index = keyed.indexOf(id);
+  return index === -1 ? null : index + 1;
+};
+
+const dims = dimensions && focused
+  ? (() => {
+      const box = bbox(outlineInPlan(focused));
+      return [
+        dimension(
+          { x: box.x, y: box.y + box.depth },
+          { x: box.x + box.width, y: box.y + box.depth },
+          px(46),
+          formatLength(box.width),
+        ),
+        dimension(
+          { x: box.x, y: box.y },
+          { x: box.x, y: box.y + box.depth },
+          -px(46),
+          formatLength(box.depth),
+        ),
+      ];
+    })()
+  : [];
+
+/** A round bar length that is a sensible fraction of what is on screen. */
+const barLength = frame.box.width <= 6000 ? 1000 : frame.box.width <= 14000 ? 2000 : 5000;
+const bar = {
+  x: frame.box.x + px(16),
+  y: frame.box.y + frame.box.depth - px(20),
+  length: barLength,
+  height: px(4),
+  steps: 4,
+};
+const compass = {
+  x: frame.box.x + frame.box.width - px(26),
+  y: frame.box.y + px(26),
+  r: px(15),
+};
+const titleId = `plan-title-${focus ?? 'home'}`;
+const descId = `plan-desc-${focus ?? 'home'}`;
+---
+
+<div class={`table-scroll rounded-xl border border-line bg-[#f7f4ee] p-2`}>
+  <svg
+    viewBox={frame.viewBox}
+    class={`h-auto w-full ${minWidth}`}
+    role="img"
+    aria-labelledby={`${titleId} ${descId}`}
+  >
+    <title id={titleId}>{title}</title>
+    <desc id={descId}>{desc}</desc>
+
+    <rect
+      x={frame.box.x}
+      y={frame.box.y}
+      width={frame.box.width}
+      height={frame.box.depth}
+      fill={PLAN_COLOURS.sheet}
+    />
+
+    <path
+      d={pathOf(home.envelope)}
+      fill={PLAN_COLOURS.structure}
+      stroke={PLAN_COLOURS.structureEdge}
+      stroke-width={px(1.4)}
+    />
+
+    {
+      drawn.map((entry) => (
+        <path
+          d={entry.path}
+          fill={entry.fill}
+          fill-opacity={entry.strength}
+          stroke={PLAN_COLOURS.structureEdge}
+          stroke-opacity="0.5"
+          stroke-width={px(0.5)}
+        />
+      ))
+    }
+
+    {
+      openings.map((opening) => (
+        <g>
+          <path d={opening.gap} fill={opening.fill} />
+          {opening.leaves.map((leaf) => (
+            <path
+              d={leaf}
+              fill="none"
+              stroke={opening.kind.startsWith('window') ? PLAN_COLOURS.glazing : PLAN_COLOURS.ink}
+              stroke-opacity={opening.kind.startsWith('window') ? 0.95 : 0.6}
+              stroke-width={px(opening.kind.startsWith('window') ? 1 : 0.8)}
+            />
+          ))}
+          {opening.swing && (
+            <>
+              {swept && opening.sweptZone && (
+                <path d={opening.sweptZone} fill={PLAN_COLOURS.ink} fill-opacity="0.05" />
+              )}
+              <path
+                d={opening.swing.arc}
+                fill="none"
+                stroke={PLAN_COLOURS.ink}
+                stroke-opacity="0.35"
+                stroke-width={px(0.6)}
+                stroke-dasharray={`${px(2.5)} ${px(2)}`}
+              />
+              <path
+                d={opening.swing.leaf}
+                fill="none"
+                stroke={PLAN_COLOURS.ink}
+                stroke-opacity="0.7"
+                stroke-width={px(1.2)}
+              />
+            </>
+          )}
+        </g>
+      ))
+    }
+
+    {
+      clearance &&
+        drawn
+          .filter((entry) => entry.strength === 1)
+          .flatMap((entry) => entry.pieces)
+          .flatMap((piece) => piece.clearance)
+          .map((zone) => (
+            <path
+              d={zone.path}
+              fill={PLAN_COLOURS.clearance}
+              fill-opacity="0.1"
+              stroke={PLAN_COLOURS.clearance}
+              stroke-opacity="0.55"
+              stroke-width={px(0.6)}
+              stroke-dasharray={`${px(3)} ${px(2.5)}`}
+            />
+          ))
+    }
+
+    {
+      drawn.map((entry) => (
+        <g opacity={entry.strength === 1 ? 1 : 0.5}>
+          {entry.pieces.map((piece) => (
+            <FurnitureSymbol item={piece} px={px} detail={entry.strength === 1} />
+          ))}
+        </g>
+      ))
+    }
+
+    {
+      dims.map((dim) => {
+        /**
+         * A dimension for a room in the middle of the plan has to be read over
+         * whatever is next door, so the figure gets its own patch of sheet rather
+         * than relying on paint-order, which not every renderer honours.
+         */
+        const font = px(11);
+        const plate = {
+          width: dim.text.length * font * 0.62 + px(6),
+          height: font * 1.15,
+          y: dim.at.y - px(3.5),
+        };
+        return (
+          <g stroke={PLAN_COLOURS.dimension} fill="none">
+            <path d={dim.line} stroke-width={px(0.7)} />
+            {dim.witnesses.map((witness) => (
+              <path d={witness} stroke-width={px(0.5)} stroke-opacity="0.55" />
+            ))}
+            <g transform={dim.vertical ? `rotate(-90 ${dim.at.x} ${dim.at.y})` : undefined}>
+              <rect
+                x={dim.at.x - plate.width / 2}
+                y={plate.y - font * 0.82}
+                width={plate.width}
+                height={plate.height}
+                rx={px(2)}
+                fill={PLAN_COLOURS.sheet}
+                fill-opacity="0.93"
+                stroke="none"
+              />
+              <text
+                x={dim.at.x}
+                y={plate.y}
+                text-anchor="middle"
+                font-size={font}
+                font-weight="700"
+                fill={PLAN_COLOURS.dimension}
+                stroke="none"
+              >
+                {dim.text}
+              </text>
+            </g>
+          </g>
+        );
+      })
+    }
+
+    {
+      roomLabels.map((label) => (
+        <g pointer-events="none" text-anchor="middle">
+          <g fill="none" stroke={PLAN_COLOURS.sheet} stroke-width={px(3)} stroke-linejoin="round">
+            {label.lines.map((line) => (
+              <text x={label.x} y={line.y} font-size={line.size} font-weight={line.weight}>
+                {line.text}
+              </text>
+            ))}
+          </g>
+          {label.lines.map((line) => (
+            <text
+              x={label.x}
+              y={line.y}
+              font-size={line.size}
+              font-weight={line.weight}
+              fill={line.fill}
+              fill-opacity={line.opacity}
+            >
+              {line.text}
+            </text>
+          ))}
+        </g>
+      ))
+    }
+
+    {
+      keyed.length > 0 &&
+        drawn
+          .filter((entry) => entry.strength === 1)
+          .flatMap((entry) => entry.pieces)
+          .map((piece) => {
+            const number = keyOf(piece.id);
+            return number === null ? null : (
+              <g pointer-events="none">
+                <circle
+                  cx={piece.label.x}
+                  cy={piece.label.y}
+                  r={px(8)}
+                  fill={PLAN_COLOURS.sheet}
+                  fill-opacity="0.92"
+                  stroke={PLAN_COLOURS.ink}
+                  stroke-opacity="0.5"
+                  stroke-width={px(0.6)}
+                />
+                <text
+                  x={piece.label.x}
+                  y={piece.label.y + px(3.6)}
+                  text-anchor="middle"
+                  font-size={px(10)}
+                  font-weight="700"
+                  fill={PLAN_COLOURS.ink}
+                >
+                  {number}
+                </text>
+              </g>
+            );
+          })
+    }
+
+    <g>
+      <rect
+        x={bar.x}
+        y={bar.y}
+        width={bar.length}
+        height={bar.height}
+        fill={PLAN_COLOURS.sheet}
+        stroke={PLAN_COLOURS.ink}
+        stroke-width={px(0.6)}
+      />
+      {
+        Array.from({ length: bar.steps }, (_, i) =>
+          i % 2 === 0 ? (
+            <rect
+              x={bar.x + (bar.length / bar.steps) * i}
+              y={bar.y}
+              width={bar.length / bar.steps}
+              height={bar.height}
+              fill={PLAN_COLOURS.ink}
+              fill-opacity="0.8"
+            />
+          ) : null,
+        )
+      }
+      <text
+        x={bar.x}
+        y={bar.y - px(4)}
+        font-size={px(9.5)}
+        font-weight="700"
+        fill={PLAN_COLOURS.inkSoft}
+      >
+        0
+      </text>
+      <text
+        x={bar.x + bar.length}
+        y={bar.y - px(4)}
+        text-anchor="middle"
+        font-size={px(9.5)}
+        font-weight="700"
+        fill={PLAN_COLOURS.inkSoft}
+      >
+        {formatLength(bar.length)}
+      </text>
+    </g>
+
+    <g transform={`rotate(${-home.northOffset} ${compass.x} ${compass.y})`}>
+      <circle
+        cx={compass.x}
+        cy={compass.y}
+        r={compass.r}
+        fill={PLAN_COLOURS.sheet}
+        fill-opacity="0.8"
+        stroke={PLAN_COLOURS.inkSoft}
+        stroke-opacity="0.5"
+        stroke-width={px(0.6)}
+      />
+      <path
+        d={`M ${compass.x} ${compass.y - compass.r * 0.72} L ${compass.x + compass.r * 0.3} ${
+          compass.y + compass.r * 0.34
+        } L ${compass.x} ${compass.y + compass.r * 0.1} L ${compass.x - compass.r * 0.3} ${
+          compass.y + compass.r * 0.34
+        } Z`}
+        fill={PLAN_COLOURS.ink}
+        fill-opacity="0.75"
+      />
+      <text
+        x={compass.x}
+        y={compass.y - compass.r * 0.95}
+        text-anchor="middle"
+        font-size={px(8.5)}
+        font-weight="700"
+        fill={PLAN_COLOURS.inkSoft}
+      >
+        N
+      </text>
+    </g>
+  </svg>
+</div>

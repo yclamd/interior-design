@@ -1,0 +1,30 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { withBase } from '~/consts';
+import { ROOMS } from '~/data/home';
+---
+
+<BaseLayout title="Not a room in this home" description="That page does not exist here.">
+  <section class="mx-auto max-w-2xl px-5 py-24 text-center sm:px-8">
+    <p class="eyebrow">404</p>
+    <h1 class="mt-3 font-serif text-3xl font-bold text-ink">Not a room in this home</h1>
+    <p class="lede mt-4">
+      Nothing is at that address. The home has {ROOMS.length} rooms, and every one of them is on the
+      plan.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a
+        href={withBase('/')}
+        class="rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-deep"
+      >
+        The plan
+      </a>
+      <a
+        href={withBase('/rooms')}
+        class="rounded-full border border-line bg-card px-5 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-paper-deep"
+      >
+        All rooms
+      </a>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import type { Finding, Severity } from '~/lib/checks';
+
+interface Props {
+  findings: Finding[];
+  heading: string;
+  /** Shown when the checks pass, so a clean room says so rather than saying nothing. */
+  clear: string;
+}
+
+const { findings, heading, clear } = Astro.props;
+
+const TONE: Record<Severity, { label: string; chip: string; dot: string }> = {
+  error: { label: 'Conflict', chip: 'bg-flag-soft text-flag', dot: 'bg-flag' },
+  warning: { label: 'Tight', chip: 'bg-clay-soft text-clay', dot: 'bg-clay' },
+  note: { label: 'Note', chip: 'bg-paper-deep text-ink-soft', dot: 'bg-ink-faint' },
+};
+
+const ORDER: Severity[] = ['error', 'warning', 'note'];
+const sorted = [...findings].sort(
+  (a, b) => ORDER.indexOf(a.severity) - ORDER.indexOf(b.severity),
+);
+---
+
+<section class="card p-5 sm:p-6">
+  <div class="flex flex-wrap items-baseline justify-between gap-3">
+    <h2 class="font-serif text-lg font-bold text-ink">{heading}</h2>
+    <p class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+      {sorted.length === 0 ? 'Nothing flagged' : `${sorted.length} flagged`}
+    </p>
+  </div>
+
+  {
+    sorted.length === 0 ? (
+      <p class="mt-3 text-sm leading-relaxed text-ink-soft">{clear}</p>
+    ) : (
+      <ul class="mt-4 space-y-3">
+        {sorted.map((finding) => (
+          <li class="flex gap-3">
+            <span
+              class:list={['mt-1.5 h-2 w-2 shrink-0 rounded-full', TONE[finding.severity].dot]}
+              aria-hidden="true"
+            />
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span
+                  class:list={[
+                    'rounded-full px-2 py-0.5 text-2xs font-bold tracking-wide',
+                    TONE[finding.severity].chip,
+                  ]}
+                >
+                  {TONE[finding.severity].label}
+                </span>
+                <code class="font-mono text-2xs text-ink-faint">{finding.code}</code>
+              </div>
+              <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">{finding.message}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>

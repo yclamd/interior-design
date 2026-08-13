@@ -1,0 +1,75 @@
+import { placed } from '~/lib/geometry';
+import type { Room } from '../types';
+
+export const KITCHEN: Room = {
+  id: 'kitchen',
+  name: 'Kitchen',
+  kind: 'kitchen',
+  origin: { x: 5100, y: 200 },
+  shape: { kind: 'rect', width: 3700, depth: 2300 },
+  ceiling: 2500,
+  theme: 'Two runs facing each other, so nothing needs more than a half turn',
+  style: 'warm-minimal',
+  floor: { name: 'Large-format porcelain, 600 × 600, matt grey-beige', colour: '#d6cec2' },
+  summary:
+    'Both long walls take a 600 mm run, leaving 1.1 m of gangway between them — enough for two people to pass, and enough for the oven door and a dishwasher to open without meeting. The north run goes under the window because a worktop under a window is the one place a low sill is an advantage. The fridge takes the east end of that run, where its 700 mm depth stops mattering.',
+  openings: [
+    {
+      id: 'kitchen-pass',
+      kind: 'opening',
+      side: 'west',
+      offset: 1500,
+      width: 750,
+      height: 2100,
+      sill: 0,
+      to: 'living',
+    },
+    {
+      id: 'north-window',
+      kind: 'window',
+      side: 'north',
+      offset: 1200,
+      width: 1500,
+      height: 1200,
+      sill: 900,
+      to: 'outside',
+    },
+  ],
+  furniture: [
+    placed(0, 0, {
+      id: 'north-run',
+      name: 'North worktop run',
+      kind: 'counter',
+      width: 3000,
+      depth: 600,
+      height: 900,
+      status: 'planned',
+      material: 'Quartz top, oak-fronted drawers',
+      note: 'Sink under the window, hob at the west end nearest the pass.',
+    }),
+    placed(3000, 0, {
+      id: 'fridge',
+      name: 'Fridge-freezer',
+      kind: 'appliance',
+      width: 700,
+      depth: 700,
+      height: 1800,
+      status: 'owned',
+      note: 'Hinged to open west, into the room rather than against the east wall.',
+    }),
+    placed(900, 1700, {
+      id: 'south-run',
+      name: 'South worktop run',
+      kind: 'counter',
+      width: 2400,
+      depth: 600,
+      height: 900,
+      status: 'planned',
+      material: 'Quartz top, tall cupboards over',
+      note: 'Stops 900 mm short of the pass so the opening is not walked into.',
+    }),
+  ],
+  openQuestions: [
+    'An extractor over the hob has to duct somewhere; the north wall is external, which is the short route, but the window is in the way of the obvious line.',
+  ],
+};

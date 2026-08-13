@@ -1,0 +1,91 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Findings from '~/components/Findings.astro';
+import { HOME, ROOMS } from '~/data/home';
+import { withBase } from '~/consts';
+import { checkHome, checkRoom, type Severity } from '~/lib/checks';
+
+/**
+ * Every finding in the home on one page. The room pages each carry their own, but
+ * when a survey is being typed in what you want is one list you can work down
+ * until it is empty.
+ */
+
+const home = checkHome(HOME, ROOMS);
+const rooms = ROOMS.map((room) => ({ room, findings: checkRoom(room) }));
+const all = [...home, ...rooms.flatMap((entry) => entry.findings)];
+
+const counts: Record<Severity, number> = {
+  error: all.filter((finding) => finding.severity === 'error').length,
+  warning: all.filter((finding) => finding.severity === 'warning').length,
+  note: all.filter((finding) => finding.severity === 'note').length,
+};
+
+const tally = [
+  { label: 'Conflicts', value: counts.error, note: 'two things cannot both be true', tone: 'text-flag' },
+  { label: 'Tight', value: counts.warning, note: 'it fits, but only just', tone: 'text-clay' },
+  { label: 'Notes', value: counts.note, note: 'worth knowing, not wrong', tone: 'text-ink-soft' },
+];
+---
+
+<BaseLayout
+  title="Audit"
+  description="Every dimensional conflict, tight fit and note found across the whole home, on one page."
+>
+  <section class="mx-auto max-w-4xl px-5 pt-14 pb-8 sm:px-8 sm:pt-20">
+    <p class="eyebrow">{all.length} findings across {ROOMS.length} rooms</p>
+    <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+      Everything the checks found
+    </h1>
+    <p class="lede mt-5">
+      The same checks that run on each room page, gathered here so a survey can be worked through in
+      one pass. None of them is about taste; each one is a statement about two dimensions that cannot
+      both hold.
+    </p>
+
+    <dl class="mt-8 grid grid-cols-3 gap-3">
+      {
+        tally.map((entry) => (
+          <div class="card p-4">
+            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{entry.label}</dt>
+            <dd class:list={['mt-1 font-serif text-2xl font-bold tabular', entry.tone]}>
+              {entry.value}
+            </dd>
+            <dd class="mt-0.5 text-xs text-ink-faint">{entry.note}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="mx-auto max-w-4xl space-y-6 px-5 sm:px-8">
+    <Findings
+      findings={home}
+      heading="The plan as a whole"
+      clear="No rooms overlap, every shared door is recorded the same way by both rooms, and the drawn area is close enough to the deed."
+    />
+
+    {
+      rooms.map((entry) => (
+        <div>
+          <h2 class="mb-3 flex flex-wrap items-baseline gap-x-3">
+            <a
+              href={withBase(`/rooms/${entry.room.id}`)}
+              class="font-serif text-xl font-bold text-ink transition-colors hover:text-brand"
+            >
+              {entry.room.name}
+            </a>
+            <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+              {entry.findings.length === 0 ? 'clear' : `${entry.findings.length} findings`}
+            </span>
+          </h2>
+          <Findings
+            findings={entry.findings}
+            heading="Findings"
+            clear="Every door opens fully, everything has the space in front of it that it needs, and nothing sits outside the walls."
+          />
+        </div>
+      ))
+    }
+  </section>
+</BaseLayout>

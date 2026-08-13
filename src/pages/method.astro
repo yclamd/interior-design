@@ -1,0 +1,182 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { HOME } from '~/data/home';
+
+/**
+ * The page that makes the dataset legible: what has to be measured, in what
+ * unit, and from where. It doubles as the survey sheet, so anyone holding a tape
+ * measure can work down it.
+ */
+
+const homeFields = [
+  ['name, location', 'text', 'Whatever is worth publishing. The location can be as vague as you like.'],
+  ['envelope', 'mm polygon', 'Outer face of the building, clockwise from its north-west corner. For a rectangle, four points.'],
+  ['walls.exterior', 'mm', 'Thickness of the perimeter wall, finish to finish.'],
+  ['walls.interior', 'mm', 'Thickness of a partition. Used wherever two rooms sit apart on the plan.'],
+  ['ceiling', 'mm', 'Floor to ceiling, clear. Rooms with a bulkhead or a dropped slab state their own.'],
+  ['northOffset', 'degrees', 'How far the plan is turned from true north, so the compass points where north is.'],
+  ['registeredArea', 'm²', 'The figure on the deed. Shown next to the area the drawing measures, so the two can disagree in public.'],
+];
+
+const roomFields = [
+  ['id', 'slug', 'Lower case, hyphenated. It is the room’s URL and the name other rooms use across a door.'],
+  ['origin', 'mm point', 'The room’s north-west inside corner, in the shared plan space. This is what puts the room in the flat.'],
+  ['shape', 'mm', 'Either width × depth for a rectangle, or a clockwise polygon of inside corners for anything else.'],
+  ['ceiling', 'mm', 'Clear floor to ceiling in this room.'],
+  ['theme, summary', 'text', 'What the room is for, and how it is meant to work. The summary is the paragraph on its page.'],
+  ['style', 'key', 'One of the styles, which sets the colours the room is drawn in.'],
+  ['floor', 'text + hex', 'The finish, and the colour to fill the room with.'],
+  ['openQuestions', 'text[]', 'Decisions still open. Printed as-is so they are not quietly dropped.'],
+];
+
+const openingFields = [
+  ['side', 'north / east / south / west', 'Which wall it is in.'],
+  ['offset', 'mm', 'Along that wall to the near edge of the opening: from the west end on north and south walls, from the north end on east and west walls.'],
+  ['width, height', 'mm', 'Structural opening, not the leaf or the glass.'],
+  ['sill', 'mm', 'Floor to the underside. Zero for a door or floor-to-ceiling glazing.'],
+  ['kind', 'enum', 'Swing, sliding, pocket, folding or french door; window, full-height window, or a cased opening with no door at all.'],
+  ['swing', 'left/right + in/out', 'Hinge side first, then whether the leaf comes into this room or goes away from it, seen standing in the room the opening is listed under.'],
+  ['to', 'room id or label', 'What is on the other side. A door shared by two rooms is listed by both, and the checks confirm the two entries land in the same place.'],
+];
+
+const furnitureFields = [
+  ['width, depth, height', 'mm', 'The piece’s own dimensions, in the order every catalogue quotes. Depth is front to back before it is turned.'],
+  ['x, y', 'mm', 'North-west corner of the floor it covers, measured from the room’s own north-west corner.'],
+  ['rotation', 'degrees', 'Clockwise. A piece faces south at zero, so 90 turns it to face west.'],
+  ['clearance', 'mm per face', 'What has to stay empty for the piece to be usable: a drawer’s travel, a chair pushed back, room to stand and open a wardrobe door.'],
+  ['mountedAt', 'mm', 'Underside height for anything wall-hung. Such a piece is drawn but takes no floor.'],
+  ['symbol', 'enum', 'Overrides the glyph for fittings whose plan symbol is conventional: wc, basin, shower, tub, sink, hob, drum.'],
+  ['status', 'enum', 'Have it, ordered, to buy, or maybe. Drives the tag in the schedule.'],
+  ['material, colour, source, note', 'text', 'Colour is a hex, and overrides the style’s fill for that piece.'],
+];
+
+const checks = [
+  ['outside-room', 'A piece’s footprint is not entirely inside the room outline.'],
+  ['pieces-overlap', 'Two pieces of furniture claim the same floor.'],
+  ['rooms-overlap', 'Two room outlines overlap on the plan, which means an origin is wrong.'],
+  ['dangling-opening', 'A door leads to a room that is not in the dataset.'],
+  ['door-swing', 'A swinging leaf sweeps through something and will stop before it is open.'],
+  ['door-approach', 'Something stands in the 900 mm of landing space inside a doorway.'],
+  ['clearance', 'A piece eats into the space another piece needs to be used.'],
+  ['clearance-wall', 'The space a piece needs runs into a wall, so it can never be had.'],
+  ['window-blocked', 'Something taller than the sill stands against the glass.'],
+  ['narrow-door', 'A door is too narrow for furniture to come through in one piece.'],
+  ['crowded', 'Furniture covers more than 45% of the floor.'],
+  ['low-ceiling', 'The ceiling is under the 2.4 m fitted furniture is drawn for.'],
+  ['area-gap', 'The rooms drawn add up to far less than the deed says, which usually means one is missing.'],
+];
+
+const tables = [
+  { heading: 'The home', intro: 'Measured once, and it decides where every room sits.', fields: homeFields },
+  { heading: 'Each room', intro: 'Eight fields, of which two are geometry.', fields: roomFields },
+  { heading: 'Each door and window', intro: 'Take these with the tape held flat against the wall.', fields: openingFields },
+  { heading: 'Each piece of furniture', intro: 'From the catalogue for the sizes, from the floor for the position.', fields: furnitureFields },
+];
+---
+
+<BaseLayout
+  title="Method"
+  description="What has to be measured to draw a home this way: units, the shared coordinate space, and every field of the dataset, with the checks that run over it."
+>
+  <section class="mx-auto max-w-4xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
+    <p class="eyebrow">Survey sheet</p>
+    <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+      What has to be measured
+    </h1>
+    <p class="lede mt-5">
+      Nothing on this site is drawn freehand. Each drawing is generated from a list of dimensions, so
+      the work of designing is the work of measuring first. Two conventions hold everywhere.
+    </p>
+
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <div class="card p-5">
+        <p class="eyebrow">One</p>
+        <h2 class="mt-2 font-serif text-lg font-bold text-ink">Millimetres, as integers</h2>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+          Tape measures read in millimetres and furniture is sold in them, so the dataset is kept in
+          them. Square metres, pings and metres are worked out at the moment of drawing, which means
+          no figure on the site is a rounded version of a rounded version.
+        </p>
+      </div>
+      <div class="card p-5">
+        <p class="eyebrow">Two</p>
+        <h2 class="mt-2 font-serif text-lg font-bold text-ink">One space for the whole home</h2>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+          x runs right, y runs down, and the origin is the north-west corner of the building. A room
+          states where its own north-west inside corner falls, and everything within the room —
+          furniture, doors, windows — is measured from that corner. This is why the whole-flat plan
+          and the room plans can never disagree: they are the same drawing at two framings.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {
+    tables.map((table) => (
+      <section class="mx-auto mt-12 max-w-4xl px-5 sm:px-8">
+        <h2 class="font-serif text-2xl font-bold text-ink">{table.heading}</h2>
+        <p class="prose-note mt-2">{table.intro}</p>
+        <div class="card table-scroll mt-5">
+          <table class="spec min-w-[38rem]">
+            <thead>
+              <tr>
+                <th scope="col" class="w-52">Field</th>
+                <th scope="col" class="w-40">Unit</th>
+                <th scope="col">How it is taken</th>
+              </tr>
+            </thead>
+            <tbody>
+              {table.fields.map(([field, unit, how]) => (
+                <tr>
+                  <th scope="row"><code class="font-mono text-xs text-ink">{field}</code></th>
+                  <td class="text-ink-soft">{unit}</td>
+                  <td class="text-ink-soft">{how}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="mx-auto mt-14 max-w-4xl px-5 sm:px-8">
+    <h2 class="font-serif text-2xl font-bold text-ink">What is checked, and against what</h2>
+    <p class="prose-note mt-2">
+      A plan can be handsome and still put a wardrobe where the door lands. These run over the
+      dimensions on every build and print what they find on the room’s page. None of them has an
+      opinion about taste.
+    </p>
+    <div class="card table-scroll mt-5">
+      <table class="spec min-w-[34rem]">
+        <tbody>
+          {
+            checks.map(([code, what]) => (
+              <tr>
+                <th scope="row" class="w-44">
+                  <code class="font-mono text-xs text-ink">{code}</code>
+                </th>
+                <td class="text-ink-soft">{what}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mx-auto mt-14 max-w-4xl px-5 sm:px-8">
+    <div class="rounded-xl border border-clay/30 bg-clay-soft p-6">
+      <p class="eyebrow text-clay">Standing in for the real thing</p>
+      <h2 class="mt-2 font-serif text-xl font-bold text-ink">
+        The figures published now are a placeholder
+      </h2>
+      <p class="mt-2 text-sm leading-relaxed text-ink-soft">
+        Everything drawn on this site at the moment is {HOME.location.toLowerCase()} — a plausible
+        flat, not the one being designed. It is here so the drawings, the checks and the pages can be
+        seen working before the survey is typed in. Rooms can be replaced one at a time: each is a
+        single file, and the whole-plan checks will report the moment two of them disagree.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

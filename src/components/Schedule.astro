@@ -1,0 +1,79 @@
+---
+import type { Furniture, FurnitureStatus, Room } from '~/data/types';
+import { formatLength } from '~/lib/geometry';
+
+interface Props {
+  room: Room;
+}
+
+const { room } = Astro.props;
+
+const STATUS: Record<FurnitureStatus, { label: string; chip: string }> = {
+  owned: { label: 'Have it', chip: 'bg-brand-soft text-brand-deep' },
+  ordered: { label: 'Ordered', chip: 'bg-brand-soft text-brand-deep' },
+  planned: { label: 'To buy', chip: 'bg-clay-soft text-clay' },
+  considering: { label: 'Maybe', chip: 'bg-paper-deep text-ink-soft' },
+};
+
+/** Width × depth × height, which is the order every catalogue quotes. */
+const size = (item: Furniture): string =>
+  `${item.width} × ${item.depth} × ${item.height}`;
+
+const facing = (item: Furniture): string => {
+  const rotation = ((item.rotation ?? 0) % 360 + 360) % 360;
+  return { 0: 'South', 90: 'West', 180: 'North', 270: 'East' }[rotation] ?? `${rotation}°`;
+};
+---
+
+<div class="card table-scroll">
+  <table class="spec min-w-[38rem]">
+    <caption class="border-b border-line px-4 py-3 text-left">
+      <span class="font-serif text-base font-bold text-ink">Furniture schedule</span>
+      <span class="ml-2 text-2xs tracking-[0.14em] text-ink-faint uppercase">
+        {room.furniture.length} pieces · millimetres
+      </span>
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col" class="w-10">#</th>
+        <th scope="col">Piece</th>
+        <th scope="col">W × D × H</th>
+        <th scope="col">Faces</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        room.furniture.map((item, index) => (
+          <tr>
+            <td class="font-mono text-2xs text-ink-faint">{index + 1}</td>
+            <th scope="row">
+              <span class="font-medium text-ink">{item.name}</span>
+              {item.material && <span class="block text-2xs text-ink-faint">{item.material}</span>}
+              {item.mountedAt !== undefined && (
+                <span class="block text-2xs text-clay">
+                  Wall-hung, underside at {formatLength(item.mountedAt)}
+                </span>
+              )}
+              {item.note && <span class="mt-1 block text-xs leading-relaxed text-ink-soft">{item.note}</span>}
+            </th>
+            <td class="whitespace-nowrap">{size(item)}</td>
+            <td class="whitespace-nowrap text-ink-soft">{facing(item)}</td>
+            <td>
+              {item.status && (
+                <span
+                  class:list={[
+                    'inline-block rounded-full px-2 py-0.5 text-2xs font-bold',
+                    STATUS[item.status].chip,
+                  ]}
+                >
+                  {STATUS[item.status].label}
+                </span>
+              )}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
