@@ -1,19 +1,58 @@
 import { placed } from '~/lib/geometry';
-import type { Room } from '~/data/types';
+import type { Furniture, Room } from '~/data/types';
 
 /**
  * 2550 east–west by 4500 north–south, window at the north end, door at the south
  * end of the east wall.
  *
- * Three designs, and the first two are not alternatives. They are the same room at
- * two times of day: cleared for play in the morning and afternoon, and with the beds
- * down at midday and at night. Both have to work, and the checks are run on both.
- * The third is the room several years from now, drawn to price what fixed beds would
- * cost if they were ever bought.
+ * Three designs, and the first two are not alternatives: they are the same room in
+ * the morning and at night, and both are checked. The third is the room with beds
+ * bought for it, drawn to price that decision rather than to propose it.
  */
 
-/** Storage, books and toys stand in the same places whatever time of day it is. */
-const FITTED = [
+/** One colour per child, so a two-year-old can find their own things before they can read a label. */
+const OLDER = '#4f8bc4';
+const YOUNGER = '#e2574c';
+const MAT = '#a9c8be';
+
+/**
+ * The mat is not furniture that gets moved: it is the floor of the room, down all
+ * day and all night. It reaches every wall except at the door, where a 900 by 1000
+ * square of bare floor is left as somewhere to stand and take shoes off. Two
+ * rectangles rather than one, because a footprint here is a rectangle and the shape
+ * needed is a rectangle with the door's corner bitten out of it.
+ */
+const MAT_PIECES: Furniture[] = [
+  placed(0, 0, {
+    id: 'mat-main',
+    name: 'Floor mat, main run',
+    short: 'Mat',
+    kind: 'rug',
+    width: 2550,
+    depth: 3500,
+    height: 25,
+    colour: MAT,
+    status: 'planned',
+    material: 'Washable foam, wall to wall',
+    note: 'Wall to wall, and permanent. Everything in the room stands on it, which is why nothing in the room is heavy on a small foot.',
+  }),
+  placed(0, 3500, {
+    id: 'mat-door',
+    name: 'Floor mat, door end',
+    short: 'Mat',
+    kind: 'rug',
+    width: 1650,
+    depth: 1000,
+    height: 25,
+    colour: MAT,
+    status: 'planned',
+    note: 'Stops 900 mm short of the east wall, leaving the square inside the door bare. That square is where shoes come off, and it is the one part of the floor that is never sat on.',
+  }),
+];
+
+/** Storage, the table and the mat stand in the same places whatever time of day it is. */
+const FITTED: Furniture[] = [
+  ...MAT_PIECES,
   placed(1950, 2500, {
     id: 'bedding-store',
     name: 'Bedding cupboard',
@@ -24,9 +63,10 @@ const FITTED = [
     height: 1350,
     rotation: 90,
     clearance: { south: 900 },
+    colour: '#4f9d8b',
     status: 'planned',
     material: 'Birch ply, two doors, soft-close',
-    note: 'The piece the whole design depends on. 600 mm deep takes two floor mattresses folded in three and both sleeping bags, and it is next to the door because it is opened twice a day. Kept to 1350 mm so an adult can reach the top shelf and a toddler cannot climb it.',
+    note: 'Holds both sleeping bags and nothing else it needs to. Next to the door because it is opened twice a day, and kept to 1350 mm so an adult reaches the top and a toddler cannot climb it.',
   }),
   placed(2150, 1450, {
     id: 'toy-bins',
@@ -38,8 +78,9 @@ const FITTED = [
     height: 600,
     rotation: 90,
     clearance: { south: 500 },
+    colour: '#f2b93b',
     status: 'planned',
-    material: 'Open frame, four fabric bins',
+    material: 'Open frame, four canvas bins',
     note: 'Open bins rather than a lidded chest: no lid to drop on fingers, and a two-year-old can put things away without help.',
   }),
   placed(2250, 500, {
@@ -52,21 +93,61 @@ const FITTED = [
     height: 700,
     rotation: 90,
     clearance: { south: 500 },
+    colour: '#e2574c',
     status: 'planned',
     material: 'Birch ply, sloped front-facing shelves',
     note: 'At the north end where the light is. Covers face out and the top shelf is at 700 mm, because a two-year-old chooses a book by its picture and only from a shelf they can reach.',
   }),
-  placed(100, 400, {
-    id: 'floor-mat',
-    name: 'Floor mat',
-    short: 'Mat',
-    kind: 'rug',
-    width: 1800,
-    depth: 3000,
-    height: 25,
+  placed(1000, 650, {
+    id: 'play-table',
+    name: 'Play table',
+    short: 'Play table',
+    kind: 'table',
+    width: 700,
+    depth: 500,
+    height: 480,
+    clearance: { north: 400, south: 400 },
+    colour: '#e3cba3',
     status: 'planned',
-    material: 'Washable, one piece rather than interlocking tiles',
-    note: 'Not a rug but the floor of the room: played on all day and slept on at night, so it is one piece with no seams for crumbs and no tiles for a toddler to lift.',
+    material: 'Birch ply, rounded corners, wipeable top',
+    note: 'A 480 mm top for 280 mm seats: the height a two-year-old can get onto unaided, which is the whole point of having one rather than using the floor. Set at the window end and off the east wall, so both children can be at it and neither is in the way of the shelves.',
+  }),
+  placed(1100, 300, {
+    id: 'chair-older',
+    name: 'Chair, older child',
+    short: 'Chair',
+    kind: 'chair',
+    width: 300,
+    depth: 300,
+    height: 560,
+    colour: OLDER,
+    status: 'planned',
+    material: 'Birch, 280 mm seat',
+  }),
+  placed(1300, 1200, {
+    id: 'chair-younger',
+    name: 'Chair, younger child',
+    short: 'Chair',
+    kind: 'chair',
+    width: 300,
+    depth: 300,
+    height: 560,
+    colour: YOUNGER,
+    status: 'planned',
+    material: 'Birch, 280 mm seat',
+  }),
+  placed(250, 3700, {
+    id: 'floor-cushion',
+    name: 'Floor cushion',
+    short: 'Cushion',
+    kind: 'armchair',
+    width: 600,
+    depth: 600,
+    height: 400,
+    colour: '#8fb96a',
+    status: 'considering',
+    material: 'Washable cover',
+    note: 'For an adult to sit at child height and read. Kept at the door end, which is the one part of the floor no bag is laid on, so it never has to be moved.',
   }),
 ];
 
@@ -107,78 +188,72 @@ export const CHILDRENS_ROOM: Room = {
       id: 'day',
       name: 'Morning and afternoon',
       preferred: true,
-      theme: 'No beds in it at all, which is what makes the floor worth having',
-      style: 'muji',
-      floor: { name: 'One-piece washable mat over the existing floor', colour: '#e6dcc9' },
+      theme: 'A floor to play on, a table to sit at, and no beds in the room at all',
+      style: 'playful',
+      floor: { name: 'Existing floor, bare only at the door', colour: '#e8dcc8' },
       summary:
-        'Nothing sleeps here by day. The bedding is folded into the cupboard by the door, and what is left is 1.8 by 3 metres of continuous mat with no bed to walk around — which in a room 2.55 m across is the difference between a floor that can be played on and a set of gaps between furniture. All the storage is on one wall, the east, in a single run, so that the other two thirds of the room is one shape rather than three. Furniture covers 13% of the floor. That figure is the design: nothing here is tall, nothing has a corner at the height a toddler falls from, and the only thing worth buying well is the cupboard, because it is opened twice a day for the next three years.',
-      furniture: [
-        ...FITTED,
-        placed(300, 2700, {
-          id: 'floor-cushion',
-          name: 'Floor cushion',
-          short: 'Cushion',
-          kind: 'armchair',
-          width: 600,
-          depth: 600,
-          height: 400,
-          status: 'considering',
-          note: 'Somewhere for an adult to sit at child height to read. Put away at night, which is why it is in this design and not the other.',
-        }),
-      ],
+        'Nothing sleeps here by day. Both bags are folded into the cupboard by the door and what is left is the whole floor: mat to every wall except the 900 by 1000 square inside the door where shoes come off. Furniture covers 18% of it, all of it standing on the mat and all of it low — the tallest thing in the room is the bedding cupboard at 1350 mm, which an adult can reach over and a toddler cannot climb. The table is the piece that was missing from the first version of this room: at 480 mm with 280 mm seats it is a height a two-year-old gets onto without help, which is what makes it get used instead of the floor. Colour does a job here rather than decorating: one flat colour per object, and one per child on the things that are theirs.',
+      furniture: [...FITTED],
       openQuestions: [
-        'The window figures are assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. Worth measuring, because at a sill of 900 nothing climbable may be put under it — and the mat reaches to within 400 mm of that wall.',
-        'Where the air conditioner is has not been recorded. It matters more here than in a room with cots, because the children sleep on the floor and the coldest air in a room is at floor level.',
-        'A mat that is slept on needs to be liftable to dry. At 1.8 by 3 m in one piece it is a two-person job; two pieces of 1.8 by 1.5 would not be.',
+        'The window figures are assumed: 1500 wide, 1200 high, sill at 900, centred on the wall. Worth measuring, because at a sill of 900 nothing climbable may stand under it.',
+        'Where the air conditioner is has not been recorded, and it matters more in a room slept in on the floor than in one with beds, because the coldest air in a room is at floor level.',
+        'A 1350 mm cupboard standing on 25 mm of foam will sink into it unevenly and can be rocked. It has to be screwed to the wall, and that is not optional in a room with a two-year-old in it.',
+        'The mat is in two pieces to leave the door square bare. Both pieces still want lifting to dry; 2.55 by 3.5 m is a two-person job, and splitting the main run again would make it one.',
       ],
     },
     {
       id: 'night',
       name: 'Midday and night',
-      theme: 'The same room with the beds down, to prove they fit',
-      style: 'muji',
-      floor: { name: 'One-piece washable mat over the existing floor', colour: '#e6dcc9' },
+      theme: 'Two bags down the middle, feet to feet',
+      style: 'playful',
+      floor: { name: 'Existing floor, bare only at the door', colour: '#e8dcc8' },
       summary:
-        'Two floor mattresses, 700 by 1400 each, laid side by side on the mat with 50 mm between them. They sit 1050 mm off the window wall, so no head is against cold glass, and they stop 2050 mm short of the south wall, which leaves the whole area inside the door clear — an adult can come in at night, close the door fully behind them, and kneel beside either child without stepping over the other. Nothing has to be moved to lay them out except the floor cushion. The checks are run on this layout as well as the daytime one, because a room that only works when it is empty does not work.',
+        'Two sleeping bags, 1400 by 700 each, laid end to end down the room with the children’s feet meeting in the middle — so neither is breathing on the other and neither can reach the other’s face, which is what settles two children a year apart in one room. Head to head they would take the same 2.8 m; feet to feet they get 700 mm of separation for nothing. The pair sits against the west side, which leaves a 1.6 m aisle down the east for an adult to walk in, reach either child, and get to the cupboard without stepping over anybody. Nothing has to be moved to lay them out: the table, the shelves and the cushion all stand clear of the 700 mm strip the bags need. That is the test this design exists to pass.',
       furniture: [
         ...FITTED,
-        placed(150, 1050, {
-          id: 'mattress-older',
-          name: 'Floor mattress, older child',
+        placed(250, 700, {
+          id: 'bag-older',
+          name: 'Sleeping bag, older child',
           short: 'Older child',
           kind: 'bed',
           width: 700,
           depth: 1400,
-          height: 60,
-          status: 'planned',
-          material: 'Folds in three, with a sleeping bag',
-          note: 'Folded away every morning into the cupboard by the door. Nothing about it is fixed, which is why the room can be two things.',
+          height: 200,
+          colour: OLDER,
+          status: 'owned',
+          material: 'Sleeping bag, laid straight on the mat',
+          note: 'Head to the north. 1400 by 700 opened out, folded into the cupboard every morning.',
         }),
-        placed(900, 1050, {
-          id: 'mattress-younger',
-          name: 'Floor mattress, younger child',
+        placed(250, 2100, {
+          id: 'bag-younger',
+          name: 'Sleeping bag, younger child',
           short: 'Younger child',
           kind: 'bed',
           width: 700,
           depth: 1400,
-          height: 60,
-          status: 'planned',
-          material: 'Folds in three, with a sleeping bag',
+          /** Turned end for end, so the two children lie feet to feet. */
+          rotation: 180,
+          height: 200,
+          colour: YOUNGER,
+          status: 'owned',
+          material: 'Sleeping bag, laid straight on the mat',
+          note: 'Head to the south, feet meeting the other bag in the middle of the room.',
         }),
       ],
       openQuestions: [
-        'A 700 mm mattress suits a two-year-old and not a five-year-old. When they outgrow these, two 900 mm mattresses come to 1850 mm across including the gap, which this room still takes — but they will no longer both fit north of the cupboard.',
-        'Sleeping bags rather than loose bedding is the right answer at this age, and it stops being one at about four, when a duvet starts sliding off a floor mattress with nothing to tuck under.',
+        'A 1400 mm bag suits a two-year-old and not a five-year-old. Two 1800 mm bags feet to feet come to 3.6 m, which this room still takes with 900 mm to spare — so the arrangement survives the children growing, and only the bags have to be replaced.',
+        'Feet to feet puts one child’s head at the window end and the other’s at the door end. The one by the door will hear the household; the one by the window will get the morning light. Which child gets which is worth deciding on purpose rather than by which bag is laid out first.',
+        'The play table stands 50 mm from the older child’s bag, level with their shoulders. Its top is well above a lying child but its legs are not, and a child in a bag rolls. Either the table moves 300 mm east at night, which defeats the point of nothing having to be moved, or its legs want to be the round ones.',
       ],
     },
     {
       id: 'fixed-beds',
       name: 'Later, with fixed beds',
       theme: 'What buying beds would cost, drawn so the choice can be made against something',
-      style: 'warm-minimal',
-      floor: { name: 'Existing floor, mat removed', colour: '#e0d3c2' },
+      style: 'playful',
+      floor: { name: 'Existing floor, mat lifted', colour: '#e8dcc8' },
       summary:
-        'The version of this room with two single beds and two desks in it. Everything fits: the beds run end to end along the west wall, using 4 m of its 4.5 m, and a 1.5 m spine down the east side takes both desks and the walking. But furniture then covers 52% of the floor, which the checks call crowded and which they are right about — the floor stops being a place and becomes the gaps between four large objects. The point of drawing it is that sleeping on the floor is not a compromise made for now: it is what keeps this room from becoming this. If beds are ever wanted, the honest comparison is against a bunk and one shared desk, not against this.',
+        'The version of this room with two single beds and two desks in it. Everything fits: the beds run end to end along the west wall, using 4 m of its 4.5 m, and a 1.5 m spine down the east side takes both desks and the walking. But furniture then covers 52% of the floor, which the checks call crowded and which they are right about — the floor stops being a place and becomes the gaps between four large objects, and the mat comes up because there is no longer any floor worth covering. The point of drawing it is that sleeping on the floor is not a compromise made for now: it is what keeps the room from becoming this. If beds are ever wanted, the honest comparison is against a bunk and one shared desk, not against this.',
       furniture: [
         placed(0, 400, {
           id: 'bed-older',
@@ -188,6 +263,7 @@ export const CHILDRENS_ROOM: Room = {
           width: 1050,
           depth: 2000,
           height: 850,
+          colour: OLDER,
           status: 'considering',
           material: 'Single, drawers under',
           note: 'Head to the north. Both beds run along the west wall end to end, and their feet meet in the middle.',
@@ -202,6 +278,7 @@ export const CHILDRENS_ROOM: Room = {
           height: 850,
           /** Turned end for end, so this head is at the south wall. */
           rotation: 180,
+          colour: YOUNGER,
           status: 'considering',
           material: 'Single, drawers under',
         }),
@@ -225,6 +302,7 @@ export const CHILDRENS_ROOM: Room = {
           width: 450,
           depth: 450,
           height: 820,
+          colour: OLDER,
           status: 'considering',
         }),
         placed(1950, 1700, {
@@ -248,6 +326,7 @@ export const CHILDRENS_ROOM: Room = {
           width: 450,
           depth: 450,
           height: 820,
+          colour: YOUNGER,
           status: 'considering',
         }),
         placed(2300, 2250, {

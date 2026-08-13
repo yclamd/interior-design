@@ -81,6 +81,27 @@ export const STYLES: Record<StyleKey, StylePreset> = {
     },
     materials: ['Fair-faced concrete', 'Hot-rolled steel', 'Reclaimed fir', 'Wire glass', 'Leather'],
   },
+  playful: {
+    key: 'playful',
+    name: 'Bright',
+    premise:
+      'Colour used as a way of finding things rather than as decoration. Pale birch and washable foam carry the room, and each large object gets one strong flat colour of its own — which matters most when the people using it are two, because a child sorts by colour years before they can read a label. Nothing is patterned, so the colour that is there does the work.',
+    palette: {
+      wall: '#faf7f0',
+      floor: '#a9c8be',
+      furniture: '#e3cba3',
+      accent: '#e2574c',
+      textile: '#f2b93b',
+      metal: '#f7f7f5',
+    },
+    materials: [
+      'Birch ply',
+      'Washable foam mat',
+      'Powder-coated steel',
+      'Cotton canvas bins',
+      'Water-based paint, matt',
+    ],
+  },
   classic: {
     key: 'classic',
     name: 'Quiet classic',
@@ -102,6 +123,7 @@ export const STYLE_ORDER: StyleKey[] = [
   'japandi',
   'warm-minimal',
   'muji',
+  'playful',
   'mid-century',
   'industrial',
   'classic',

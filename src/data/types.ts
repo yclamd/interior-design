@@ -171,7 +171,8 @@ export type StyleKey =
   | 'mid-century'
   | 'muji'
   | 'industrial'
-  | 'classic';
+  | 'classic'
+  | 'playful';
 
 /**
  * A style is a palette plus a short list of materials. Both the swatches on the
