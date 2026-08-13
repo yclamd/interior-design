@@ -13,7 +13,8 @@ import type { Furniture, Room } from '~/data/types';
 /** One colour per child, so a two-year-old can find their own things before they can read a label. */
 const OLDER = '#4f8bc4';
 const YOUNGER = '#e2574c';
-const MAT = '#a9c8be';
+/** Milk tea. Warm enough that everything standing on it reads as an object on a floor. */
+const MAT = '#d5bfa3';
 
 /**
  * The mat is not furniture that gets moved: it is the floor of the room, down all
