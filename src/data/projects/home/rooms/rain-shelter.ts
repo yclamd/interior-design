@@ -24,8 +24,8 @@ export const RAIN_SHELTER: Room = {
   id: 'rain-shelter',
   name: 'Rain shelter',
   kind: 'canopy',
-  /** East of the living room's outer wall face at 9700, aligned with its inner width. */
-  origin: { x: 9700, y: 200 },
+  /** East of the living room's outer wall face at 9100, aligned with its inner width. */
+  origin: { x: 9100, y: 200 },
   shape: { kind: 'rect', width: 1000, depth: 3050 },
   /**
    * Whatever is overhead is the underside of the slab above, and it has not been

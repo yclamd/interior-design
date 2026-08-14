@@ -3,19 +3,21 @@ import { single, type Room } from '~/data/types';
 import { ASSUMED_ENTRY_TILE } from '../floors';
 
 /**
- * 2250 east–west by 1300 north–south, at the west end of the flat with the front
+ * 1650 east–west by 1300 north–south, at the west end of the flat with the front
  * door in its west wall. It shares its north wall with the dining room and stands
  * open to it: the two fitted runs join at the corner, which they could not do with a
  * partition between them.
  *
- * Only 1300 deep, of which 330 is cabinet, so the walking width is 970.
+ * Only 1300 deep, of which 330 is cabinet, so the walking width is 970. At 1650 wide
+ * that walking space is 1.65 by 0.97 m, which is a space to put a bag down in and turn
+ * round, and not one two people pass each other in.
  */
 export const ENTRY: Room = {
   id: 'entry',
   name: 'Entry',
   kind: 'entry',
   origin: { x: 200, y: 650 },
-  shape: { kind: 'rect', width: 2250, depth: 1300 },
+  shape: { kind: 'rect', width: 1650, depth: 1300 },
   ceiling: 2600,
   openings: [
     {
@@ -42,7 +44,7 @@ export const ENTRY: Room = {
       fromCatalogue('fitted-run-330', 0, 970, {
         id: 'entry-run',
         name: 'Shoe and coat run',
-        width: 2250,
+        width: 1650,
         /** Turned to face north, into the entry: a piece faces south before it is turned. */
         rotation: 180,
         status: 'owned',
@@ -50,7 +52,7 @@ export const ENTRY: Room = {
       }),
     ],
     openQuestions: [
-      'What is south of the entry is not yet known. The entry is 1300 deep against the dining room’s 2600, so there is a 2.25 by 1.3 m space behind the cabinet run that no room has claimed yet, and it is drawn as solid because of it.',
+      'What is south of the entry is not yet known. The entry is 1300 deep against the dining room’s 2600, so there is a 1.65 by 1.3 m space behind the cabinet run that no room has claimed yet, and it is hatched rather than drawn as a room because of it.',
     ],
   }),
 };

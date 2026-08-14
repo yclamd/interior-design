@@ -25,31 +25,30 @@ export const PROJECT: Project = {
   /**
    * Every face sits exactly one 100 mm wall outside the rooms behind it: west of the
    * entry at 200, north of the entry and dining at 650, north of the living room at
-   * 200, east of it at 9600, and south of everything at 3250.
+   * 200, east of it at 9000, and south of everything at 3250.
    *
-   * The step is the one that had to be corrected rather than moved. It used to stand at
-   * 7100, which is the living room's own west face, so the 250 mm of that wall standing
-   * north of the dining room had no thickness at all — the room's edge and the outside
-   * of the building were the same line. It is now a wall's width west of the room, like
-   * every other face here.
+   * The step is a wall's width west of the living room rather than on it. Standing on
+   * the room's own west face, the 250 mm of that wall north of the dining room had no
+   * thickness at all — the inside of the room and the outside of the building were one
+   * line.
    */
   envelope: [
     { x: 100, y: 550 },
-    { x: 7000, y: 550 },
-    { x: 7000, y: 100 },
-    { x: 9700, y: 100 },
-    { x: 9700, y: 3350 },
+    { x: 6400, y: 550 },
+    { x: 6400, y: 100 },
+    { x: 9100, y: 100 },
+    { x: 9100, y: 3350 },
     { x: 100, y: 3350 },
   ],
   /**
-   * The 2.25 by 1.3 m behind the entry's cabinet run. The entry is 1300 deep against
+   * The 1.65 by 1.3 m behind the entry's cabinet run. The entry is 1300 deep against
    * the dining room's 2600, and what fills the difference is not known yet.
    */
   unsurveyed: [
     [
       { x: 200, y: 1950 },
-      { x: 2450, y: 1950 },
-      { x: 2450, y: 3250 },
+      { x: 1850, y: 1950 },
+      { x: 1850, y: 3250 },
       { x: 200, y: 3250 },
     ],
   ],

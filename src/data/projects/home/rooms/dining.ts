@@ -379,7 +379,8 @@ export const DINING: Room = {
   id: 'dining',
   name: 'Dining',
   kind: 'dining',
-  origin: { x: 2450, y: 650 },
+  /** Flush with the entry's east edge at 1850, so the two stand open to each other. */
+  origin: { x: 1850, y: 650 },
   shape: { kind: 'rect', width: 4650, depth: 2600 },
   ceiling: 2600,
   openings: [

@@ -281,7 +281,8 @@ export const LIVING: Room = {
   id: 'living',
   name: 'Living',
   kind: 'living',
-  origin: { x: 7100, y: 200 },
+  /** Flush with the dining room's east edge at 6500, with no partition between them. */
+  origin: { x: 6500, y: 200 },
   shape: { kind: 'rect', width: 2500, depth: 3050 },
   ceiling: 2600,
   openings: [
