@@ -23,6 +23,12 @@ const CARCASS = (RUN - CHAMFER) / 3;
  * arrange is about 3300 by 2600, and every design below is a different answer to the
  * same question: how much of that goes to seating and how much stays as floor, with
  * two children under three who use the floor rather than the furniture.
+ *
+ * The style is the project's on every one of them, and held there deliberately. These
+ * used to carry a style each, cycling through seven, so the first thing anyone saw
+ * comparing two designs was a change of colour — the one variable in the set that costs
+ * nothing and can be changed after the flat is built. Held still, the difference between
+ * two designs is the difference in the arrangement, which is what is being decided.
  */
 const BUILT_IN: Furniture[] = [
   fromCatalogue('fitted-run-600', 0, 970, {
@@ -70,7 +76,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '1 · Table west, floor east',
     preferred: true,
     theme: 'Push the table as far west as its own chairs allow and keep the rest as one floor',
-    style: 'japandi',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'The 1500 by 900 table with its length running east–west, held 50 mm clear of where the storage run’s standing room ends. Turned this way the chairs take their 750 out of the depth and only 1.5 m of the width; turned the other way they would take 2.4 m of the width instead, and the room would be a table with a corridor round it. What this buys is 1.75 m of clear width east of the table, running into the living room without a threshold — two children under three use the floor of a flat rather than its furniture, and this is the most of it any arrangement here leaves in one piece. The depth is the tight figure: 900 of table and 750 either side comes to 2400 of the room’s 2600, so the table sits centred with 100 mm to spare at each end and neither of those walls can hold anything at all.',
@@ -127,7 +133,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'extendable',
     name: '3 · An extendable table',
     theme: 'Four every day, six when it matters, and stop choosing',
-    style: 'muji',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'The first two designs are a choice between four seats and six. This one refuses it. A 1200 by 800 top that takes a leaf to 1800 sits exactly where the four-seat table sits and leaves the same 2.05 m of floor for 360 days a year; on the other five, the leaf goes in, two chairs come from the bedrooms, and the table grows east into floor nobody is using at dinner time anyway. It needs 600 mm of length at one end and nothing in depth, and the room has 2.05 m spare at that end. This is the answer small-space design keeps arriving at, and it is available here at no cost in floor at all.',
@@ -154,7 +160,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'bench-south',
     name: '4 · Bench against the south wall',
     theme: 'Take the pull-back off one side and give the north wall to walking',
-    style: 'japandi',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'A bench against the south wall with the 1500 table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 500 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Four sit properly, two on chairs and two on the bench, and the bench will take a third at a squeeze in a way a row of chairs cannot. What it costs is the shuffle: the person in the middle of a bench gets out last.',
@@ -188,7 +194,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'round',
     name: '5 · A round table',
     theme: 'No corners, and a table people walk past on the diagonal',
-    style: 'mid-century',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'An 1100 round top seating four, with a chair at each quarter. A round table loses less to circulation than a rectangle seating the same number, because people pass a circle on the diagonal and a rectangle square-on, and it is the only table shape with nothing at a two-year-old’s eye height to run into. It also has no head of the table, which in a room this open matters more than it sounds: nobody sits with their back to the way in. What it costs is the wall: a round table cannot be pushed against anything, so it holds the middle of the room and the clear floor ends up in two pieces rather than one.',
@@ -248,7 +254,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'play-corner',
     name: '7 · A low shelf, and a corner that is theirs',
     theme: 'Spend one footprint on storage and a boundary at the same time',
-    style: 'muji',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'The four-seat table where it belongs, and a 930 by 440 cabinet standing out from the north wall rather than against it. Turned that way it does two jobs from one footprint: it holds things, and its end makes a corner of the room feel like somewhere rather than like the middle of a route. That corner — 1.21 m of the east end, opening into the living room — becomes the children’s, with everything in it at their height and nothing in it belonging to the dining table. A low unit accessible from both sides is the standard small-flat divider, and it is the only kind of boundary a room this open can have.',
@@ -281,7 +287,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'rug-zones',
     name: '8 · Zoned by rug, not by furniture',
     theme: 'Mark the floor instead of dividing it, and buy nothing',
-    style: 'macaron',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'The same table in the same place, and the east end of the room given a rug instead of a divider. Nothing is bought, nothing is climbed, nothing has to be fixed to the floor, and the boundary is a change of surface a two-year-old reads perfectly well: on the rug is where toys are allowed. It gives up what a shelf would have given — storage, and a boundary you can see over the top of — in exchange for a floor that can be swept clear in one movement and a room that stays one room. Of the eight designs so far this is the one that changes the least and costs the least.',
@@ -314,7 +320,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'benches-both',
     name: '9 · Benches on both sides',
     theme: 'The smallest a table for six can be made',
-    style: 'industrial',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'Two benches and a 1.6 m table, and no chair anywhere. Neither bench needs room to pull back into, so the whole arrangement is 1.7 m deep against the 2.3 m a table with chairs on both sides demands, and it seats six. That 600 mm goes straight into the clear strip along the north wall, which becomes 900 — enough to walk two abreast, or for a child to get past a chair that is not there. It is the tightest seating this room can hold, and it is a canteen: nobody has a back, everybody shuffles, and it suits a family that eats fast and often rather than long and rarely.',
@@ -337,7 +343,7 @@ export const DINING_DESIGNS: Design[] = [
     id: 'sideboard',
     name: '10 · Table north, sideboard south',
     theme: 'Use the south wall for storage and accept a table against the corridor end',
-    style: 'classic',
+    style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
       'Every other design leaves the south wall bare because the chairs’ clearance runs to within 175 mm of it. This one moves the table to the north wall instead — chairs on its south side only — which frees the whole south wall for a 1.1 m sideboard, and puts a second surface at working height in a room that otherwise has none outside the fitted run. What it costs is the north wall: the table now sits against the wall the corridor opens off, so anybody going to bed passes behind whoever is eating. In a flat where two children go to bed while adults are still at the table, that is not a small thing.',

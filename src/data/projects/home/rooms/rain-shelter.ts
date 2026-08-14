@@ -51,7 +51,7 @@ export const RAIN_SHELTER: Room = {
   ],
   designs: single({
     theme: 'One plant, put where a hand can reach it through the window',
-    style: 'japandi',
+    style: 'warm-minimal',
     floor: EXISTING_CANOPY_SLAB,
     summary:
       'One tall planter, held against the building and set towards the north end of the window. Against the building because a metre of slab reached through a window is not a metre of usable slab — past about 400 mm nothing can be watered without climbing out, and nobody is climbing out of this window. Towards the north end because the one design next door that turns the sofa to face east is looking through the middle of this glass, and a plant in the middle of it would be the view rather than part of it. The rest of the slab stays empty, which is not indecision: it is the part that cannot be reached. The checks flag this planter for standing 300 mm above an 1800 window’s sill and taking some of the light, which it does: 400 of the 1800, at the end furthest from where anybody sits. That is the trade the design accepts, because a planter below the sill is one nobody indoors ever sees.',
