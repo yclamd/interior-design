@@ -69,36 +69,40 @@ export const DINING_DESIGNS: Design[] = [
       ]),
     ],
     openQuestions: [
-      'Four seats. A fifth and sixth could sit at the ends, where there is room for a chair but not the 750 to pull it back into.',
+      'Four seats. A chair at each end would make six, but at this position the west one would sit inside the storage run’s standing room — which is why the six-seat design moves the whole table 400 mm east and pays for it in floor.',
       'The chairs’ clearance runs to within 100 mm of both the north and south walls. There is no sideboard on either of them, now or later, and the 900 deep table is what spends that.',
     ],
   },
   {
     id: 'table-six',
-    name: '2 · Six chairs round the same table',
-    theme: 'Keep the table and add two chairs, which costs no floor and costs elbows',
+    name: '2 · Six at the same table, two of them at the ends',
+    theme: 'Seat six without anybody getting 500 mm of table',
     style: 'warm-minimal',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'The same table in the same place with three chairs down each long side instead of two. A 1500 top gives each of six people 500 mm of edge, against the 600 that is comfortable and the 750 four people get — so six fit, and six eat with their elbows in. What it costs is not floor area: the table has not moved and the clear width east of it is still 1.75 m. What it costs is the gap between the chairs and the storage run, which the fourth and fifth chairs fill, so the room stops having a way past the table while people are sitting at it. This is the honest six-seat option for a 1500 table. Anything roomier means a longer table, and a longer table means the floor east of it.',
+      'Two chairs down each long side and one at each end. Three a side would also fit a 1500 top on paper and would give each of six people 500 mm of edge, which is under the 550 a place setting needs and not worth drawing — a chair nobody can sit at is not a seat. This way the four along the sides keep the full 750 they get in the four-seat design and the two at the ends get the whole 900 of the table depth, so all six are properly seated. What it costs is the table moving 400 mm east, which is what it takes to keep the head of the table out of the storage run’s standing room. Clear floor east then drops from 1.75 m to 0.9 m, and the last 900 of that is the corridor’s own landing space. Six proper seats costs almost all of the continuous floor.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1500', 1400, 850, { status: 'considering' }),
+      fromCatalogue('table-dining-1500', 1800, 850, {
+        clearance: { north: 750, south: 750, east: 750, west: 750 },
+        status: 'considering',
+        note: 'Held 400 mm east of where the four-seat design puts it, so the chair at the west end clears the storage run’s standing room instead of sitting in it.',
+      }),
       ...chairs(
         [
-          [1425, 400],
-          [1975, 400],
-          [2525, 400],
-          [1425, 1750],
-          [1975, 1750],
-          [2525, 1750],
+          [1950, 400],
+          [2600, 400],
+          [1950, 1750],
+          [2600, 1750],
+          [1350, 1075],
+          [3300, 1075],
         ],
         'considering',
       ),
     ],
     openQuestions: [
-      'The end chairs overhang the table by 75 mm at the east and sit 25 mm off its west end. Six at a 1500 table is an arrangement that works on a plan and is judged at a meal.',
-      'Six seats in a flat with two children under three is a bet on five years from now rather than on now.',
+      'The chair at the west end stands exactly where the storage run’s standing room ends, and the one at the east end exactly where the corridor’s landing begins. Both are checks passed rather than margins.',
+      'Six seats in a flat with two children under three is a bet on five years from now rather than on now — and this is the version of that bet that does not also seat them badly.',
     ],
   },
   {
@@ -134,7 +138,7 @@ export const DINING_DESIGNS: Design[] = [
     style: 'japandi',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'A bench against the south wall with the 1500 table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 500 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Six can sit — three on the bench, three on chairs. What it costs is the shuffle: the person in the middle of a bench gets out last.',
+      'A bench against the south wall with the 1500 table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 500 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Four sit properly, two on chairs and two on the bench, and the bench will take a third at a squeeze in a way a row of chairs cannot. What it costs is the shuffle: the person in the middle of a bench gets out last.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('bench-dining-1600', 1450, 2150, {
@@ -148,14 +152,14 @@ export const DINING_DESIGNS: Design[] = [
       }),
       ...chairs(
         [
-          [1550, 800],
-          [2100, 800],
-          [2650, 800],
+          [1650, 800],
+          [2400, 800],
         ],
         'considering',
       ),
     ],
     openQuestions: [
+      'Four seated properly: two on chairs at 750 each and two on the bench. A third chair would fit the 1500 table only by giving all three 500 mm, which is under what a place setting needs, so it is not drawn. The bench will take a third at a squeeze because a bench has no arms to define where one person stops.',
       'A bench against a wall means the wall is the backrest. At 450 high with a 740 table this is a perch rather than a chair, and it is not where anybody wants to sit for two hours.',
       'The clear strip along the north is 500 mm, where the shallower table left 600. That is a passage either way, not a play space — this design buys circulation, not floor.',
     ],
