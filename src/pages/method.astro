@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { PROJECTS } from '~/data/projects';
+import { slug } from '~/data/navigation';
 
 /**
  * The page that makes the dataset legible: what has to be measured, in what unit,
@@ -117,7 +118,7 @@ const tables = [
   title="Method"
   description="What has to be measured to draw a room this way: units, the shared coordinate space, the split between a room and a design, and every field of the dataset."
 >
-  <section class="mx-auto max-w-4xl px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
+  <section id="conventions" class="mx-auto max-w-4xl scroll-mt-24 px-5 pt-14 pb-10 sm:px-8 sm:pt-20">
     <p class="eyebrow">Survey sheet</p>
     <h1 class="mt-3 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
       What has to be measured
@@ -162,7 +163,7 @@ const tables = [
 
   {
     tables.map((table) => (
-      <section class="mx-auto mt-12 max-w-4xl px-5 sm:px-8">
+      <section id={slug(table.heading)} class="mx-auto mt-12 max-w-4xl scroll-mt-24 px-5 sm:px-8">
         <h2 class="font-serif text-2xl font-bold text-ink">{table.heading}</h2>
         <p class="prose-note mt-2">{table.intro}</p>
         <div class="card table-scroll mt-5">
@@ -191,7 +192,7 @@ const tables = [
     ))
   }
 
-  <section class="mx-auto mt-14 max-w-4xl px-5 sm:px-8">
+  <section id="checks" class="mx-auto mt-14 max-w-4xl scroll-mt-24 px-5 sm:px-8">
     <h2 class="font-serif text-2xl font-bold text-ink">What is checked, and against what</h2>
     <p class="prose-note mt-2">
       A plan can be handsome and still put a wardrobe where the door lands. These run over the

@@ -15,7 +15,11 @@ import { UTILITY } from './rooms/utility';
  */
 export const PROJECT: Project = {
   id: 'placeholder-flat',
-  name: 'The flat',
+  /**
+   * Named for what it is. It shared the real flat's name until both appeared in the
+   * same menu, one under the other, and nothing but the room count told them apart.
+   */
+  name: 'Placeholder flat',
   location: 'Placeholder — a 9.0 × 9.2 m single-floor plan',
   scope: 'home',
   northOffset: 0,

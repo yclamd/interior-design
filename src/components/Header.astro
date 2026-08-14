@@ -1,5 +1,19 @@
 ---
-import { NAV_LINKS, SITE, withBase } from '~/consts';
+import { SITE, withBase } from '~/consts';
+import { NAV } from '~/data/navigation';
+
+/**
+ * The bar, with a menu under each heading.
+ *
+ * The menus open on hover and on focus, and they are built out of CSS alone. That is
+ * not a preference: the site ships no client-side JavaScript, so a menu that needed a
+ * click handler would be a menu that never opened. Hovering is what was asked for and
+ * :focus-within covers the keyboard, since every item in a menu is a link and tabbing
+ * to one opens the menu that holds it.
+ *
+ * Each heading stays a link to its own page, so the menu is a shortcut past that page
+ * and not a replacement for it.
+ */
 
 const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
 
@@ -35,19 +49,61 @@ function isActive(href: string): boolean {
 
     <nav class="ml-auto hidden items-center gap-1 md:flex" aria-label="Primary">
       {
-        NAV_LINKS.map((link) => (
-          <a
-            href={withBase(link.href)}
-            aria-current={isActive(link.href) ? 'page' : undefined}
-            class:list={[
-              'rounded-full px-3.5 py-2 text-sm transition-colors duration-200',
-              isActive(link.href)
-                ? 'bg-brand-soft font-medium text-brand-deep'
-                : 'text-ink-soft hover:bg-paper-deep hover:text-ink',
-            ]}
-          >
-            {link.label}
-          </a>
+        NAV.map((item) => (
+          <div class="nav-item relative">
+            <a
+              href={withBase(item.href)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              aria-haspopup={item.children.length > 0 ? 'true' : undefined}
+              class:list={[
+                'flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition-colors duration-200',
+                isActive(item.href)
+                  ? 'bg-brand-soft font-medium text-brand-deep'
+                  : 'text-ink-soft hover:bg-paper-deep hover:text-ink',
+              ]}
+            >
+              {item.label}
+              {item.children.length > 0 && (
+                <svg
+                  class="nav-chevron h-2.5 w-2.5 opacity-50"
+                  viewBox="0 0 10 6"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M1 1.5 5 5l4-3.5"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              )}
+            </a>
+
+            {item.children.length > 0 && (
+              /**
+               * The padding is the hover bridge. Without it the pointer crosses a gap
+               * of dead space between the heading and the menu, the hover drops, and
+               * the menu closes on the way to it.
+               */
+              <div class="nav-pop absolute top-full right-0 pt-2">
+                <div class="w-64 overflow-hidden rounded-xl border border-line bg-card shadow-xl shadow-ink/10">
+                  {item.children.map((child) => (
+                    <a
+                      href={withBase(child.href)}
+                      class="block border-b border-line-soft px-4 py-2.5 transition-colors last:border-0 hover:bg-paper-deep"
+                    >
+                      <span class="block text-sm text-ink">{child.label}</span>
+                      {child.note && (
+                        <span class="mt-0.5 block text-xs text-ink-faint">{child.note}</span>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ))
       }
     </nav>
@@ -66,21 +122,31 @@ function isActive(href: string): boolean {
         </svg>
       </summary>
       <div
-        class="absolute right-0 mt-3 w-52 overflow-hidden rounded-xl border border-line bg-card shadow-xl shadow-ink/5"
+        class="absolute right-0 mt-3 max-h-[70vh] w-64 overflow-y-auto rounded-xl border border-line bg-card shadow-xl shadow-ink/5"
       >
         {
-          NAV_LINKS.map((link) => (
-            <a
-              href={withBase(link.href)}
-              class:list={[
-                'block border-b border-line-soft px-4 py-3 text-sm transition-colors last:border-0',
-                isActive(link.href)
-                  ? 'bg-brand-soft font-medium text-brand-deep'
-                  : 'text-ink-soft hover:bg-paper-deep',
-              ]}
-            >
-              {link.label}
-            </a>
+          NAV.map((item) => (
+            <div class="border-b border-line-soft last:border-0">
+              <a
+                href={withBase(item.href)}
+                class:list={[
+                  'block px-4 py-2.5 text-sm',
+                  isActive(item.href)
+                    ? 'bg-brand-soft font-medium text-brand-deep'
+                    : 'font-medium text-ink',
+                ]}
+              >
+                {item.label}
+              </a>
+              {item.children.map((child) => (
+                <a
+                  href={withBase(child.href)}
+                  class="block py-2 pr-4 pl-7 text-xs text-ink-soft transition-colors hover:bg-paper-deep"
+                >
+                  {child.label}
+                </a>
+              ))}
+            </div>
           ))
         }
       </div>
@@ -91,5 +157,49 @@ function isActive(href: string): boolean {
 <style>
   summary::-webkit-details-marker {
     display: none;
+  }
+
+  /**
+   * Kept out of the way with visibility rather than display, so that opening and
+   * closing can be transitioned; and with pointer-events, so a closed menu cannot be
+   * clicked through the page underneath it.
+   */
+  .nav-pop {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-0.25rem);
+    pointer-events: none;
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease,
+      visibility 0.16s;
+  }
+
+  .nav-item:hover .nav-pop,
+  .nav-item:focus-within .nav-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-chevron {
+    transition: transform 0.16s ease;
+  }
+
+  .nav-item:hover .nav-chevron,
+  .nav-item:focus-within .nav-chevron {
+    transform: rotate(180deg);
+  }
+
+  /**
+   * A menu that opens under the pointer is a trap on a touch screen, where the first
+   * tap both hovers and follows the link. There the bar keeps its headings and the
+   * hamburger, which lists the same children, does the rest.
+   */
+  @media (hover: none) {
+    .nav-pop {
+      display: none;
+    }
   }
 </style>

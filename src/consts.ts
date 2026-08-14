@@ -7,14 +7,6 @@ export const SITE = {
   author: 'The owner',
 } as const;
 
-export const NAV_LINKS = [
-  { label: 'Projects', href: '/' },
-  { label: 'Catalogue', href: '/catalogue' },
-  { label: 'Styles', href: '/styles' },
-  { label: 'Audit', href: '/audit' },
-  { label: 'Method', href: '/method' },
-] as const;
-
 /** Prefixes an internal path with the configured deployment base path. */
 export function withBase(path: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/+$/, '');

@@ -83,7 +83,10 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
 
   {
     audits.map((audit) => (
-      <section class="mx-auto mt-12 max-w-4xl px-5 sm:px-8">
+      <section
+        id={audit.entry.project.id}
+        class="mx-auto mt-12 max-w-4xl scroll-mt-24 px-5 sm:px-8"
+      >
         <h2 class="font-serif text-2xl font-bold text-ink">
           <a
             href={withBase(`/projects/${audit.entry.project.id}`)}

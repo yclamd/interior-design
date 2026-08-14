@@ -50,7 +50,7 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
     <ul class="mt-6 grid gap-6 lg:grid-cols-2">
       {
         inUse.map((card) => (
-          <li>
+          <li id={card.style.key} class="scroll-mt-24">
             <StyleCard style={card.style} usedBy={card.usedBy} />
           </li>
         ))
@@ -68,7 +68,7 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
         </p>
         <ul class="mt-6 grid gap-6 lg:grid-cols-2">
           {spare.map((card) => (
-            <li>
+            <li id={card.style.key} class="scroll-mt-24">
               <StyleCard style={card.style} />
             </li>
           ))}

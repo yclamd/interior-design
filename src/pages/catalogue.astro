@@ -83,7 +83,7 @@ const madeToSize = rows.filter((row) => row.item.madeToSize).length;
     groups.map((group) => {
       const items = rows.filter((row) => row.item.group === group);
       return items.length === 0 ? null : (
-        <section class="mx-auto mt-10 max-w-5xl px-5 sm:px-8">
+        <section id={group} class="mx-auto mt-10 max-w-5xl scroll-mt-24 px-5 sm:px-8">
           <h2 class="font-serif text-2xl font-bold text-ink">{GROUP_LABELS[group]}</h2>
           <div class="card table-scroll mt-4">
             <table class="spec min-w-[46rem]">

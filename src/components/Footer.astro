@@ -1,5 +1,6 @@
 ---
-import { NAV_LINKS, SITE, withBase } from '~/consts';
+import { SITE, withBase } from '~/consts';
+import { NAV } from '~/data/navigation';
 import { PROJECTS } from '~/data/projects';
 
 const rooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
@@ -17,12 +18,12 @@ const rooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
       </div>
       <nav class="flex flex-col gap-2" aria-label="Footer">
         {
-          NAV_LINKS.map((link) => (
+          NAV.map((item) => (
             <a
-              href={withBase(link.href)}
+              href={withBase(item.href)}
               class="text-sm text-ink-soft transition-colors hover:text-brand"
             >
-              {link.label}
+              {item.label}
             </a>
           ))
         }
