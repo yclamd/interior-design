@@ -13,7 +13,7 @@ export const PROJECT: Project = {
   scope: 'room',
   /** The window is in the north wall, so plan-up is north. */
   northOffset: 0,
-  walls: { exterior: 200, interior: 100 },
+  walls: { exterior: 100, interior: 100 },
   ceiling: 2600,
   style: 'macaron',
   premise:

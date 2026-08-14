@@ -6,7 +6,7 @@ import { EXISTING_CANOPY_SLAB } from '../floors';
  * 1000 east–west by 3050 north–south, projecting from the living room's east wall.
  *
  * A 雨遮, not a balcony. It runs the full 3050 of the living room's inner width and
- * stands a metre out beyond the outer face of the wall, and there is no door onto it:
+ * stands a metre out beyond the outer face of the east wall, and there is no door onto it:
  * the only way to reach it is over the sill of the living room's east window, which is
  * 900 up and spans the middle 1800 of the wall. That single fact decides everything
  * that can be put here. Anything on this slab has to be placed, watered and taken back
@@ -24,8 +24,8 @@ export const RAIN_SHELTER: Room = {
   id: 'rain-shelter',
   name: 'Rain shelter',
   kind: 'canopy',
-  /** East of the living room's outer wall face at 9800, aligned with its inner width. */
-  origin: { x: 9800, y: 200 },
+  /** East of the living room's outer wall face at 9700, aligned with its inner width. */
+  origin: { x: 9700, y: 200 },
   shape: { kind: 'rect', width: 1000, depth: 3050 },
   /**
    * Whatever is overhead is the underside of the slab above, and it has not been

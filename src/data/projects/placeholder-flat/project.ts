@@ -24,12 +24,12 @@ export const PROJECT: Project = {
    * it out would give almost the same rectangle, from the rooms plus one wall.
    */
   envelope: [
-    { x: 0, y: 0 },
-    { x: 9000, y: 0 },
-    { x: 9000, y: 9200 },
-    { x: 0, y: 9200 },
+    { x: 100, y: 100 },
+    { x: 8900, y: 100 },
+    { x: 8900, y: 9100 },
+    { x: 100, y: 9100 },
   ],
-  walls: { exterior: 200, interior: 100 },
+  walls: { exterior: 100, interior: 100 },
   ceiling: 2650,
   style: 'japandi',
   premise:

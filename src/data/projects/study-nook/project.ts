@@ -17,7 +17,7 @@ export const PROJECT: Project = {
   location: 'Placeholder — one 2.6 × 3.2 m room in an existing flat',
   scope: 'room',
   northOffset: 0,
-  walls: { exterior: 200, interior: 100 },
+  walls: { exterior: 100, interior: 100 },
   ceiling: 2450,
   style: 'mid-century',
   premise:
