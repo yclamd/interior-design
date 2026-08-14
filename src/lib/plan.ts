@@ -121,6 +121,67 @@ export function roomPath(room: Room): string {
   return pathOf(outlineInPlan(room));
 }
 
+/** Two edges are the same edge if both ends of one sit on the line of the other. */
+const COLLINEAR: Mm = 1;
+/** Shorter than this, a shared or remaining run is rounding rather than a boundary. */
+const RUN: Mm = 50;
+
+const edgesOf = (points: Point[]): [Point, Point][] =>
+  points.map((point, i) => [point, points[(i + 1) % points.length]!]);
+
+/**
+ * The parts of a room's outline that are against something.
+ *
+ * Every room used to be stroked all the way round, which drew a line between the
+ * entry, the dining room and the living room. There is no wall and no door at any of
+ * those three boundaries — the rooms share an edge exactly, which in this model is
+ * precisely what having no wall between them means, since a wall is only ever the
+ * envelope left showing where no room covered it. A line there says a threshold that
+ * does not exist, and it cut in half a floor the drawing is otherwise at pains to show
+ * as continuous: same boards, same direction, one pattern aligned in world space, so
+ * the timber runs across the join without a seam. The line was the only thing
+ * disagreeing.
+ *
+ * So an edge is drawn only where no other room is on the other side of it. Partial
+ * matches matter: the dining room's west edge is open to the entry for the 1300 they
+ * share and against something unmeasured for the rest, and only the rest is stroked.
+ */
+export function wallEdges(room: Room, rooms: Room[]): string {
+  const foreign = rooms
+    .filter((other) => other.id !== room.id)
+    .flatMap((other) => edgesOf(outlineInPlan(other)));
+
+  const parts: string[] = [];
+  for (const [a, b] of edgesOf(outlineInPlan(room))) {
+    const span = Math.hypot(b.x - a.x, b.y - a.y);
+    if (span < RUN) continue;
+
+    /** How far along this edge, as a fraction, each neighbouring room covers it. */
+    const covered: [number, number][] = [];
+    for (const [c, d] of foreign) {
+      const off = (p: Point) =>
+        Math.abs((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) / span;
+      if (off(c) > COLLINEAR || off(d) > COLLINEAR) continue;
+
+      const at = (p: Point) =>
+        ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / (span * span);
+      const from = Math.max(0, Math.min(at(c), at(d)));
+      const to = Math.min(1, Math.max(at(c), at(d)));
+      if ((to - from) * span > RUN) covered.push([from, to]);
+    }
+
+    covered.sort((one, two) => one[0] - two[0]);
+    const point = (t: number) => `${round(a.x + (b.x - a.x) * t)} ${round(a.y + (b.y - a.y) * t)}`;
+    let cursor = 0;
+    for (const [from, to] of covered) {
+      if ((from - cursor) * span > RUN) parts.push(`M ${point(cursor)} L ${point(from)}`);
+      cursor = Math.max(cursor, to);
+    }
+    if ((1 - cursor) * span > RUN) parts.push(`M ${point(cursor)} L ${point(1)}`);
+  }
+  return parts.join(' ');
+}
+
 export function roomFill(design: Design): string {
   return design.floor.colour ?? STYLES[design.style].palette.floor;
 }

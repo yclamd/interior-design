@@ -23,6 +23,7 @@ import {
   projectBox,
   roomFill,
   roomPath,
+  wallEdges,
 } from '~/lib/plan';
 
 /**
@@ -118,6 +119,8 @@ const drawn = rooms.map((room) => {
     room,
     design,
     path: roomPath(room),
+    /** Only the edges with something on the other side; open plan gets no line. */
+    walls: wallEdges(room, rooms),
     fill: roomFill(design),
     floor,
     /** Each room's material is its own pattern, since the colours differ room to room. */
@@ -397,13 +400,21 @@ const descId = `plan-desc-${slug}`;
 
     {
       drawn.map((entry) => (
-        <path
-          d={entry.path}
-          fill={entry.floor.pattern === 'none' ? entry.fill : `url(#${entry.floorId})`}
-          stroke={PLAN_COLOURS.structureEdge}
-          stroke-opacity="0.5"
-          stroke-width={px(0.5)}
-        />
+        <>
+          <path
+            d={entry.path}
+            fill={entry.floor.pattern === 'none' ? entry.fill : `url(#${entry.floorId})`}
+          />
+          {entry.walls.length > 0 && (
+            <path
+              d={entry.walls}
+              fill="none"
+              stroke={PLAN_COLOURS.structureEdge}
+              stroke-opacity="0.5"
+              stroke-width={px(0.5)}
+            />
+          )}
+        </>
       ))
     }
 
