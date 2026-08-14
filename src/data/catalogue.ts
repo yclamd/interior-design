@@ -812,6 +812,7 @@ export const CATALOGUE = {
     height: 1200,
     measured: false,
     source: TYPICAL,
+    note: 'Belongs on a balcony, a light well or under a rain shelter, and not in a room. Published plans are full of indoor planting because it makes a drawing look alive, which is a reason to draw one and not a reason to own one: inside, it is 0.16 m² of floor holding something that wants light the room has not got. Put one in only where the plan has outdoor space to put it in.',
     group: 'floor',
   },
 } satisfies Record<string, CatalogueItem>;

@@ -38,3 +38,16 @@ export const ASSUMED_ENTRY_TILE: FloorFinish = {
   module: 600,
   note: 'Not chosen. A harder, darker surface where the outside comes in, and a visible edge where it stops.',
 };
+
+/**
+ * The rain shelter's slab, which is existing and not a choice — it is whatever the
+ * builder laid. Drawn cooler and greyer than anything inside, so the drawing shows at
+ * a glance where the building stops.
+ */
+export const EXISTING_CANOPY_SLAB: FloorFinish = {
+  name: 'Existing: exterior slab',
+  colour: '#c8c6c0',
+  pattern: 'tile',
+  module: 300,
+  note: 'Not measured. Drawn as a 300 mm module because that is the common size for an exterior slab, and the module is the only thing about it the plan shows.',
+};

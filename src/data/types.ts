@@ -42,6 +42,13 @@ export type RoomKind =
   | 'entry'
   | 'corridor'
   | 'balcony'
+  /**
+   * A slab projecting outside a window — a 雨遮 — which is part of the building and
+   * carries no floor anyone stands on. Distinct from a balcony because a balcony is
+   * walked onto and this is only reached through the window above it, which is what
+   * decides how deep into it anything can be put.
+   */
+  | 'canopy'
   | 'utility'
   | 'storage';
 

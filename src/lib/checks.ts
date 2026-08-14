@@ -7,6 +7,7 @@ import type {
   Point,
   Project,
   Room,
+  RoomKind,
 } from '~/data/types';
 import {
   boxCorners,
@@ -52,6 +53,9 @@ const WALKWAY: Mm = 600;
 
 /** Past this share of the floor, a room reads as furniture with gaps in it. */
 const CROWDED = 0.45;
+
+/** Kinds with no ceiling worth measuring: what is outside, and what is a cupboard. */
+const UNROOFED: RoomKind[] = ['balcony', 'canopy', 'storage'];
 
 /**
  * A chair standing in the legroom of a table is what the legroom is for, so it is
@@ -201,7 +205,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
     });
   }
 
-  if (room.ceiling < 2400 && room.kind !== 'balcony' && room.kind !== 'storage') {
+  if (room.ceiling < 2400 && !UNROOFED.includes(room.kind)) {
     findings.push({
       severity: 'note',
       code: 'low-ceiling',

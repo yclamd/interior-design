@@ -285,7 +285,8 @@ export const LIVING: Room = {
       width: 1800,
       height: 1500,
       sill: 900,
-      to: 'outside',
+      /** Not 'outside': what is on the other side is the rain shelter, and it is drawn. */
+      to: 'rain-shelter',
     },
   ],
   designs: LIVING_DESIGNS,

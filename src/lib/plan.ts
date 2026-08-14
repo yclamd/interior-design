@@ -102,8 +102,16 @@ export function frameFor(box: Box, padding: Mm, nominalWidth = 960): PlanFrame {
   };
 }
 
+/**
+ * What the whole-project view has to fit.
+ *
+ * The envelope alone is not enough. A slab projecting outside a window is part of the
+ * building and is not inside its walls, so a stated envelope does not contain it and
+ * framing on the envelope cropped it off the east edge of the drawing. A drawing may
+ * decide what to emphasise; it may not silently leave a room out.
+ */
 export const projectBox = (project: Project, rooms: Room[]): Box =>
-  bbox(envelopeOf(project, rooms));
+  mergeBoxes([bbox(envelopeOf(project, rooms)), roomsBox(rooms)]);
 
 export const roomsBox = (rooms: Room[]): Box =>
   mergeBoxes(rooms.map((room) => bbox(outlineInPlan(room))));

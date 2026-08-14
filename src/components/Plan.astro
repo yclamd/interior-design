@@ -9,6 +9,7 @@ import {
   outlineInPlan,
   pathOf,
   roomArea,
+  round,
 } from '~/lib/geometry';
 import {
   PLAN_COLOURS,
@@ -156,18 +157,35 @@ const roomLabels =
          * set at that size the name ran out over the wall and into the flat next door.
          */
         const spacing = px(1.6);
-        const size = Math.min(px(11), Math.max(px(6.5), (box.width * 0.86) / (name.length * 0.72)));
+        /**
+         * A name is set along the room's longer side. Across the short side of a rain
+         * shelter a metre wide, RAIN SHELTER does not fit at any size worth reading and
+         * ran out over the slab's edge onto the paper.
+         */
+        const upright = box.depth > box.width * 1.35;
+        const along = upright ? box.depth : box.width;
+        const across = upright ? box.width : box.depth;
+        const size = Math.min(px(11), Math.max(px(6.5), (along * 0.86) / (name.length * 0.72)));
         /** And what still will not fit is centred on the room rather than on the clear floor. */
         const half = (name.length * (size * 0.66 + spacing)) / 2;
-        const x =
-          half * 2 > box.width
-            ? box.x + box.width / 2
-            : Math.min(Math.max(entry.centre.x, box.x + half), box.x + box.width - half);
+        const middle = (from: Mm, extent: Mm, at: Mm, margin: Mm) =>
+          margin * 2 > extent
+            ? from + extent / 2
+            : Math.min(Math.max(at, from + margin), from + extent - margin);
+        const at = upright
+          ? {
+              x: middle(box.x, box.width, entry.centre.x, Math.min(size, across / 2)),
+              y: middle(box.y, box.depth, entry.centre.y, half),
+            }
+          : {
+              x: middle(box.x, box.width, entry.centre.x, half),
+              y: middle(box.y, box.depth, entry.centre.y, Math.min(size, across / 2)),
+            };
         return {
           lines: [
             {
               text: name,
-              y: entry.centre.y,
+              y: at.y,
               size,
               weight: 600,
               spacing,
@@ -176,7 +194,7 @@ const roomLabels =
             },
             {
               text: formatArea(entry.area),
-              y: entry.centre.y + size * 1.15,
+              y: at.y + size * 1.15,
               size: size * 0.78,
               weight: 400,
               spacing: px(0.4),
@@ -184,7 +202,8 @@ const roomLabels =
               opacity: entry.strength === 1 ? 0.8 : 0.45,
             },
           ],
-          x,
+          x: at.x,
+          transform: upright ? `rotate(-90 ${round(at.x)} ${round(at.y)})` : undefined,
         };
       })
     : [];
@@ -503,7 +522,7 @@ const descId = `plan-desc-${slug}`;
 
     {
       roomLabels.map((label) => (
-        <g pointer-events="none" text-anchor="middle">
+        <g pointer-events="none" text-anchor="middle" transform={label.transform}>
           <g fill="none" stroke={PLAN_COLOURS.sheet} stroke-width={px(3)} stroke-linejoin="round">
             {label.lines.map((line) => (
               <text

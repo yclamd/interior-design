@@ -46,6 +46,7 @@ export const KIND_LABELS: Record<RoomKind, string> = {
   entry: 'Entry',
   corridor: 'Circulation',
   balcony: 'Balcony',
+  canopy: 'Rain shelter',
   utility: 'Utility',
   storage: 'Storage',
 };
