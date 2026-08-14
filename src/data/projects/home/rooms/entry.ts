@@ -1,5 +1,6 @@
 import { fromCatalogue } from '~/data/catalogue';
 import { single, type Room } from '~/data/types';
+import { ASSUMED_ENTRY_TILE } from '../floors';
 
 /**
  * 2250 east–west by 1300 north–south, at the west end of the flat with the front
@@ -34,7 +35,7 @@ export const ENTRY: Room = {
   designs: single({
     theme: 'A metre of walking width, and everything else given to storage',
     style: 'warm-minimal',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_ENTRY_TILE,
     summary:
       'The whole south side is a 330 mm fitted run for shoes and everything that comes in with them, which leaves 970 mm to walk through. That is enough for one person with a bag and not enough for two, which is what a 1.3 m entry gets you. The run turns the corner into the dining room’s 600 mm storage without a break, so the two read as one piece of carpentry rather than two rooms’ worth.',
     furniture: [

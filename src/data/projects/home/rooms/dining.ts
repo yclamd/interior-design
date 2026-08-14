@@ -1,6 +1,7 @@
 import { fromCatalogue } from '~/data/catalogue';
 import { circlePoints } from '~/lib/geometry';
 import type { Design, Furniture, Room } from '~/data/types';
+import { ASSUMED_BOARDS } from '../floors';
 
 /** The west wall's fitted run, in the piece's own terms before it is turned. */
 const RUN = 1630;
@@ -43,9 +44,24 @@ const BUILT_IN: Furniture[] = [
   }),
 ];
 
-const chairs = (positions: [number, number][], status: Furniture['status'] = 'planned') =>
-  positions.map(([x, y], i) =>
-    fromCatalogue('chair-dining', x, y, { id: `chair-${i + 1}`, status }),
+/**
+ * Chairs, each given the way it faces.
+ *
+ * The facing is not optional and has no default, because leaving it out is exactly the
+ * mistake that was here: every chair took rotation 0, which is facing south, so the
+ * chairs on the south side of every table were drawn with their backs to it. The
+ * footprint is 450 square and does not change when it turns, so nothing in the checks
+ * noticed and nothing in the drawing showed it until chairs were drawn with a back.
+ *
+ * A piece faces south before it is turned, so: 0 faces south, 180 north, 270 east and
+ * 90 west. A chair north of a table therefore takes 0, and one south of it takes 180.
+ */
+const chairs = (
+  positions: [x: number, y: number, facing: 0 | 90 | 180 | 270][],
+  status: Furniture['status'] = 'planned',
+) =>
+  positions.map(([x, y, facing], i) =>
+    fromCatalogue('chair-dining', x, y, { id: `chair-${i + 1}`, status, rotation: facing }),
   );
 
 export const DINING_DESIGNS: Design[] = [
@@ -55,17 +71,18 @@ export const DINING_DESIGNS: Design[] = [
     preferred: true,
     theme: 'Push the table as far west as its own chairs allow and keep the rest as one floor',
     style: 'japandi',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The 1500 by 900 table with its length running east–west, held 50 mm clear of where the storage run’s standing room ends. Turned this way the chairs take their 750 out of the depth and only 1.5 m of the width; turned the other way they would take 2.4 m of the width instead, and the room would be a table with a corridor round it. What this buys is 1.75 m of clear width east of the table, running into the living room without a threshold — two children under three use the floor of a flat rather than its furniture, and this is the most of it any arrangement here leaves in one piece. The depth is the tight figure: 900 of table and 750 either side comes to 2400 of the room’s 2600, so the table sits centred with 100 mm to spare at each end and neither of those walls can hold anything at all.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
+      /** Table y 850–1750, so 400 is the north side and 1750 the south. */
       ...chairs([
-        [1550, 400],
-        [2250, 400],
-        [1550, 1750],
-        [2250, 1750],
+        [1550, 400, 0],
+        [2250, 400, 0],
+        [1550, 1750, 180],
+        [2250, 1750, 180],
       ]),
     ],
     openQuestions: [
@@ -78,7 +95,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '2 · Six at the same table, two of them at the ends',
     theme: 'Seat six without anybody getting 500 mm of table',
     style: 'warm-minimal',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'Two chairs down each long side and one at each end. Three a side would also fit a 1500 top on paper and would give each of six people 500 mm of edge, which is under the 550 a place setting needs and not worth drawing — a chair nobody can sit at is not a seat. This way the four along the sides keep the full 750 they get in the four-seat design and the two at the ends get the whole 900 of the table depth, so all six are properly seated. What it costs is the table moving 400 mm east, which is what it takes to keep the head of the table out of the storage run’s standing room. Clear floor east then drops from 1.75 m to 0.9 m, and the last 900 of that is the corridor’s own landing space. Six proper seats costs almost all of the continuous floor.',
     furniture: [
@@ -88,14 +105,15 @@ export const DINING_DESIGNS: Design[] = [
         status: 'considering',
         note: 'Held 400 mm east of where the four-seat design puts it, so the chair at the west end clears the storage run’s standing room instead of sitting in it.',
       }),
+      /** Table x 1800–3300, y 850–1750: two a side, and one at each end facing along it. */
       ...chairs(
         [
-          [1950, 400],
-          [2600, 400],
-          [1950, 1750],
-          [2600, 1750],
-          [1350, 1075],
-          [3300, 1075],
+          [1950, 400, 0],
+          [2600, 400, 0],
+          [1950, 1750, 180],
+          [2600, 1750, 180],
+          [1350, 1075, 270],
+          [3300, 1075, 90],
         ],
         'considering',
       ),
@@ -110,7 +128,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '3 · An extendable table',
     theme: 'Four every day, six when it matters, and stop choosing',
     style: 'muji',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The first two designs are a choice between four seats and six. This one refuses it. A 1200 by 800 top that takes a leaf to 1800 sits exactly where the four-seat table sits and leaves the same 2.05 m of floor for 360 days a year; on the other five, the leaf goes in, two chairs come from the bedrooms, and the table grows east into floor nobody is using at dinner time anyway. It needs 600 mm of length at one end and nothing in depth, and the room has 2.05 m spare at that end. This is the answer small-space design keeps arriving at, and it is available here at no cost in floor at all.',
     furniture: [
@@ -119,11 +137,12 @@ export const DINING_DESIGNS: Design[] = [
         status: 'planned',
         note: 'Drawn closed at 1200. Extended it reaches 2600 east, which is 1.1 m short of the corridor’s landing space, so even open it blocks nothing.',
       }),
+      /** Table y 900–1700. */
       ...chairs([
-        [1550, 450],
-        [2050, 450],
-        [1550, 1700],
-        [2050, 1700],
+        [1550, 450, 0],
+        [2050, 450, 0],
+        [1550, 1700, 180],
+        [2050, 1700, 180],
       ]),
     ],
     openQuestions: [
@@ -136,7 +155,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '4 · Bench against the south wall',
     theme: 'Take the pull-back off one side and give the north wall to walking',
     style: 'japandi',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'A bench against the south wall with the 1500 table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 500 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Four sit properly, two on chairs and two on the bench, and the bench will take a third at a squeeze in a way a row of chairs cannot. What it costs is the shuffle: the person in the middle of a bench gets out last.',
     furniture: [
@@ -150,10 +169,11 @@ export const DINING_DESIGNS: Design[] = [
         status: 'considering',
         note: 'Pushed south onto the bench, so all its standing room is on one side.',
       }),
+      /** Table y 1250–2150, so both chairs are on its north side. */
       ...chairs(
         [
-          [1650, 800],
-          [2400, 800],
+          [1650, 800, 0],
+          [2400, 800, 0],
         ],
         'considering',
       ),
@@ -169,7 +189,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '5 · A round table',
     theme: 'No corners, and a table people walk past on the diagonal',
     style: 'mid-century',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'An 1100 round top seating four, with a chair at each quarter. A round table loses less to circulation than a rectangle seating the same number, because people pass a circle on the diagonal and a rectangle square-on, and it is the only table shape with nothing at a two-year-old’s eye height to run into. It also has no head of the table, which in a room this open matters more than it sounds: nobody sits with their back to the way in. What it costs is the wall: a round table cannot be pushed against anything, so it holds the middle of the room and the clear floor ends up in two pieces rather than one.',
     furniture: [
@@ -179,12 +199,13 @@ export const DINING_DESIGNS: Design[] = [
         outline: circlePoints(1100),
         status: 'considering',
       }),
+      /** One at each quarter of the 1100 round top, which spans x and y 1800–2900 / 750–1850. */
       ...chairs(
         [
-          [2100, 300],
-          [2100, 1850],
-          [2900, 1075],
-          [1350, 1075],
+          [2100, 300, 0],
+          [2100, 1850, 180],
+          [2900, 1075, 90],
+          [1350, 1075, 270],
         ],
         'considering',
       ),
@@ -199,7 +220,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '6 · Everything along one side',
     theme: 'Table against the south wall, chairs on one side, the north half left empty',
     style: 'warm-minimal',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The standard answer to a narrow room, applied literally: put the furniture along one long side and leave the other as a route. The 1500 table goes hard against the south wall with chairs only on its north side, which seats two facing the room and two more at the ends if they are wanted. That leaves 950 mm of clear depth running the entire 4.65 m width — the widest single piece of floor any of these designs produces, and the only one a child can run the length of. What it costs is dining: half the table is against a wall and out of reach, and it suits a household that eats in shifts rather than together.',
     furniture: [
@@ -209,10 +230,11 @@ export const DINING_DESIGNS: Design[] = [
         status: 'considering',
         note: 'Against the south wall, so all its standing room is on the north side.',
       }),
+      /** Table hard against the south wall at y 1700, so the chairs face south into it. */
       ...chairs(
         [
-          [1550, 1250],
-          [2250, 1250],
+          [1550, 1250, 0],
+          [2250, 1250, 0],
         ],
         'considering',
       ),
@@ -227,17 +249,17 @@ export const DINING_DESIGNS: Design[] = [
     name: '7 · A low shelf, and a corner that is theirs',
     theme: 'Spend one footprint on storage and a boundary at the same time',
     style: 'muji',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The four-seat table where it belongs, and a 930 by 440 cabinet standing out from the north wall rather than against it. Turned that way it does two jobs from one footprint: it holds things, and its end makes a corner of the room feel like somewhere rather than like the middle of a route. That corner — 1.21 m of the east end, opening into the living room — becomes the children’s, with everything in it at their height and nothing in it belonging to the dining table. A low unit accessible from both sides is the standard small-flat divider, and it is the only kind of boundary a room this open can have.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
       ...chairs([
-        [1550, 400],
-        [2250, 400],
-        [1550, 1750],
-        [2250, 1750],
+        [1550, 400, 0],
+        [2250, 400, 0],
+        [1550, 1750, 180],
+        [2250, 1750, 180],
       ]),
       fromCatalogue('cabinet-930-low', 3000, 0, {
         id: 'divider',
@@ -260,17 +282,17 @@ export const DINING_DESIGNS: Design[] = [
     name: '8 · Zoned by rug, not by furniture',
     theme: 'Mark the floor instead of dividing it, and buy nothing',
     style: 'macaron',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The same table in the same place, and the east end of the room given a rug instead of a divider. Nothing is bought, nothing is climbed, nothing has to be fixed to the floor, and the boundary is a change of surface a two-year-old reads perfectly well: on the rug is where toys are allowed. It gives up what a shelf would have given — storage, and a boundary you can see over the top of — in exchange for a floor that can be swept clear in one movement and a room that stays one room. Of the eight designs so far this is the one that changes the least and costs the least.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
       ...chairs([
-        [1550, 400],
-        [2250, 400],
-        [1550, 1750],
-        [2250, 1750],
+        [1550, 400, 0],
+        [2250, 400, 0],
+        [1550, 1750, 180],
+        [2250, 1750, 180],
       ]),
       fromCatalogue('rug-flatweave', 2800, 400, {
         id: 'play-rug',
@@ -293,7 +315,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '9 · Benches on both sides',
     theme: 'The smallest a table for six can be made',
     style: 'industrial',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'Two benches and a 1.6 m table, and no chair anywhere. Neither bench needs room to pull back into, so the whole arrangement is 1.7 m deep against the 2.3 m a table with chairs on both sides demands, and it seats six. That 600 mm goes straight into the clear strip along the north wall, which becomes 900 — enough to walk two abreast, or for a child to get past a chair that is not there. It is the tightest seating this room can hold, and it is a canteen: nobody has a back, everybody shuffles, and it suits a family that eats fast and often rather than long and rarely.',
     furniture: [
@@ -316,7 +338,7 @@ export const DINING_DESIGNS: Design[] = [
     name: '10 · Table north, sideboard south',
     theme: 'Use the south wall for storage and accept a table against the corridor end',
     style: 'classic',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'Every other design leaves the south wall bare because the chairs’ clearance runs to within 175 mm of it. This one moves the table to the north wall instead — chairs on its south side only — which frees the whole south wall for a 1.1 m sideboard, and puts a second surface at working height in a room that otherwise has none outside the fitted run. What it costs is the north wall: the table now sits against the wall the corridor opens off, so anybody going to bed passes behind whoever is eating. In a flat where two children go to bed while adults are still at the table, that is not a small thing.',
     furniture: [
@@ -326,10 +348,11 @@ export const DINING_DESIGNS: Design[] = [
         status: 'considering',
         note: 'Against the north wall, 100 mm off it, with all its standing room to the south.',
       }),
+      /** Table against the north wall at y 100–1000, so these two face north into it. */
       ...chairs(
         [
-          [1550, 1000],
-          [2250, 1000],
+          [1550, 1000, 180],
+          [2250, 1000, 180],
         ],
         'considering',
       ),

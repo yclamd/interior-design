@@ -1,4 +1,5 @@
 ---
+import type { Mm } from '~/data/types';
 import { PLAN_COLOURS, type FurnitureRender } from '~/lib/plan';
 
 /**
@@ -17,9 +18,13 @@ interface Props {
   px: (pixels: number) => number;
   /** Off in the whole-flat view, where the detail would only be noise. */
   detail: boolean;
+  /** The drawing's drop-shadow filter, for pieces that stand on the floor. */
+  cast?: string;
+  /** The drawing's weave pattern, for mats. */
+  weave?: string;
 }
 
-const { item, px, detail } = Astro.props;
+const { item, px, detail, cast, weave } = Astro.props;
 const { x, y, width, depth } = item.box;
 
 const hairline = px(0.7);
@@ -48,9 +53,48 @@ const glyph = item.symbol;
 const cased = ['wardrobe', 'sideboard', 'shelving', 'counter', 'appliance'].includes(item.kind);
 const seats = Math.max(1, Math.round(width / 700));
 const dashed = `${px(3)} ${px(2)}`;
+
+/**
+ * Upholstery is drawn with its corners taken off. Casework and worktops are not:
+ * a fitted run really does die square into the wall next to it, and rounding it
+ * would draw a gap that is not there. So the radius is a property of what the
+ * piece is made of, not a uniform softening of the whole drawing.
+ */
+const ROUNDING: Partial<Record<FurnitureRender['kind'], Mm>> = {
+  sofa: 100,
+  armchair: 120,
+  chair: 90,
+  bed: 70,
+};
+/** A piece with its own outline is drawn from it, so there is nothing to round. */
+const radius = item.cut ? 0 : Math.min(ROUNDING[item.kind] ?? 0, short * 0.32);
+
+/** Arms and back, sized off the piece and clamped so a small chair keeps a seat. */
+const arm = Math.min(150, width * 0.16);
+const back = Math.min(230, depth * 0.28);
+
+/**
+ * A plant is foliage, not a box: overlapping rounds read as a canopy seen from
+ * above, and a single circle reads as a stool.
+ */
+const canopy = Array.from({ length: 7 }, (_, i) => {
+  const angle = (i / 7) * Math.PI * 2;
+  return {
+    cx: centre.x + Math.cos(angle) * short * 0.25,
+    cy: centre.y + Math.sin(angle) * short * 0.25,
+    r: short * 0.22,
+  };
+});
+
+/**
+ * A mat lies on the floor and a wall-hung piece stands on nothing, so neither casts.
+ * The shadow is what says a piece has a thickness, and putting one under a rug would
+ * say the rug is a step.
+ */
+const cs = cast && item.kind !== 'rug' && !item.mounted ? `url(#${cast})` : undefined;
 ---
 
-<g transform={item.transform} data-piece={item.id}>
+<g transform={item.transform} data-piece={item.id} filter={cs}>
   {
     item.kind === 'rug' ? (
       /**
@@ -62,7 +106,36 @@ const dashed = `${px(3)} ${px(2)}`;
        * shape that has the door's corner bitten out of it. Without outlines they
        * meet invisibly, which is what the material does.
        */
-      <path d={item.shape} fill={item.fill} fill-opacity="0.55" />
+      <>
+        <path d={item.shape} fill={item.fill} fill-opacity="0.7" />
+        {weave && <path d={item.shape} fill={`url(#${weave})`} />}
+      </>
+    ) : item.kind === 'plant' ? (
+      /**
+       * Drawn instead of the footprint rather than over it, so that a plant is its
+       * canopy. The footprint is still what the checks use; it is simply not what a
+       * plant looks like from above.
+       */
+      <g fill={item.fill} fill-opacity="0.85" stroke={item.stroke} stroke-opacity="0.35" stroke-width={hairline}>
+        {canopy.map((leaf) => (
+          <circle cx={leaf.cx} cy={leaf.cy} r={leaf.r} />
+        ))}
+        <circle cx={centre.x} cy={centre.y} r={short * 0.24} fill-opacity="0.95" />
+      </g>
+    ) : radius > 0 ? (
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={depth}
+        rx={radius}
+        fill={item.fill}
+        fill-opacity={item.mounted ? 0.3 : 0.92}
+        stroke={item.stroke}
+        stroke-opacity={item.mounted ? 0.5 : 0.85}
+        stroke-width={outline}
+        stroke-dasharray={item.mounted ? dashed : undefined}
+      />
     ) : (
       <path
         d={item.shape}
@@ -81,52 +154,131 @@ const dashed = `${px(3)} ${px(2)}`;
       <g fill="none" stroke={PLAN_COLOURS.ink} stroke-opacity="0.55" stroke-width={hairline}>
         {item.kind === 'bed' && (
           <>
+            {/**
+             * A made bed, from the head down: pillows, the sheet turned back over the
+             * duvet, then the duvet itself. The turn-back is what tells you which end
+             * is the head at a glance, without reading the label.
+             */}
             <rect
-              x={x + 80}
-              y={y + 80}
+              x={x + 90}
+              y={y + 100}
               width={pillowWidth}
-              height={320}
+              height={340}
+              rx={80}
               fill={PLAN_COLOURS.sheet}
-              fill-opacity="0.75"
+              fill-opacity="0.85"
             />
             {width >= 1400 && (
               <rect
-                x={x + width - 80 - pillowWidth}
-                y={y + 80}
+                x={x + width - 90 - pillowWidth}
+                y={y + 100}
                 width={pillowWidth}
-                height={320}
+                height={340}
+                rx={80}
                 fill={PLAN_COLOURS.sheet}
-                fill-opacity="0.75"
+                fill-opacity="0.85"
               />
             )}
-            <path d={`M ${x} ${y + 620} L ${x + width} ${y + 620}`} />
+            <rect
+              x={x + 50}
+              y={y + 520}
+              width={width - 100}
+              height={Math.max(180, depth * 0.15)}
+              rx={40}
+              fill={PLAN_COLOURS.sheet}
+              fill-opacity="0.92"
+              stroke-opacity="0.7"
+            />
+            <rect
+              x={x + 50}
+              y={y + 520 + Math.max(180, depth * 0.15)}
+              width={width - 100}
+              height={Math.max(200, depth - 600 - Math.max(180, depth * 0.15))}
+              rx={50}
+              fill={PLAN_COLOURS.sheet}
+              fill-opacity="0.45"
+              stroke-opacity="0.7"
+            />
           </>
         )}
 
         {(item.kind === 'sofa' || item.kind === 'armchair') && (
           <>
-            <rect x={x} y={y} width={width} height={Math.min(220, depth * 0.3)} />
-            <rect x={x} y={y} width={Math.min(130, width * 0.18)} height={depth} />
-            <rect
-              x={x + width - Math.min(130, width * 0.18)}
-              y={y}
-              width={Math.min(130, width * 0.18)}
-              height={depth}
-            />
-            {Array.from({ length: seats - 1 }, (_, i) => (
-              <path
-                d={`M ${x + (width * (i + 1)) / seats} ${y + Math.min(220, depth * 0.3)} L ${
-                  x + (width * (i + 1)) / seats
-                } ${front}`}
-              />
-            ))}
+            {/**
+             * Cushions with gaps between them, not a grid drawn over a block. The gaps
+             * are what make it read as upholstery: a back cushion and a seat cushion
+             * are two objects, and a single dividing line says they are one.
+             */}
+            <rect x={x + 40} y={y + 40} width={arm} height={depth - 80} rx={70} />
+            <rect x={x + width - arm - 40} y={y + 40} width={arm} height={depth - 80} rx={70} />
+            {Array.from({ length: seats }, (_, i) => {
+              const gap = 50;
+              const span = (width - arm * 2 - gap * (seats - 1)) / seats;
+              const at = x + arm + i * (span + gap);
+              return (
+                <>
+                  <rect x={at} y={y + 40} width={span} height={back} rx={60} />
+                  <rect
+                    x={at}
+                    y={y + back + 90}
+                    width={span}
+                    height={depth - back - 170}
+                    rx={60}
+                  />
+                </>
+              );
+            })}
           </>
         )}
 
-        {item.kind === 'chair' && <rect x={x} y={y} width={width} height={Math.max(70, depth * 0.2)} />}
+        {item.kind === 'chair' && (
+          <>
+            {/** Back at the north edge, seat inside it: enough to see which way it faces. */}
+            <rect
+              x={x + 60}
+              y={y + 50}
+              width={width - 120}
+              height={Math.max(80, depth * 0.17)}
+              rx={45}
+            />
+            <rect
+              x={x + 80}
+              y={y + Math.max(80, depth * 0.17) + 90}
+              width={width - 160}
+              height={depth - Math.max(80, depth * 0.17) - 170}
+              rx={60}
+            />
+          </>
+        )}
 
         {(item.kind === 'table' || item.kind === 'desk') && !item.cut && (
           <rect x={x + inset} y={y + inset} width={width - inset * 2} height={depth - inset * 2} />
+        )}
+
+        {item.kind === 'table' && !item.cut && short >= 700 && (
+          /**
+           * A runner down the long axis, which is the one mark that separates a dining
+           * table from a rectangle at this scale. Only on tables big enough to be dined
+           * at: a side table with a stripe across it reads as two objects.
+           */
+          <rect
+            x={width >= depth ? x + width * 0.14 : centre.x - short * 0.16}
+            y={width >= depth ? centre.y - short * 0.16 : y + depth * 0.14}
+            width={width >= depth ? width * 0.72 : short * 0.32}
+            height={width >= depth ? short * 0.32 : depth * 0.72}
+            rx={px(1)}
+            fill={PLAN_COLOURS.ink}
+            fill-opacity="0.1"
+          />
+        )}
+
+        {item.kind === 'table' && item.cut && Math.abs(width - depth) < 60 && (
+          /**
+           * A round table, which is the one outline whose bounding box is square. It
+           * gets a rim rather than the inset rectangle, whose corners would sit outside
+           * the top. A table with a cut corner is not square and keeps the rectangle.
+           */
+          <circle cx={centre.x} cy={centre.y} r={short * 0.5 - inset} />
         )}
 
         {cased && !glyph && (
@@ -216,8 +368,6 @@ const dashed = `${px(3)} ${px(2)}`;
             ))}
           </>
         )}
-
-        {item.kind === 'plant' && <circle cx={centre.x} cy={centre.y} r={short * 0.46} />}
 
         {item.kind === 'lighting' && (
           <>

@@ -1,7 +1,18 @@
-import type { Box, Design, Furniture, Mm, Opening, Point, Project, Room } from '~/data/types';
+import type {
+  Box,
+  Design,
+  Furniture,
+  Mm,
+  Opening,
+  Point,
+  Project,
+  Room,
+  StylePreset,
+} from '~/data/types';
 import { STYLES } from '~/data/styles';
 import {
   bbox,
+  centroid,
   cornersOf,
   envelopeOf,
   footprintPoints,
@@ -11,6 +22,7 @@ import {
   outlineInPlan,
   outwardNormal,
   pathOf,
+  pointInPolygon,
   rotatePoint,
   round,
   swingZone,
@@ -28,19 +40,43 @@ import {
  */
 
 export const PLAN_COLOURS = {
-  structure: '#b9b0a0',
-  structureEdge: '#8d8474',
+  /**
+   * Cut walls are filled almost black — poché, in the drawing convention. A plan is
+   * read first as the shape of its walls, and a wall the colour of a pale floor makes
+   * the reader hunt for the layout. The earlier warm grey was honest about the wall
+   * being a solid and still lost every argument with the timber next to it.
+   */
+  structure: '#33322f',
+  structureEdge: '#22211f',
   sheet: '#f7f4ee',
   ink: '#2b2f36',
   inkSoft: '#6b7280',
-  dimension: '#0f5c56',
-  glazing: '#7fa8c9',
+  /**
+   * Muted rather than the near-teal it was. Dimensions have to be findable without
+   * becoming the brightest thing on a warm drawing, and they were winning.
+   */
+  dimension: '#4a5b58',
+  glazing: '#8fb4d0',
   /**
    * Dark enough to read over a warm floor. An ochre close to the timber colours
    * disappeared on any room with an oiled parquet in it.
    */
   clearance: '#7a4410',
   focusEdge: '#15181d',
+  /** Boards, tile joints, and weave: the floor's own lines, not the drawing's. */
+  floorLine: '#6b5e4c',
+  /** What a piece of furniture casts, so it sits on the floor rather than in it. */
+  shadow: '#3a332a',
+  /** Planting, which is green on every plan ever drawn and should not take a style's word for it. */
+  foliage: '#7d9070',
+  /**
+   * Two materials a style has no say in. A washing machine and an oven are dark grey
+   * whatever the room is meant to look like, and sanitary ware is white. Colouring
+   * them from the palette made a plan in which every object was the same timber, and
+   * a drawing where everything is one material is a drawing you cannot skim.
+   */
+  appliance: '#4c4a47',
+  sanitary: '#f1eee9',
 } as const;
 
 export interface PlanFrame {
@@ -79,6 +115,167 @@ export function roomPath(room: Room): string {
 
 export function roomFill(design: Design): string {
   return design.floor.colour ?? STYLES[design.style].palette.floor;
+}
+
+const distanceToSegment = (p: Point, a: Point, b: Point): number => {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSquared));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+};
+
+/**
+ * Where a room's name goes: the most open floor it has.
+ *
+ * The centre of a room is the obvious place for its name and frequently the worst,
+ * because the centre of a room is where the table is. Written there the name needs a
+ * panel behind it to stay readable, and a panel over the one piece of furniture the
+ * room is arranged around hides the arrangement. So the name is put where there is
+ * actually nothing: the point furthest from both the furniture and the walls, pulled
+ * gently back towards the middle so that an empty room still reads as labelled in
+ * the middle rather than in an arbitrary corner.
+ */
+export function labelPoint(outline: Point[], obstacles: Box[]): Point {
+  const box = bbox(outline);
+  const middle = centroid(outline);
+  const steps = 26;
+  const reach = Math.min(box.width, box.depth);
+  /**
+   * A name written over a chair is untidy; one written over a wall is wrong, because
+   * the wall belongs to two rooms and the name to one. So clearance from the walls is
+   * a condition to be met and clearance from the furniture is only preferred, and a
+   * small room crowded with fittings takes the name over a fitting rather than over
+   * its own wall. Enough for a line of type at the sizes used here.
+   */
+  const margin = Math.min(260, reach * 0.22);
+  let best = middle;
+  let bestScore = -Infinity;
+
+  for (let i = 0; i <= steps; i += 1) {
+    for (let j = 0; j <= steps; j += 1) {
+      const point = {
+        x: box.x + (box.width * i) / steps,
+        y: box.y + (box.depth * j) / steps,
+      };
+      if (!pointInPolygon(point, outline)) continue;
+
+      let fromWall = reach;
+      for (let k = 0; k < outline.length; k += 1) {
+        fromWall = Math.min(
+          fromWall,
+          distanceToSegment(point, outline[k]!, outline[(k + 1) % outline.length]!),
+        );
+      }
+      if (fromWall < margin) continue;
+
+      let clear = reach;
+      for (const o of obstacles) {
+        const dx = Math.max(o.x - point.x, 0, point.x - (o.x + o.width));
+        const dy = Math.max(o.y - point.y, 0, point.y - (o.y + o.depth));
+        clear = Math.min(clear, Math.hypot(dx, dy));
+      }
+
+      const score = clear - Math.hypot(point.x - middle.x, point.y - middle.y) * 0.35;
+      if (score > bestScore) {
+        bestScore = score;
+        best = point;
+      }
+    }
+  }
+  return best;
+}
+
+/** A floor's material, resolved into what has to be drawn to show it. */
+export interface FloorRender {
+  colour: string;
+  pattern: 'plank' | 'tile' | 'weave' | 'none';
+  /** One tile of the repeat, in millimetres, ready for patternUnits="userSpaceOnUse". */
+  tile: { width: Mm; height: Mm };
+  /**
+   * The material's own lines within one tile of the repeat, split by weight. A board
+   * floor is the clearest case for the split: its long seams run unbroken and its end
+   * joints are short and few, and drawing both at one weight is what turns a timber
+   * floor into brickwork.
+   */
+  lines: string[];
+  faint: string[];
+  opacity: number;
+}
+
+/**
+ * Boards default to 190 mm — a common engineered-oak width — and tiles to 600 mm,
+ * so a floor named but not otherwise specified still draws at a believable module.
+ */
+const FLOOR_MODULE = { plank: 190, tile: 600, weave: 90, none: 0 } as const;
+
+export function floorRender(design: Design): FloorRender {
+  const colour = roomFill(design);
+  const pattern = design.floor.pattern ?? 'none';
+  const module = design.floor.module ?? FLOOR_MODULE[pattern];
+  /** Boards run along the room unless the floor says otherwise. */
+  const across = (design.floor.grain ?? 'ew') === 'ew';
+
+  if (pattern === 'plank') {
+    /**
+     * Two courses per repeat, with the end joints of the second offset by half a
+     * board: a running bond, which is how boards are actually laid. One course per
+     * repeat would line every joint up into a grid and read as tile.
+     *
+     * The boards are 12 modules long — about 2.3 m, a plausible plank — and their end
+     * joints are drawn faint. Short boards with strong ends read as a masonry floor,
+     * which is the mistake this length and weighting exist to avoid.
+     */
+    const run = module * 12;
+    const tile = across ? { width: run, height: module * 2 } : { width: module * 2, height: run };
+    const seam = (at: Mm) => (across ? `M 0 ${at} H ${run}` : `M ${at} 0 V ${run}`);
+    const end = (at: Mm, from: Mm, to: Mm) =>
+      across ? `M ${at} ${from} V ${to}` : `M ${from} ${at} H ${to}`;
+    return {
+      colour,
+      pattern,
+      tile,
+      lines: [seam(0), seam(module)],
+      faint: [end(0, 0, module), end(run / 2, module, module * 2)],
+      opacity: 0.28,
+    };
+  }
+
+  if (pattern === 'tile') {
+    /** Both joints at one weight, because a tile floor's grid really is square. */
+    const tile = { width: module, height: module };
+    return {
+      colour,
+      pattern,
+      tile,
+      lines: [`M 0 0 H ${module}`, `M 0 0 V ${module}`],
+      faint: [],
+      opacity: 0.32,
+    };
+  }
+
+  if (pattern === 'weave') {
+    /** A mat: fine lines both ways, closer together than any floor material. */
+    const tile = { width: module, height: module };
+    return {
+      colour,
+      pattern,
+      tile,
+      lines: [`M 0 0 H ${module}`, `M 0 0 V ${module}`],
+      faint: [],
+      opacity: 0.22,
+    };
+  }
+
+  return {
+    colour,
+    pattern: 'none',
+    tile: { width: 0, height: 0 },
+    lines: [],
+    faint: [],
+    opacity: 0,
+  };
 }
 
 export interface OpeningRender {
@@ -233,6 +430,33 @@ export interface FurnitureRender {
   height: Mm;
 }
 
+/**
+ * What a piece is made of, which is what decides its colour. Upholstery takes the
+ * style's textile and casework its timber, so naming a style still changes the
+ * drawing; appliances and sanitary ware take neither, because they are not
+ * negotiable. A piece may still override all of this with its own colour.
+ */
+function materialFill(kind: Furniture['kind'], palette: StylePreset['palette']): string {
+  switch (kind) {
+    case 'bed':
+    case 'sofa':
+    case 'armchair':
+    case 'chair':
+    case 'rug':
+      return palette.textile;
+    case 'appliance':
+      return PLAN_COLOURS.appliance;
+    case 'sanitary':
+      return PLAN_COLOURS.sanitary;
+    case 'plant':
+      return PLAN_COLOURS.foliage;
+    case 'lighting':
+      return palette.metal;
+    default:
+      return palette.furniture;
+  }
+}
+
 export function furnitureRenders(room: Room, design: Design): FurnitureRender[] {
   const palette = STYLES[design.style].palette;
   return design.furniture.map((item) => {
@@ -269,7 +493,7 @@ export function furnitureRenders(room: Room, design: Design): FurnitureRender[] 
       transform: `rotate(${item.rotation ?? 0} ${round(centre.x)} ${round(centre.y)})`,
       corners: pathOf(corners),
       at: rotatePoint(anchor, centre, item.rotation ?? 0),
-      fill: item.colour ?? (item.kind === 'rug' ? palette.textile : palette.furniture),
+      fill: item.colour ?? materialFill(item.kind, palette),
       stroke: PLAN_COLOURS.ink,
       mounted: item.mountedAt !== undefined,
       height: item.height,

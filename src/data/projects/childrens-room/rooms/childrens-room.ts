@@ -114,6 +114,8 @@ const FITTED: Furniture[] = [
     id: 'chair-younger',
     name: 'Chair, younger child',
     colour: YOUNGER,
+    /** South of the table, so it faces north into it. The other chair faces south. */
+    rotation: 180,
     status: 'owned',
   }),
 ];

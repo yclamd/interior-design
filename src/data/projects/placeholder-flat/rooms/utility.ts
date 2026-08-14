@@ -33,7 +33,12 @@ export const UTILITY: Room = {
   designs: single({
     theme: 'The room that keeps the laundry out of the bathroom',
     style: 'warm-minimal',
-    floor: { name: 'Porcelain, same tile as the bathroom', colour: '#d9d2c8' },
+    floor: {
+      name: 'Porcelain, same tile as the bathroom',
+      colour: '#d9d2c8',
+      pattern: 'tile',
+      module: 300,
+    },
     summary:
       'Washer and dryer stack, which turns 1.2 m of wall into 600 mm and buys the west wall for shelving. A folding door instead of a swing one, because a 800 mm leaf opening into a 1.7 m room would take a third of the floor to open.',
     furniture: [

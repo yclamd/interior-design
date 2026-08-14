@@ -27,6 +27,18 @@ export const PROJECT: Project = {
     { x: 9800, y: 3450 },
     { x: 0, y: 3450 },
   ],
+  /**
+   * The 2.25 by 1.3 m behind the entry's cabinet run. The entry is 1300 deep against
+   * the dining room's 2600, and what fills the difference is not known yet.
+   */
+  unsurveyed: [
+    [
+      { x: 200, y: 1950 },
+      { x: 2450, y: 1950 },
+      { x: 2450, y: 3250 },
+      { x: 200, y: 3250 },
+    ],
+  ],
   /** Assumed. Neither thickness has been measured yet. */
   walls: { exterior: 200, interior: 100 },
   /** Assumed. */

@@ -1,10 +1,8 @@
 ---
 import FurnitureSymbol from '~/components/FurnitureSymbol.astro';
-import { KIND_LABELS } from '~/data/projects';
 import { preferredDesign, type Mm, type Opening, type Project, type Room } from '~/data/types';
 import {
   bbox,
-  centroid,
   envelopeOf,
   formatArea,
   formatLength,
@@ -15,8 +13,10 @@ import {
 import {
   PLAN_COLOURS,
   dimension,
+  floorRender,
   frameFor,
   furnitureRenders,
+  labelPoint,
   isDoorway,
   openingRender,
   projectBox,
@@ -107,20 +107,34 @@ const openings = [...seen.values()].map(({ room, opening }) => ({
   fill: isDoorway(opening.kind) ? roomFill(designOf(room)) : PLAN_COLOURS.sheet,
 }));
 
+/** Unique per drawing, since a compare page puts several on one document. */
+const slug = [project.id, focus ?? 'all', designId].filter(Boolean).join('-');
+
 const drawn = rooms.map((room) => {
-  const outline = outlineInPlan(room);
   const design = designOf(room);
+  const floor = floorRender(design);
   return {
     room,
     design,
     path: roomPath(room),
     fill: roomFill(design),
+    floor,
+    /** Each room's material is its own pattern, since the colours differ room to room. */
+    floorId: `floor-${slug}-${room.id}`,
     strength: !focus || room.id === focus ? 1 : 0.75,
-    centre: centroid(outline),
     area: roomArea(room),
     pieces: furniture ? furnitureRenders(room, design) : [],
   };
 });
+
+/** Set once the pieces are known, since the name goes where they are not. */
+const labelled = drawn.map((entry) => ({
+  ...entry,
+  centre: labelPoint(
+    outlineInPlan(entry.room),
+    entry.pieces.filter((piece) => piece.kind !== 'rug' && !piece.mounted).map((piece) => piece.occupied),
+  ),
+}));
 
 /**
  * Room names sit over whatever the room contains, so each is drawn twice: once as
@@ -129,27 +143,50 @@ const drawn = rooms.map((room) => {
  */
 const roomLabels =
   labels === 'rooms'
-    ? drawn.map((entry) => ({
-        lines: [
-          {
-            text: entry.room.name,
-            y: entry.centre.y,
-            size: px(12),
-            weight: 700,
-            fill: PLAN_COLOURS.ink,
-            opacity: entry.strength === 1 ? 0.9 : 0.55,
-          },
-          {
-            text: `${formatArea(entry.area)} · ${KIND_LABELS[entry.room.kind]}`,
-            y: entry.centre.y + px(13),
-            size: px(9.5),
-            weight: 400,
-            fill: PLAN_COLOURS.inkSoft,
-            opacity: entry.strength === 1 ? 0.95 : 0.55,
-          },
-        ],
-        x: entry.centre.x,
-      }))
+    ? labelled.map((entry) => {
+        const name = entry.room.name.toUpperCase();
+        const box = bbox(outlineInPlan(entry.room));
+        /**
+         * Letter-spaced capitals, which is how a room is named on a drawing. The kind
+         * used to be appended and was always a restatement of the name — a room called
+         * Kitchen did not need telling it was one.
+         *
+         * The type shrinks to the room. A utility room is 1.5 m across and the words
+         * UTILITY ROOM at the size the living room's name takes do not fit inside it;
+         * set at that size the name ran out over the wall and into the flat next door.
+         */
+        const spacing = px(1.6);
+        const size = Math.min(px(11), Math.max(px(6.5), (box.width * 0.86) / (name.length * 0.72)));
+        /** And what still will not fit is centred on the room rather than on the clear floor. */
+        const half = (name.length * (size * 0.66 + spacing)) / 2;
+        const x =
+          half * 2 > box.width
+            ? box.x + box.width / 2
+            : Math.min(Math.max(entry.centre.x, box.x + half), box.x + box.width - half);
+        return {
+          lines: [
+            {
+              text: name,
+              y: entry.centre.y,
+              size,
+              weight: 600,
+              spacing,
+              fill: PLAN_COLOURS.ink,
+              opacity: entry.strength === 1 ? 0.88 : 0.5,
+            },
+            {
+              text: formatArea(entry.area),
+              y: entry.centre.y + size * 1.15,
+              size: size * 0.78,
+              weight: 400,
+              spacing: px(0.4),
+              fill: PLAN_COLOURS.inkSoft,
+              opacity: entry.strength === 1 ? 0.8 : 0.45,
+            },
+          ],
+          x,
+        };
+      })
     : [];
 
 /**
@@ -166,6 +203,18 @@ const pieceLabels =
         .flatMap((entry) => entry.pieces)
         /** An empty label is how a piece says it is a continuation of the one before it. */
         .filter((piece) => piece.label.length > 0)
+        /**
+         * Six chairs round a table produced the word "Chair" six times, which told the
+         * reader nothing they could not see and covered the table doing it. Where a
+         * label would repeat, only the first one is written.
+         */
+        .filter((piece, i, all) => all.findIndex((other) => other.label === piece.label) === i)
+        /**
+         * A bedside table is 450 mm wide and "Bedside table, north" does not go on it at
+         * any size worth reading. Pieces too small to carry their own name are left to
+         * the schedule, which has room for the whole of it.
+         */
+        .filter((piece) => Math.max(piece.occupied.width, piece.occupied.depth) >= 700)
         .map((piece) => {
           const upright = piece.occupied.depth > piece.occupied.width * 1.35;
           const along = upright ? piece.occupied.depth : piece.occupied.width;
@@ -211,8 +260,6 @@ const compass = {
   y: frame.box.y + px(26),
   r: px(15),
 };
-/** Unique per drawing, since a compare page puts several on one document. */
-const slug = [project.id, focus ?? 'all', designId].filter(Boolean).join('-');
 const titleId = `plan-title-${slug}`;
 const descId = `plan-desc-${slug}`;
 ---
@@ -226,6 +273,80 @@ const descId = `plan-desc-${slug}`;
   >
     <title id={titleId}>{title}</title>
     <desc id={descId}>{desc}</desc>
+
+    <defs>
+      {
+        drawn
+          .filter((entry) => entry.floor.pattern !== 'none')
+          .map((entry) => (
+            <pattern
+              id={entry.floorId}
+              width={entry.floor.tile.width}
+              height={entry.floor.tile.height}
+              patternUnits="userSpaceOnUse"
+            >
+              <rect width={entry.floor.tile.width} height={entry.floor.tile.height} fill={entry.floor.colour} />
+              <g fill="none" stroke={PLAN_COLOURS.floorLine} stroke-width={Math.max(4, px(0.45))}>
+                {entry.floor.faint.map((d) => (
+                  <path d={d} stroke-opacity={entry.floor.opacity * 0.45} />
+                ))}
+                {entry.floor.lines.map((d) => (
+                  <path d={d} stroke-opacity={entry.floor.opacity} />
+                ))}
+              </g>
+            </pattern>
+          ))
+      }
+      {
+        /**
+         * A weave, drawn as lines on nothing and laid over a mat's own colour rather
+         * than replacing it. One pattern serves every mat in the drawing because it
+         * carries no fill of its own, and because it repeats in world space two
+         * rectangles of one mat share a continuous weave with no seam where they meet.
+         */
+      }
+      {
+        /** Diagonals at 45°, which is how a drawing says "not in scope" without words. */
+      }
+      <pattern
+        id={`unsurveyed-${slug}`}
+        width="260"
+        height="260"
+        patternUnits="userSpaceOnUse"
+        patternTransform="rotate(45)"
+      >
+        <rect width="260" height="260" fill={PLAN_COLOURS.sheet} />
+        <path
+          d="M 0 0 V 260"
+          fill="none"
+          stroke={PLAN_COLOURS.structure}
+          stroke-opacity="0.45"
+          stroke-width={Math.max(8, px(0.9))}
+        />
+      </pattern>
+
+      <pattern id={`weave-${slug}`} width="120" height="120" patternUnits="userSpaceOnUse">
+        <g
+          fill="none"
+          stroke={PLAN_COLOURS.shadow}
+          stroke-opacity="0.14"
+          stroke-width={Math.max(3, px(0.35))}
+        >
+          <path d="M 0 0 H 120" />
+          <path d="M 0 0 V 120" />
+        </g>
+      </pattern>
+
+      <filter id={`cast-${slug}`} x="-30%" y="-30%" width="180%" height="180%">
+        <feDropShadow
+          dx={px(1.4)}
+          dy={px(2.2)}
+          stdDeviation={px(1.6)}
+          flood-color={PLAN_COLOURS.shadow}
+          flood-opacity="0.34"
+        />
+      </filter>
+    </defs>
 
     <rect
       x={frame.box.x}
@@ -243,16 +364,39 @@ const descId = `plan-desc-${slug}`;
     />
 
     {
+      /** Over the poché and under the rooms, so a room drawn later still covers it. */
+      (project.unsurveyed ?? []).map((area) => (
+        <path
+          d={pathOf(area)}
+          fill={`url(#unsurveyed-${slug})`}
+          stroke={PLAN_COLOURS.structureEdge}
+          stroke-opacity="0.55"
+          stroke-width={px(0.6)}
+        />
+      ))
+    }
+
+    {
       drawn.map((entry) => (
         <path
           d={entry.path}
-          fill={entry.fill}
-          fill-opacity={entry.strength}
+          fill={entry.floor.pattern === 'none' ? entry.fill : `url(#${entry.floorId})`}
           stroke={PLAN_COLOURS.structureEdge}
           stroke-opacity="0.5"
           stroke-width={px(0.5)}
         />
       ))
+    }
+
+    {
+      /**
+       * A room being looked past is faded towards the paper, not made transparent.
+       * Held back by its own opacity it showed the near-black envelope through itself
+       * and came out darker than the room in focus, which is the wrong way round.
+       */
+      drawn
+        .filter((entry) => entry.strength !== 1)
+        .map((entry) => <path d={entry.path} fill={PLAN_COLOURS.sheet} fill-opacity="0.5" />)
     }
 
     {
@@ -298,7 +442,13 @@ const descId = `plan-desc-${slug}`;
       drawn.map((entry) => (
         <g opacity={entry.strength === 1 ? 1 : 0.5}>
           {entry.pieces.map((piece) => (
-            <FurnitureSymbol item={piece} px={px} detail={entry.strength === 1} />
+            <FurnitureSymbol
+              item={piece}
+              px={px}
+              detail={entry.strength === 1}
+              cast={`cast-${slug}`}
+              weave={`weave-${slug}`}
+            />
           ))}
         </g>
       ))
@@ -356,7 +506,13 @@ const descId = `plan-desc-${slug}`;
         <g pointer-events="none" text-anchor="middle">
           <g fill="none" stroke={PLAN_COLOURS.sheet} stroke-width={px(3)} stroke-linejoin="round">
             {label.lines.map((line) => (
-              <text x={label.x} y={line.y} font-size={line.size} font-weight={line.weight}>
+              <text
+                x={label.x}
+                y={line.y}
+                font-size={line.size}
+                font-weight={line.weight}
+                letter-spacing={line.spacing}
+              >
                 {line.text}
               </text>
             ))}
@@ -367,6 +523,7 @@ const descId = `plan-desc-${slug}`;
               y={line.y}
               font-size={line.size}
               font-weight={line.weight}
+              letter-spacing={line.spacing}
               fill={line.fill}
               fill-opacity={line.opacity}
             >

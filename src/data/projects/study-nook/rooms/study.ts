@@ -44,7 +44,13 @@ export const STUDY: Room = {
   designs: single({
     theme: 'A room to work in that has to sleep a guest twice a year',
     style: 'mid-century',
-    floor: { name: 'Existing parquet, kept and re-oiled', colour: '#c9a074' },
+    floor: {
+      name: 'Existing parquet, kept and re-oiled',
+      colour: '#c9a074',
+      pattern: 'plank',
+      grain: 'ns',
+      module: 160,
+    },
     summary:
       'Two things want the same 900 mm: the pull-back for the desk chair, and the depth of a sofa bed. At 2.6 m wide the room can have both only if they do not share a line, so the sofa takes the west wall and the desk starts 950 mm in from it, which puts the desk under the window and clear of the sofa entirely. The desk top is 740 mm and the sill is 800 mm, so the worktop passes under the glass rather than blocking it. Shelving goes on the one piece of north wall the door does not need.',
     furniture: [

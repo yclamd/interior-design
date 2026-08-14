@@ -34,7 +34,13 @@ export const BEDROOM_MAIN: Room = {
   designs: single({
     theme: 'A room for sleeping in, with the storage a flat this size has nowhere else to put',
     style: 'japandi',
-    floor: { name: 'Engineered white oak, continuous with the living room', colour: '#dfd0ba' },
+    floor: {
+      name: 'Engineered white oak, continuous with the living room',
+      colour: '#dfd0ba',
+      pattern: 'plank',
+      grain: 'ew',
+      module: 190,
+    },
     summary:
       'At 2.9 m deep the room cannot take a wardrobe on the same wall as the head of the bed: 600 mm of wardrobe, 900 mm to stand and open it, and 2 m of bed comes to 3.5 m. So the bed turns and runs east–west with its head against the west wall, and the whole 2.4 m of wardrobe goes on the east wall where the standing room is the walkway anyway. The window is left clear because it is the only one, and it faces the quiet side.',
     furniture: [

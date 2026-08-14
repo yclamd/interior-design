@@ -33,7 +33,12 @@ export const KITCHEN: Room = {
   designs: single({
     theme: 'Two runs facing each other, so nothing needs more than a half turn',
     style: 'warm-minimal',
-    floor: { name: 'Large-format porcelain, 600 × 600, matt grey-beige', colour: '#d6cec2' },
+    floor: {
+      name: 'Large-format porcelain, 600 × 600, matt grey-beige',
+      colour: '#d6cec2',
+      pattern: 'tile',
+      module: 600,
+    },
     summary:
       'Both long walls take a 600 mm run, leaving 1.1 m of gangway between them — enough for two people to pass, and enough for the oven door and a dishwasher to open without meeting. The north run goes under the window because a worktop under a window is the one place a low sill is an advantage. The fridge takes the east end of that run, where its 700 mm depth stops mattering.',
     furniture: [

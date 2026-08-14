@@ -67,7 +67,14 @@ export const TEMPLATE: Room = {
     summary:
       'A paragraph on how the room is meant to work: which wall each large object has to go against, and why the alternatives were rejected. This is the text on the room’s own page.',
     style: 'japandi',
-    floor: { name: 'Engineered oak, 190 mm boards', colour: '#dfd0ba' },
+    floor: {
+      name: 'Engineered oak, 190 mm boards',
+      colour: '#dfd0ba',
+      /** Drop these three and the floor draws as a flat colour. */
+      pattern: 'plank',
+      grain: 'ew',
+      module: 190,
+    },
     furniture: [
       /**
        * placed(x, y, …) takes the north-west corner of the floor the piece ends up

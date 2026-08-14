@@ -227,6 +227,16 @@ export interface FloorFinish {
   name: string;
   /** Hex used as the room's floor fill, overriding the style's. */
   colour?: string;
+  /**
+   * How the floor is drawn. A plan reads as a drawing rather than a diagram largely
+   * because its floors are materials: boards with a direction, tiles with a grid,
+   * a mat with a weave. Left out, the floor is a flat colour.
+   */
+  pattern?: 'plank' | 'tile' | 'weave' | 'none';
+  /** Which way boards or tiles run. Only meaningful for plank and tile. */
+  grain?: 'ew' | 'ns';
+  /** Board width or tile size, in millimetres. */
+  module?: Mm;
   note?: string;
 }
 
@@ -308,6 +318,16 @@ export interface Project {
    * a second figure that can disagree with the first.
    */
   envelope?: Point[];
+  /**
+   * Floor inside the envelope that is known not to be wall and has not been surveyed.
+   *
+   * Whatever the envelope covers and no room claims comes out filled as solid wall,
+   * which for a real wall is correct and for a gap in the survey is a lie — it draws
+   * two square metres of masonry where there is a room nobody has measured yet. Listed
+   * here, the same area is drawn hatched instead, which is the convention for out of
+   * scope and reads as a question rather than as a fact.
+   */
+  unsurveyed?: Point[][];
   walls: {
     exterior: Mm;
     interior: Mm;

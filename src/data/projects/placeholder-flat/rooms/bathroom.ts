@@ -24,7 +24,12 @@ export const BATHROOM: Room = {
   designs: single({
     theme: 'An internal bathroom, so everything that can be pale is pale',
     style: 'warm-minimal',
-    floor: { name: 'Porcelain, 300 × 600, laid to a linear drain', colour: '#d9d2c8' },
+    floor: {
+      name: 'Porcelain, 300 × 600, laid to a linear drain',
+      colour: '#d9d2c8',
+      pattern: 'tile',
+      module: 300,
+    },
     summary:
       'No external wall, which decides most of it: mechanical extraction, and no dark surfaces anywhere. The shower takes the north-west corner because that is the only 900 mm square the room has; the basin goes on the north wall beside it, and the WC on the east, which is the one position the door can swing fully open past.',
     furniture: [

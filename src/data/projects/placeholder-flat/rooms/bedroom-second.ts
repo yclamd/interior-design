@@ -34,7 +34,13 @@ export const BEDROOM_SECOND: Room = {
   designs: single({
     theme: 'A single bedroom that has to work as a study for most of the week',
     style: 'muji',
-    floor: { name: 'Engineered white oak, continuous with the hall', colour: '#e2d6c2' },
+    floor: {
+      name: 'Engineered white oak, continuous with the hall',
+      colour: '#e2d6c2',
+      pattern: 'plank',
+      grain: 'ew',
+      module: 190,
+    },
     summary:
       'A single bed takes 1.05 m of the 2.9 m depth, which leaves enough for a desk on the north wall and a walkway between the two. The desk sits east of the door so that whoever is at it has their back to the doorway rather than their screen, and the wardrobe takes the east wall where it does not shorten either.',
     furniture: [
@@ -67,6 +73,8 @@ export const BEDROOM_SECOND: Room = {
         width: 450,
         depth: 450,
         height: 820,
+        /** South of the desk, in its legroom, so facing north at it. */
+        rotation: 180,
         status: 'owned',
       }),
       placed(3300, 1500, {

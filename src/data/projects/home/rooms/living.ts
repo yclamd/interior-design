@@ -1,5 +1,6 @@
 import { fromCatalogue } from '~/data/catalogue';
 import type { Design, Furniture, Room } from '~/data/types';
+import { ASSUMED_BOARDS } from '../floors';
 
 /**
  * 2500 east–west by 3050 north–south, at the east end, open to the dining room along
@@ -49,7 +50,7 @@ export const LIVING_DESIGNS: Design[] = [
     preferred: true,
     theme: 'One long seat facing the television and 1.3 m of floor in front of it',
     style: 'japandi',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The sofa against the south wall facing north, and nothing else. That leaves 1.72 m between the seat and the cabinet, and 1.32 m of it is clear floor — which running west into the dining room without a threshold is the same floor the children use. Furniture covers 40% of the room, which for a room this size with a sofa in it is as low as it goes. The absence is the design: everything this room could hold, it holds better on a wall or in the next room.',
     furniture: [...BUILT_IN, SOFA_BIG],
@@ -63,7 +64,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '2 · Sofa and a low table',
     theme: 'A normal living room, at the price of the floor',
     style: 'warm-minimal',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The same sofa with a coffee table 450 mm in front of it — the right distance, and most of what the room had left. Furniture goes from 40% of the floor to 48%, which the checks call crowded: past about 45% a room reads as the gaps between things. The gap here is 670 mm between the table and the cabinet, which is a passage rather than a place. Worth drawing because a room with nowhere to put a cup down is a room people stop sitting in, and that cost is real too — it is just not one a plan can measure.',
     furniture: [
@@ -84,7 +85,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '3 · Sofa and an ottoman',
     theme: 'A surface that is also a seat and also a toy box',
     style: 'muji',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'Instead of a coffee table, a 600 square storage ottoman. It is a surface with a tray on it, a second seat when six people have eaten at the extendable table next door, and the place the toys go at eight o’clock — three jobs from a footprint 40% the size of the coffee table’s. Soft on all four sides, which matters at the height a toddler’s head is, and light enough that a child is allowed to move it, which turns the one object in the middle of the floor from an obstacle into part of the game. Furniture covers 44% of the floor: under the line, where the coffee table was over it.',
     furniture: [
@@ -105,7 +106,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '4 · Sofa and an armchair',
     theme: 'Two places to sit facing each other, not two facing a screen',
     style: 'japandi',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The narrower two-seat sofa on the south wall and an armchair in the north-west corner turned to face east, which puts two seats at right angles rather than in a row. It is a room for talking rather than for watching, and the only design here where somebody sitting down faces the dining room and the children in it rather than the television. The armchair costs 0.6 m² and the sofa gives 0.53 m² back by being 1.63 m instead of 2.18 m, so the two nearly cancel: 40% covered, the same as the room with nothing in it but the big sofa. Two seats for the price of one.',
     furniture: [
@@ -127,7 +128,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '5 · Sofa, side table, and the corner left alone',
     theme: 'Solve the cup problem with 0.2 m² and stop there',
     style: 'mid-century',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The narrower sofa pushed west, and a 450 square side table in the gap that leaves at the east end of the south wall. It answers the one complaint the empty room has — nowhere to put a cup down — for a third of the floor a coffee table costs, and it does it at the arm of the sofa where somebody sitting can reach it without leaning. Nothing stands in the middle of the room at all. Furniture covers 34%, the lowest of any design here that has somewhere to sit and somewhere to put something down, and the clear floor is a single piece 1.37 m deep running the width of the room and on into the dining room.',
     furniture: [
@@ -148,7 +149,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '6 · Sofa west, facing the window',
     theme: 'Turn the room a quarter, and look out instead of in',
     style: 'warm-minimal',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The one arrangement that does not face the television. The two-seat sofa stands against the south wall’s west end, turned to face east at the window, so what somebody sitting down looks at is daylight rather than a screen. It suits the design next door that keeps the whole north half of the dining room as a route, because a sofa turned this way stops being something you walk behind. The television becomes what it is in most rooms with small children in them — something switched on for an hour, watched at an angle, and otherwise a dark rectangle on a wall.',
     furniture: [
@@ -170,7 +171,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '7 · Sofa, and a low shelf as the boundary',
     theme: 'Let the storage do the dividing, on this side of the opening too',
     style: 'muji',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The three-seat sofa where it belongs, and a low cabinet standing out from the south wall at the west end, in line with the one doing the same job in the dining room. The two of them make a soft gate across the opening between the rooms: nothing blocks the way through, but there is a place where one room stops and the other starts, at a height an adult sees over and a child does not. Between them the children’s corner is a defined 1.6 m square rather than the middle of a corridor. Furniture covers 45%, exactly on the line.',
     furniture: [
@@ -197,7 +198,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '8 · Sofa, and a rug where the toys are allowed',
     theme: 'Mark the floor and buy nothing else',
     style: 'macaron',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The three-seat sofa and a rug, and that is the whole room. The rug fills the floor between the sofa’s legroom and the television cabinet, and it says what a low shelf would have said without standing in the way of anything: on the rug is where toys are allowed. It costs no floor, nothing has to be fixed down, nothing is climbable, and the room can be swept clear in one movement. It is also the only design here that a two-year-old can be taught in a sentence.',
     furniture: [
@@ -224,7 +225,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '9 · Sofa and wall shelves',
     theme: 'Put the storage in the air and keep every millimetre of floor',
     style: 'industrial',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'The three-seat sofa and 1.2 m of shelving on the wall above the television cabinet, hung at 1200 so it clears the cabinet and everything on it. It takes no floor at all — the drawing shows it dashed for that reason — which is the whole argument: in a room where furniture is already at 40% and the floor is the thing being protected, the only storage worth adding is storage that is not on the ground. Pairs with the benches next door, which is the other design that treats floor as the scarce material and everything else as negotiable.',
     furniture: [
@@ -245,7 +246,7 @@ export const LIVING_DESIGNS: Design[] = [
     name: '10 · Sofa, table and chair — the room as it would be without children',
     theme: 'The version everybody draws first, priced honestly',
     style: 'classic',
-    floor: { name: 'Not yet decided', colour: '#ddd6c9' },
+    floor: ASSUMED_BOARDS,
     summary:
       'Sofa, coffee table, armchair: the arrangement anybody would sketch for a living room, drawn here so its cost is a number rather than a feeling. It comes to 48% of the floor covered, over the line at which a room reads as the gaps between things, and there is no continuous floor left at all — the table is hard against the armchair’s standing room on one side and its own 400 mm of legroom on the other. For two adults it would be a good room. For two adults and two children under three it is a room with nowhere to put the children, which is why every other design on this list gives something up.',
     furniture: [

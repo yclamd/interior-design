@@ -77,7 +77,13 @@ export const LIVING: Room = {
       preferred: true,
       theme: 'Keep the television, and give the table the quiet end',
       style: 'japandi',
-      floor: { name: 'Engineered white oak, 190 mm boards laid east–west', colour: '#dfd0ba' },
+      floor: {
+        name: 'Engineered white oak, 190 mm boards laid east–west',
+        colour: '#dfd0ba',
+        pattern: 'plank',
+        grain: 'ew',
+        module: 190,
+      },
       summary:
         'Four of the five walls are already spoken for, and what is left is one long clear stretch of the east wall — which is why the sofa is there and not floating in the middle. It faces west across the room at a console on the opposite wall, so there is somewhere for a television to go. Seating takes the north half where the balcony light lands; the table takes the south half, so nobody eating is walked past on the way to the bedroom.',
       furniture: [
@@ -175,7 +181,13 @@ export const LIVING: Room = {
       name: 'Turned to the balcony',
       theme: 'Give up the television wall to sit looking at the light',
       style: 'warm-minimal',
-      floor: { name: 'Engineered white oak, 190 mm boards laid north–south', colour: '#e2d5c0' },
+      floor: {
+        name: 'Engineered white oak, 190 mm boards laid north–south',
+        colour: '#e2d5c0',
+        pattern: 'plank',
+        grain: 'ns',
+        module: 190,
+      },
       summary:
         'The same room with the sofa on the south wall, facing north through 2.4 m of glass. It buys the one view the flat has and the best light in it; what it costs is the television, because the only thing opposite the sofa now is the balcony door, and nothing can stand in front of that. The table moves to the east side, off the wall and within a step of the kitchen pass, which shortens the carry from the hob at the price of a table nobody can walk all the way around.',
       furniture: [
@@ -242,7 +254,8 @@ export const LIVING: Room = {
           width: 450,
           depth: 450,
           height: 810,
-          rotation: 90,
+          /** West of the turned table, so facing east into it. */
+          rotation: 270,
           status: 'owned',
         }),
         placed(3400, 1900, {
@@ -252,7 +265,7 @@ export const LIVING: Room = {
           width: 450,
           depth: 450,
           height: 810,
-          rotation: 90,
+          rotation: 270,
           status: 'owned',
         }),
       ],

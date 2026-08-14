@@ -54,7 +54,13 @@ export const CORRIDOR: Room = {
   designs: single({
     theme: 'Four doors and no furniture',
     style: 'japandi',
-    floor: { name: 'Engineered white oak, continuous with the living room', colour: '#dfd0ba' },
+    floor: {
+      name: 'Engineered white oak, continuous with the living room',
+      colour: '#dfd0ba',
+      pattern: 'plank',
+      grain: 'ew',
+      module: 190,
+    },
     summary:
       'The only circulation in the flat, and it earns its 4.4 m² by serving four doors: the second bedroom, the bathroom, the utility room and the living room. It is 1.2 m deep, which is 300 mm more than a corridor needs, and that 300 mm is what lets two of those doors be open at once. Nothing is put here on purpose — a console 300 mm deep would leave 900 mm, and 900 mm is the width of the doors swinging into it.',
     furniture: [],
