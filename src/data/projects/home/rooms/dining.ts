@@ -57,47 +57,47 @@ export const DINING_DESIGNS: Design[] = [
     style: 'japandi',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'A four-seat table with its length running east–west, held 50 mm clear of where the storage run’s standing room ends. Turned this way the chairs take their 750 out of the depth — 2.25 m of the 2.6 — and only 1.2 m of the width. Turned the other way they would take 2.25 m of the width instead, and the room would be a table with a corridor round it. What this buys is 2.05 m of clear width east of the table, running into the living room without a threshold. Two children under three use the floor of a flat rather than its furniture, and 2 m of it in one piece is the most this plan can give them.',
+      'The 1500 by 900 table with its length running east–west, held 50 mm clear of where the storage run’s standing room ends. Turned this way the chairs take their 750 out of the depth and only 1.5 m of the width; turned the other way they would take 2.4 m of the width instead, and the room would be a table with a corridor round it. What this buys is 1.75 m of clear width east of the table, running into the living room without a threshold — two children under three use the floor of a flat rather than its furniture, and this is the most of it any arrangement here leaves in one piece. The depth is the tight figure: 900 of table and 750 either side comes to 2400 of the room’s 2600, so the table sits centred with 100 mm to spare at each end and neither of those walls can hold anything at all.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1200', 1400, 925, { status: 'planned' }),
+      fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
       ...chairs([
-        [1550, 475],
-        [2050, 475],
-        [1550, 1675],
-        [2050, 1675],
+        [1550, 400],
+        [2250, 400],
+        [1550, 1750],
+        [2250, 1750],
       ]),
     ],
     openQuestions: [
       'Four seats. A fifth and sixth could sit at the ends, where there is room for a chair but not the 750 to pull it back into.',
-      'The chairs’ clearance runs to within 175 mm of both the north and south walls, so there is no sideboard on either of them, now or later.',
+      'The chairs’ clearance runs to within 100 mm of both the north and south walls. There is no sideboard on either of them, now or later, and the 900 deep table is what spends that.',
     ],
   },
   {
     id: 'table-six',
-    name: '2 · A table for six',
-    theme: 'Seat six properly and pay for it in floor',
+    name: '2 · Six chairs round the same table',
+    theme: 'Keep the table and add two chairs, which costs no floor and costs elbows',
     style: 'warm-minimal',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'A 1.6 m table, three chairs down each long side, six people and nobody at a corner. The table has to sit 400 mm further east than the four-seat one to keep the last chair out of the corridor’s landing space. The cost is exactly measurable: clear floor east of the table drops from 2.05 m to 1.05 m. Six seats costs a metre of the only continuous floor in the flat.',
+      'The same table in the same place with three chairs down each long side instead of two. A 1500 top gives each of six people 500 mm of edge, against the 600 that is comfortable and the 750 four people get — so six fit, and six eat with their elbows in. What it costs is not floor area: the table has not moved and the clear width east of it is still 1.75 m. What it costs is the gap between the chairs and the storage run, which the fourth and fifth chairs fill, so the room stops having a way past the table while people are sitting at it. This is the honest six-seat option for a 1500 table. Anything roomier means a longer table, and a longer table means the floor east of it.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1600', 2000, 900, { status: 'considering' }),
+      fromCatalogue('table-dining-1500', 1400, 850, { status: 'considering' }),
       ...chairs(
         [
-          [2100, 450],
-          [2675, 450],
-          [3250, 450],
-          [2100, 1700],
-          [2675, 1700],
-          [3250, 1700],
+          [1425, 400],
+          [1975, 400],
+          [2525, 400],
+          [1425, 1750],
+          [1975, 1750],
+          [2525, 1750],
         ],
         'considering',
       ),
     ],
     openQuestions: [
-      'The third chair on each side stops 50 mm short of the corridor’s landing space: a check passed rather than a margin.',
+      'The end chairs overhang the table by 75 mm at the east and sit 25 mm off its west end. Six at a 1500 table is an arrangement that works on a plan and is judged at a meal.',
       'Six seats in a flat with two children under three is a bet on five years from now rather than on now.',
     ],
   },
@@ -134,30 +134,30 @@ export const DINING_DESIGNS: Design[] = [
     style: 'japandi',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'A bench against the south wall with the table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 600 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Six can sit — three on the bench, three on chairs. What it costs is the shuffle: the person in the middle of a bench gets out last.',
+      'A bench against the south wall with the 1500 table pushed onto it, and chairs on the north side only. A bench needs no room to pull back into, so this arrangement saves the 750 mm a second row of chairs would want and puts the whole saving into one place: a clear 500 mm strip along the north wall running the full width of the room, from the front door to the living room, with the table and everybody at it out of the way of it. Six can sit — three on the bench, three on chairs. What it costs is the shuffle: the person in the middle of a bench gets out last.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('bench-dining-1600', 1500, 2150, {
+      fromCatalogue('bench-dining-1600', 1450, 2150, {
         status: 'considering',
-        note: 'Hard against the south wall. Its 450 depth and no clearance is the whole trick.',
+        note: 'Hard against the south wall, and 100 mm longer than the table at either end. Its 450 depth and no clearance is the whole trick.',
       }),
-      fromCatalogue('table-dining-1600', 1500, 1350, {
+      fromCatalogue('table-dining-1500', 1500, 1250, {
         clearance: { north: 750 },
         status: 'considering',
         note: 'Pushed south onto the bench, so all its standing room is on one side.',
       }),
       ...chairs(
         [
-          [1650, 900],
-          [2225, 900],
-          [2800, 900],
+          [1550, 800],
+          [2100, 800],
+          [2650, 800],
         ],
         'considering',
       ),
     ],
     openQuestions: [
-      'A bench against a wall means the wall is the backrest. At 450 high with a 750 table this is a perch rather than a chair, and it is not where anybody wants to sit for two hours.',
-      'The clear strip along the north is 600 mm. That is a passage, not a play space — this design buys circulation, not floor.',
+      'A bench against a wall means the wall is the backrest. At 450 high with a 740 table this is a perch rather than a chair, and it is not where anybody wants to sit for two hours.',
+      'The clear strip along the north is 500 mm, where the shallower table left 600. That is a passage either way, not a play space — this design buys circulation, not floor.',
     ],
   },
   {
@@ -197,18 +197,18 @@ export const DINING_DESIGNS: Design[] = [
     style: 'warm-minimal',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'The standard answer to a narrow room, applied literally: put the furniture along one long side and leave the other as a route. The table goes hard against the south wall with chairs only on its north side, which seats four with two of them facing the room. That leaves 1.1 m of clear depth running the entire 4.65 m width — the widest single piece of floor any of these designs produces, and the only one a child can run down. What it costs is dining: two people sit facing a wall, and reaching the far side of the table means walking round the end of it.',
+      'The standard answer to a narrow room, applied literally: put the furniture along one long side and leave the other as a route. The 1500 table goes hard against the south wall with chairs only on its north side, which seats two facing the room and two more at the ends if they are wanted. That leaves 950 mm of clear depth running the entire 4.65 m width — the widest single piece of floor any of these designs produces, and the only one a child can run the length of. What it costs is dining: half the table is against a wall and out of reach, and it suits a household that eats in shifts rather than together.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1200', 1400, 1850, {
+      fromCatalogue('table-dining-1500', 1400, 1700, {
         clearance: { north: 750 },
         status: 'considering',
         note: 'Against the south wall, so all its standing room is on the north side.',
       }),
       ...chairs(
         [
-          [1550, 1400],
-          [2050, 1400],
+          [1550, 1250],
+          [2250, 1250],
         ],
         'considering',
       ),
@@ -225,28 +225,29 @@ export const DINING_DESIGNS: Design[] = [
     style: 'muji',
     floor: { name: 'Not yet decided', colour: '#ddd6c9' },
     summary:
-      'The four-seat table where it belongs, and a 930 by 440 cabinet standing out from the north wall rather than against it. Turned that way it does two jobs from one footprint: it holds things, and its end makes a corner of the room feel like somewhere rather than like the middle of a route. That corner — 1.36 m of the east end, opening into the living room — becomes the children’s, with everything in it at their height and nothing in it belonging to the dining table. A low unit accessible from both sides is the standard small-flat divider, and it is the only kind of boundary a room this open can have.',
+      'The four-seat table where it belongs, and a 930 by 440 cabinet standing out from the north wall rather than against it. Turned that way it does two jobs from one footprint: it holds things, and its end makes a corner of the room feel like somewhere rather than like the middle of a route. That corner — 1.21 m of the east end, opening into the living room — becomes the children’s, with everything in it at their height and nothing in it belonging to the dining table. A low unit accessible from both sides is the standard small-flat divider, and it is the only kind of boundary a room this open can have.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1200', 1400, 925, { status: 'planned' }),
+      fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
       ...chairs([
-        [1550, 475],
-        [2050, 475],
-        [1550, 1675],
-        [2050, 1675],
+        [1550, 400],
+        [2250, 400],
+        [1550, 1750],
+        [2250, 1750],
       ]),
-      fromCatalogue('cabinet-930-low', 2850, 0, {
+      fromCatalogue('cabinet-930-low', 3000, 0, {
         id: 'divider',
         name: 'Low cabinet, standing out from the wall',
         short: 'Cabinet',
         rotation: 270,
-        clearance: { south: 400 },
+        /** 250 rather than 400: the corridor's landing space is 310 mm further east. */
+        clearance: { south: 250 },
         status: 'considering',
-        note: 'Out from the north wall rather than along it, so its 930 length becomes a boundary. Open on the east face for the children and on the west for the table, and set far enough west that the room to use its east face stops 60 mm short of the corridor’s landing.',
+        note: 'Out from the north wall rather than along it, so its 930 length becomes a boundary. Open on the east face for the children and on the west for the table. Held in the 550 mm between the table’s east end and the corridor, which is all the room the 1500 table leaves it.',
       }),
     ],
     openQuestions: [
-      'The room to stand and use the cabinet’s east face stops 60 mm short of the corridor’s landing space. That is a check passed rather than a margin: 100 mm further east and somebody at the cabinet is in the way of somebody going to bed.',
+      'The 1500 table leaves this cabinet 550 mm of wall to stand on and 250 mm to be used from, against the 400 a cupboard wants. With the shallower table it had 400. This is the design the bigger table costs the most.',
       'A 530 high unit is climbable. Standing free rather than against a wall, it has to be weighted or fixed to the floor, and that is a real cost of using it as a divider.',
     ],
   },
@@ -260,12 +261,12 @@ export const DINING_DESIGNS: Design[] = [
       'The same table in the same place, and the east end of the room given a rug instead of a divider. Nothing is bought, nothing is climbed, nothing has to be fixed to the floor, and the boundary is a change of surface a two-year-old reads perfectly well: on the rug is where toys are allowed. It gives up what a shelf would have given — storage, and a boundary you can see over the top of — in exchange for a floor that can be swept clear in one movement and a room that stays one room. Of the eight designs so far this is the one that changes the least and costs the least.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1200', 1400, 925, { status: 'planned' }),
+      fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
       ...chairs([
-        [1550, 475],
-        [2050, 475],
-        [1550, 1675],
-        [2050, 1675],
+        [1550, 400],
+        [2250, 400],
+        [1550, 1750],
+        [2250, 1750],
       ]),
       fromCatalogue('rug-flatweave', 2800, 400, {
         id: 'play-rug',
@@ -293,13 +294,13 @@ export const DINING_DESIGNS: Design[] = [
       'Two benches and a 1.6 m table, and no chair anywhere. Neither bench needs room to pull back into, so the whole arrangement is 1.7 m deep against the 2.3 m a table with chairs on both sides demands, and it seats six. That 600 mm goes straight into the clear strip along the north wall, which becomes 900 — enough to walk two abreast, or for a child to get past a chair that is not there. It is the tightest seating this room can hold, and it is a canteen: nobody has a back, everybody shuffles, and it suits a family that eats fast and often rather than long and rarely.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('bench-dining-1600', 1500, 900, { id: 'bench-north', status: 'considering' }),
-      fromCatalogue('table-dining-1600', 1500, 1350, {
+      fromCatalogue('bench-dining-1600', 1450, 700, { id: 'bench-north', status: 'considering' }),
+      fromCatalogue('table-dining-1500', 1500, 1150, {
         clearance: {},
         status: 'considering',
         note: 'No clearance either side: both are benches, and a bench is got onto from the end.',
       }),
-      fromCatalogue('bench-dining-1600', 1500, 2150, { id: 'bench-south', status: 'considering' }),
+      fromCatalogue('bench-dining-1600', 1450, 2050, { id: 'bench-south', status: 'considering' }),
     ],
     openQuestions: [
       'The north bench has nothing behind it, so it is got onto from either end only. With the table between them that is a real constraint at every meal.',
@@ -316,15 +317,15 @@ export const DINING_DESIGNS: Design[] = [
       'Every other design leaves the south wall bare because the chairs’ clearance runs to within 175 mm of it. This one moves the table to the north wall instead — chairs on its south side only — which frees the whole south wall for a 1.1 m sideboard, and puts a second surface at working height in a room that otherwise has none outside the fitted run. What it costs is the north wall: the table now sits against the wall the corridor opens off, so anybody going to bed passes behind whoever is eating. In a flat where two children go to bed while adults are still at the table, that is not a small thing.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('table-dining-1200', 1400, 175, {
+      fromCatalogue('table-dining-1500', 1400, 100, {
         clearance: { south: 750 },
         status: 'considering',
-        note: 'Against the north wall, 175 mm off it, with all its standing room to the south.',
+        note: 'Against the north wall, 100 mm off it, with all its standing room to the south.',
       }),
       ...chairs(
         [
-          [1550, 925],
-          [2050, 925],
+          [1550, 1000],
+          [2250, 1000],
         ],
         'considering',
       ),
