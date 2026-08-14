@@ -71,9 +71,9 @@ const legend = [
   { swatch: design.floor.colour ?? style.palette.floor, label: 'This room', note: design.floor.name },
   { swatch: style.palette.furniture, label: 'Furniture', note: 'Drawn at its measured footprint, and named on the plan' },
   {
-    swatch: PLAN_COLOURS.clearance,
-    label: 'Dashed: clearance',
-    note: 'Floor that has to stay empty for the piece beside it to be usable — to open a door, pull a chair back, or kneel down',
+    swatch: PLAN_COLOURS.structureEdge,
+    label: 'Dashed outline',
+    note: 'Wall-hung: drawn where it is, but standing on no floor',
   },
   {
     swatch: PLAN_COLOURS.glazing,
@@ -135,7 +135,6 @@ const legend = [
   design={design.id}
   labels="names"
   dimensions
-  clearance
   swept
   nominalWidth={1000}
   title={`Plan of the ${room.name.toLowerCase()}`}

@@ -44,7 +44,6 @@ interface Props {
   /** Room names on every room, piece names on the focused room, or nothing. */
   labels?: 'rooms' | 'names' | 'none';
   furniture?: boolean;
-  clearance?: boolean;
   /** The floor a door leaf sweeps, which is worth seeing on a room page. */
   swept?: boolean;
   dimensions?: boolean;
@@ -62,7 +61,6 @@ const {
   design: designId,
   labels = 'rooms',
   furniture = true,
-  clearance = false,
   swept = false,
   dimensions = false,
   padding,
@@ -294,25 +292,6 @@ const descId = `plan-desc-${slug}`;
           )}
         </g>
       ))
-    }
-
-    {
-      clearance &&
-        drawn
-          .filter((entry) => entry.strength === 1)
-          .flatMap((entry) => entry.pieces)
-          .flatMap((piece) => piece.clearance)
-          .map((zone) => (
-            <path
-              d={zone.path}
-              fill={PLAN_COLOURS.clearance}
-              fill-opacity="0.09"
-              stroke={PLAN_COLOURS.clearance}
-              stroke-opacity="0.75"
-              stroke-width={px(1)}
-              stroke-dasharray={`${px(4)} ${px(3)}`}
-            />
-          ))
     }
 
     {

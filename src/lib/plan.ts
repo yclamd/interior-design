@@ -3,7 +3,6 @@ import { STYLES } from '~/data/styles';
 import {
   bbox,
   cornersOf,
-  clearanceZonesOf,
   envelopeOf,
   footprintPoints,
   grow,
@@ -232,7 +231,6 @@ export interface FurnitureRender {
   stroke: string;
   mounted: boolean;
   height: Mm;
-  clearance: { path: string; depth: Mm }[];
 }
 
 export function furnitureRenders(room: Room, design: Design): FurnitureRender[] {
@@ -275,12 +273,6 @@ export function furnitureRenders(room: Room, design: Design): FurnitureRender[] 
       stroke: PLAN_COLOURS.ink,
       mounted: item.mountedAt !== undefined,
       height: item.height,
-      clearance: clearanceZonesOf(item).map((zone) => ({
-        depth: zone.depth,
-        path: pathOf(
-          zone.polygon.map((p) => ({ x: p.x + room.origin.x, y: p.y + room.origin.y })),
-        ),
-      })),
     };
   });
 }
