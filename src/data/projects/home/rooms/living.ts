@@ -3,53 +3,59 @@ import type { Design, Furniture, Room } from '~/data/types';
 import { ASSUMED_BOARDS } from '../floors';
 
 /**
- * 2500 east–west by 3050 north–south, at the east end, open to the dining room along
- * its whole west side. The north wall carries a 380 mm television cabinet in the
- * recess the room's extra depth makes, which leaves 2670 clear. The east wall carries
- * the only window on this side of the flat, sill assumed at 900.
+ * 3400 east–west by 3050 north–south, at the east end, open to the dining room along its
+ * west side. It was 2500 across until it took 900 from the dining room's east end and
+ * from the corridor's south end, and that 900 changed what the room is rather than just
+ * how much of it there is.
  *
- * At 2.5 m across there is exactly one wall a sofa can go against — the south — and
- * every design below agrees about that. What they disagree about is what else is
- * allowed in, and the answer runs from nothing to a chair, a table and a rug.
+ * Three things follow from it. At 2500 there was exactly one wall a sofa could go
+ * against and all ten designs agreed about that; at 3400 by 3050 the room is nearly
+ * square and the east wall is a second one, so the designs below put the sofa in four
+ * different places rather than one. No arrangement here now passes 36% of the floor,
+ * where the same furniture in the old room reached 55% — the room has stopped being a
+ * set of things with gaps between them. And the way into the private half moved with the
+ * corridor: it is now the first 900 of this room's north wall, so everybody going to bed
+ * crosses this room, and the 900 square inside that opening has to stay clear.
  *
- * The ten here are numbered to pair with the ten dining designs: read them together,
- * because there is no wall between the two rooms and the floor is continuous.
+ * The north wall carries the 380 mm television cabinet east of that opening. The east
+ * wall carries the window, sill assumed at 900, with the rain shelter beyond it.
  *
- * Every design holds the project's style, and that is the point rather than an
- * oversight. Each of these used to carry a style of its own and the ten cycled through
- * seven of them, so the loudest difference between any two designs was the colour of
- * the floor and the sofa. That is the one variable here that costs nothing and can be
- * changed after everything is built, and putting it on the same axis as the
- * arrangement made a set of similar layouts look like a set of different ones. With the
- * palette held still, what is left to see between two designs is where the furniture
- * is — which is the only thing a plan can settle.
+ * The ten are numbered to pair with the ten dining designs: read them together, because
+ * there is no wall between the two rooms and the floor is continuous.
+ *
+ * Every design holds the project's style, and that is the point rather than an oversight.
+ * Each of these used to carry a style of its own and the ten cycled through seven of them,
+ * so the loudest difference between any two designs was the colour of the floor and the
+ * sofa — the one variable here that costs nothing and can be changed after everything is
+ * built. With the palette held still, what is left to see between two designs is where the
+ * furniture is, which is the only thing a plan can settle.
  */
 const BUILT_IN: Furniture[] = [
-  fromCatalogue('fitted-run-380', 0, 0, {
+  fromCatalogue('fitted-run-380', 900, 0, {
     id: 'tv-run',
     name: 'Television cabinet',
     short: 'TV',
     width: 2500,
     depth: 380,
     status: 'owned',
-    note: 'Full width of the north wall, in the recess the room’s extra depth makes. Its 380 takes up all but 70 mm of that step.',
+    note: 'The north wall east of the way through. Its 2500 was the full width of this wall before the room took 900 from the dining room; now the first 900 is the corridor’s landing and the cabinet starts beyond it, at the same length it always was.',
   }),
 ];
 
-/** The three-seat sofa in the only place it goes: against the south wall, facing the television. */
-const SOFA_BIG = fromCatalogue('sofa-three-seat', 160, 2100, {
+/** The three-seat sofa centred on the south wall, facing the television. */
+const SOFA_BIG = fromCatalogue('sofa-three-seat', 610, 2100, {
   rotation: 180,
   clearance: { south: 400 },
   status: 'planned',
-  note: 'Centred on the south wall with 160 either side. Its east end reaches into the window’s reveal, but at 830 it sits below the 900 sill and takes no light.',
+  note: 'Centred on the 3400 south wall with 610 either side, where it had 160 either side of the old one. It is the same sofa in a room that now has room for it.',
 });
 
 /** The narrower sofa, pushed west, which is what makes room for anything beside it. */
-const SOFA_SMALL = fromCatalogue('sofa-two-seat', 200, 2150, {
+const SOFA_SMALL = fromCatalogue('sofa-two-seat', 300, 2150, {
   rotation: 180,
   clearance: { south: 400 },
   status: 'considering',
-  note: 'Half a metre narrower than the three-seat and pushed west, which leaves 470 mm of the south wall free at the east end.',
+  note: 'Half a metre narrower than the three-seat and set at the west end of the south wall, which leaves 1.47 m of that wall free at the east end — enough for a chair rather than the 470 mm it used to leave.',
 });
 
 export const LIVING_DESIGNS: Design[] = [
@@ -57,36 +63,36 @@ export const LIVING_DESIGNS: Design[] = [
     id: 'table-west',
     name: '1 · Sofa only',
     preferred: true,
-    theme: 'One long seat facing the television and 1.3 m of floor in front of it',
+    theme: 'One long seat facing the television, and the rest left as floor',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The sofa against the south wall facing north, and nothing else. That leaves 1.72 m between the seat and the cabinet, and 1.32 m of it is clear floor — which running west into the dining room without a threshold is the same floor the children use. Furniture covers 40% of the room, which for a room this size with a sofa in it is as low as it goes. The absence is the design: everything this room could hold, it holds better on a wall or in the next room.',
+      'The sofa centred on the south wall facing north, and nothing else. That leaves 1.32 m of clear floor the full 3.4 m width of the room, running west into the dining room without a threshold — the same floor the children use. Furniture covers 29% of the room. In the 2500 room the identical pair of objects covered 40%, and that difference is the whole argument for the 900: not that anything new fits, but that what was already here stopped filling the place.',
     furniture: [...BUILT_IN, SOFA_BIG],
     openQuestions: [
-      'The window’s figures are assumed. The sofa passing under that sill by 70 mm is why it can go where it goes, so this is the assumption most worth checking.',
-      'Nowhere to put a cup down. The nearest surface is the television cabinet, 1.7 m away.',
+      'The window’s figures are assumed. The sofa is on the south wall now rather than reaching into the reveal, so nothing depends on the sill any more — which makes this the design least exposed to that assumption.',
+      'Nowhere to put a cup down. The nearest surface is the television cabinet, 1.7 m away, and at 3.4 m wide the room can now afford a side table without noticing — which is design 5’s argument.',
     ],
   },
   {
     id: 'table-six',
     name: '2 · Sofa and a low table',
-    theme: 'A normal living room, at the price of the floor',
+    theme: 'The ordinary living room, which now fits',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The same sofa with a coffee table 450 mm in front of it — the right distance, and most of what the room had left. Furniture goes from 40% of the floor to 48%, which the checks call crowded: past about 45% a room reads as the gaps between things. The gap here is 670 mm between the table and the cabinet, which is a passage rather than a place. Worth drawing because a room with nowhere to put a cup down is a room people stop sitting in, and that cost is real too — it is just not one a plan can measure.',
+      'The same sofa with an 1100 by 600 coffee table 450 mm in front of it, which is the reach of somebody sitting down. In the old room this was the design the checks called crowded at 48%: the table left 670 mm between itself and the cabinet, a passage rather than a place. Here it covers 36% and leaves 1.15 m to walk round the north side of it and 1.15 m either end. It is the same three objects, and the only thing that changed is that the room is now big enough for the arrangement everybody draws first.',
     furniture: [
       ...BUILT_IN,
       SOFA_BIG,
-      fromCatalogue('table-coffee', 700, 1050, {
+      fromCatalogue('table-coffee', 1150, 1050, {
         status: 'considering',
-        note: '450 off the front of the sofa, which is the reach of somebody sitting down, and 670 off the cabinet, which is what is left to walk in.',
+        note: '450 off the front of the sofa and centred on the room, with 1.15 m of clear floor between it and the cabinet.',
       }),
     ],
     openQuestions: [
-      'A 1100 by 600 table is the largest that leaves a walkway. A 900 by 500 would give back 200 mm and still hold what a coffee table holds.',
-      'A 400 high table in the middle of the floor is both a hazard and the first thing to be climbed on. This is the design to come back to, not the one to start with.',
+      'A 400 high table in the middle of the floor is both a hazard and the first thing to be climbed on. That is not solved by the room being bigger; it is only made easier to walk round.',
+      'With this much floor a 1300 by 700 table would also fit and hold more. The 1100 is drawn because it is the common size, not because it is the largest that works.',
     ],
   },
   {
@@ -96,97 +102,98 @@ export const LIVING_DESIGNS: Design[] = [
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'Instead of a coffee table, a 600 square storage ottoman. It is a surface with a tray on it, a second seat when six people have eaten at the extendable table next door, and the place the toys go at eight o’clock — three jobs from a footprint 40% the size of the coffee table’s. Soft on all four sides, which matters at the height a toddler’s head is, and light enough that a child is allowed to move it, which turns the one object in the middle of the floor from an obstacle into part of the game. Furniture covers 44% of the floor: under the line, where the coffee table was over it.',
+      'Instead of a coffee table, a 600 square storage ottoman. It is a surface with a tray on it, a second seat when five people have eaten at the table next door, and the place the toys go at eight o’clock — three jobs from a footprint 55% the size of the coffee table’s. Soft on all four sides, which matters at the height a toddler’s head is, and light enough that a child is allowed to move it, which turns the one object in the middle of the floor from an obstacle into part of the game. Furniture covers 33%.',
     furniture: [
       ...BUILT_IN,
       SOFA_BIG,
-      fromCatalogue('ottoman-600', 950, 1050, {
+      fromCatalogue('ottoman-600', 1400, 1050, {
         status: 'considering',
-        note: '450 off the sofa like a coffee table, and 670 off the cabinet, but 500 mm narrower, so the floor either side of it stays walkable.',
+        note: '450 off the sofa like a coffee table and centred, but 500 mm narrower, so the floor either side of it is a route rather than a gap.',
       }),
     ],
     openQuestions: [
       'An ottoman is a worse table. Nothing with a stem stands up on one, which is most of what gets put on a coffee table.',
-      'It only holds what fits in 600 by 600 by 400, which is one evening’s toys and not a day’s.',
+      'It only holds what fits in 600 by 600 by 420, which is one evening’s toys and not a day’s.',
     ],
   },
   {
     id: 'bench-south',
-    name: '4 · Sofa and an armchair',
-    theme: 'Two places to sit facing each other, not two facing a screen',
+    name: '4 · Two seats at right angles',
+    theme: 'Somewhere to talk rather than somewhere to watch',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The narrower two-seat sofa on the south wall and an armchair in the north-west corner turned to face east, which puts two seats at right angles rather than in a row. It is a room for talking rather than for watching, and the only design here where somebody sitting down faces the dining room and the children in it rather than the television. The armchair costs 0.6 m² and the sofa gives 0.53 m² back by being 1.63 m instead of 2.18 m, so the two nearly cancel: 40% covered, the same as the room with nothing in it but the big sofa. Two seats for the price of one.',
+      'The two-seat sofa at the west end of the south wall and an armchair in the south-east corner turned to face west, so the two seats meet at a corner rather than sitting in a row. It is a room for talking, and the only design here where somebody sitting down faces the dining room and the children in it rather than the television. In the 2500 room this had to put the armchair in the north-west corner, which is now the corridor’s landing and no longer available; the wider south wall is what lets both seats sit on it. Furniture covers 29% — the same as the room with nothing in it but the big sofa, because the narrower sofa gives back almost exactly what the armchair takes.',
     furniture: [
       ...BUILT_IN,
       SOFA_SMALL,
-      fromCatalogue('armchair-750', 150, 900, {
-        rotation: 270,
+      fromCatalogue('armchair-750', 2500, 2250, {
+        rotation: 90,
         status: 'considering',
-        note: 'Facing east across the room, 50 mm clear of the sofa’s legroom. Its back is to the dining room, which is the price of facing the seat rather than the screen.',
+        note: 'In the south-east corner facing west across the room, 570 mm clear of the sofa’s east arm. Its back is to the window rather than to the way in, which is the arrangement the old room could not offer.',
       }),
     ],
     openQuestions: [
-      'An armchair here has its back to the way in. Anybody arriving from the dining room arrives behind whoever is sitting in it.',
-      'Two seats at right angles means neither of them is square to the television. This design gives the screen up rather than arranging round it.',
+      'Two seats at right angles means neither is square to the television. This design gives the screen up rather than arranging round it.',
+      'The armchair sits in front of the window’s south end. At 800 high against a 900 sill it takes no light, but it does mean a floor-length curtain cannot close at that end.',
     ],
   },
   {
     id: 'round',
-    name: '5 · Sofa, side table, and the corner left alone',
-    theme: 'Solve the cup problem with 0.2 m² and stop there',
+    name: '5 · Sofa on the east wall, under the window',
+    theme: 'Use the second wall the room just gained',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The narrower sofa pushed west, and a 450 square side table in the gap that leaves at the east end of the south wall. It answers the one complaint the empty room has — nowhere to put a cup down — for a third of the floor a coffee table costs, and it does it at the arm of the sofa where somebody sitting can reach it without leaning. Nothing stands in the middle of the room at all. Furniture covers 34%, the lowest of any design here that has somewhere to sit and somewhere to put something down, and the clear floor is a single piece 1.37 m deep running the width of the room and on into the dining room.',
+      'The arrangement the 2500 room could not hold at all: the three-seat sofa against the east wall, facing west across the room. At 2180 long it needs 2.18 m of wall and the east wall is 3.05 m, so it fits with 435 either end — where the old room’s east wall was the same length but had no width in front of it to sit facing. At 830 high the sofa passes under the 900 sill and takes no light. What it buys is the shape of the clear floor: one piece 1.65 m wide running the full 3.05 m depth along the west side, continuous with the dining room, instead of a 1.3 m strip across the middle. What it costs is the television, which is now 90° off to the right of anybody sitting down. Furniture covers 29%.',
     furniture: [
       ...BUILT_IN,
-      SOFA_SMALL,
-      fromCatalogue('side-table-450', 1900, 2400, {
+      fromCatalogue('sofa-three-seat', 2450, 435, {
+        rotation: 90,
+        clearance: { south: 800 },
         status: 'considering',
-        note: 'In the 470 mm of south wall the narrower sofa leaves, at the arm of it. 550 high, which is the height of a sofa arm.',
+        note: 'Against the east wall facing west, centred on it. Its 800 of legroom runs west to 1650, which is where the clear floor begins.',
       }),
     ],
     openQuestions: [
-      'A side table serves one end of the sofa. Whoever sits at the west end still has nowhere.',
-      'It sits in the window’s reveal at 550 high against a 900 sill, so it takes no light — but it does mean the window cannot have a floor-length curtain at that end.',
+      'The television ends up beside the sofa rather than in front of it. Either it moves to the west end of the north cabinet, where it is square to nothing, or this design accepts that the room is not arranged round a screen.',
+      'This is the design most exposed to the window’s assumed sill. If the sill is lower than 900 the sofa back is in the glass.',
     ],
   },
   {
     id: 'one-side',
-    name: '6 · Sofa west, facing the window',
-    theme: 'Turn the room a quarter, and look out instead of in',
+    name: '6 · Sofa in the south-west corner, facing east',
+    theme: 'Turn a quarter, look out, and keep the north half as a route',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The one arrangement that does not face the television. The two-seat sofa stands against the south wall’s west end, turned to face east at the window, so what somebody sitting down looks at is daylight rather than a screen. It suits the design next door that keeps the whole north half of the dining room as a route, because a sofa turned this way stops being something you walk behind. The television becomes what it is in most rooms with small children in them — something switched on for an hour, watched at an angle, and otherwise a dark rectangle on a wall.',
+      'The two-seat sofa in the south-west corner, turned to face east at the window, so what somebody sitting down looks at is daylight rather than a screen. It suits the dining design next door that keeps a clear strip along the north wall, because a sofa turned this way is not something you walk behind: the whole north half of this room stays a route, from the corridor opening straight through to the dining room. Furniture covers 23%, the lowest of any design here that has somewhere to sit. What it costs is the same as design 5 and worse — the television is behind the sofa’s left shoulder.',
     furniture: [
       ...BUILT_IN,
-      fromCatalogue('sofa-two-seat', 200, 1400, {
+      fromCatalogue('sofa-two-seat', 0, 1420, {
         rotation: 270,
         clearance: { south: 400 },
         status: 'considering',
-        note: 'Turned to face east at the window. 900 deep against a 2500 room, so it leaves 1.2 m of floor between it and the glass.',
+        note: 'Hard into the south-west corner facing east. It sits on the boundary with the dining room, and stops 970 mm short of the corridor’s landing, which is what keeps the way through open.',
       }),
     ],
     openQuestions: [
-      'Facing east means the television is 90° off. It is a real compromise and not a clever one — worth drawing to see whether the view is worth it.',
-      'The window figures are assumed, so what this sofa is looking at is assumed too.',
+      'A sofa on the boundary with the dining room narrows the opening between the two rooms to 970 mm for the length of it. That is a doorway’s width where the rest of the boundary is 2.6 m of nothing.',
+      'Facing east means the television is 90° off, and the window figures the view depends on are assumed.',
     ],
   },
   {
     id: 'play-corner',
-    name: '7 · Sofa, and a low shelf as the boundary',
-    theme: 'Let the storage do the dividing, on this side of the opening too',
+    name: '7 · Sofa, and a low shelf on the boundary',
+    theme: 'Let the storage mark where one room stops',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The three-seat sofa where it belongs, and a low cabinet standing out from the south wall at the west end, in line with the one doing the same job in the dining room. The two of them make a soft gate across the opening between the rooms: nothing blocks the way through, but there is a place where one room stops and the other starts, at a height an adult sees over and a child does not. Between them the children’s corner is a defined 1.6 m square rather than the middle of a corridor. Furniture covers 45%, exactly on the line.',
+      'The three-seat sofa where it belongs, and a 930 by 440 low cabinet standing on the boundary with the dining room, in line with the one doing the same job on the other side of it. The two make a soft gate across the opening: nothing blocks the way through, but there is a place where one room stops and the other starts, at a height an adult sees over and a child does not. It stood in the north-west corner before, which is the corridor’s landing now, so it has moved 1 m south — where it works better anyway, because it is no longer in the way of anybody going to bed. Furniture covers 33%.',
     furniture: [
       ...BUILT_IN,
       SOFA_BIG,
-      fromCatalogue('cabinet-930-low', 0, 700, {
+      fromCatalogue('cabinet-930-low', 0, 1000, {
         id: 'divider',
         name: 'Low cabinet, standing out from the wall',
         short: 'Cabinet',
@@ -194,11 +201,11 @@ export const LIVING_DESIGNS: Design[] = [
         /** Standing room on its east face, inside this room; its west face is used from the dining room. */
         clearance: { north: 400 },
         status: 'considering',
-        note: 'Out from the west edge rather than along a wall, in line with its twin in the dining room. Open on both faces, and held 70 mm clear of the sofa’s legroom.',
+        note: 'On the boundary rather than against a wall, open on both faces, and held 1 m south of the corridor’s landing so it is clear of the route to bed. Its north end stops 550 mm short of the sofa’s legroom.',
       }),
     ],
     openQuestions: [
-      'Two low cabinets facing each other across the opening narrow the way through to 1.6 m. That is generous now and will not feel it with a pushchair.',
+      'Two low cabinets facing each other across the boundary narrow the way through to 2.0 m, where it used to be 1.6 m. The wider room is what makes this design comfortable rather than tight.',
       'A 530 high unit standing free is climbable and has to be weighted or fixed down.',
     ],
   },
@@ -209,24 +216,24 @@ export const LIVING_DESIGNS: Design[] = [
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The three-seat sofa and a rug, and that is the whole room. The rug fills the floor between the sofa’s legroom and the television cabinet, and it says what a low shelf would have said without standing in the way of anything: on the rug is where toys are allowed. It costs no floor, nothing has to be fixed down, nothing is climbable, and the room can be swept clear in one movement. It is also the only design here that a two-year-old can be taught in a sentence.',
+      'The three-seat sofa and a rug, and that is the whole room. This is the design the 900 helped most: the play rug used to be next door at the dining room’s east end, on the floor this room now owns, and it was 1.7 by 1.8 m. Here it is 2.4 by 1.15 m and it sits in the middle of the room between the cabinet and the sofa’s legroom, which is where the children already are. It costs no floor the checks count, nothing has to be fixed down, nothing is climbable, and the room can be swept clear in one movement. It is also the only design here that a two-year-old can be taught in a sentence.',
     furniture: [
       ...BUILT_IN,
       SOFA_BIG,
-      fromCatalogue('rug-flatweave', 300, 500, {
+      fromCatalogue('rug-flatweave', 900, 480, {
         id: 'play-rug',
         name: 'Play rug',
         short: 'Rug',
-        width: 1900,
+        width: 2400,
         depth: 1150,
         colour: '#d5bfa3',
         status: 'considering',
-        note: 'Between the sofa’s legroom and the cabinet, held 100 mm off both so its edges are not underfoot at either end.',
+        note: 'Between the cabinet and the sofa’s legroom, 100 mm off both, and lined up with the cabinet’s west end so its edge is not across the corridor’s landing.',
       }),
     ],
     openQuestions: [
       'This is the design that admits the room has one job at a time. It works because the storage is elsewhere, which is a decision made in the other rooms and not in this one.',
-      'A washable rug that also looks like a living room rug is the hard part of this design, and it is a shopping problem rather than a plan problem.',
+      'A washable rug that also looks like a living room rug is the hard part, and it is a shopping problem rather than a plan problem.',
     ],
   },
   {
@@ -236,43 +243,44 @@ export const LIVING_DESIGNS: Design[] = [
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The three-seat sofa and 1.2 m of shelving on the wall above the television cabinet, hung at 1200 so it clears the cabinet and everything on it. It takes no floor at all — the drawing shows it dashed for that reason — which is the whole argument: in a room where furniture is already at 40% and the floor is the thing being protected, the only storage worth adding is storage that is not on the ground. Pairs with the benches next door, which is the other design that treats floor as the scarce material and everything else as negotiable.',
+      'The three-seat sofa and 1.2 m of shelving on the wall above the television cabinet, hung at 1200 so it clears the cabinet and everything on it. It takes no floor at all — the drawing shows it dashed for that reason — which was the whole argument when the room was at 40% covered and the floor was the thing being protected. At 29% that argument is weaker, and the design is now worth drawing for the opposite reason: this is the room where storage could go on the ground and does not have to.',
     furniture: [
       ...BUILT_IN,
       SOFA_BIG,
-      fromCatalogue('shelves-wall-1200', 650, 0, {
+      fromCatalogue('shelves-wall-1200', 1550, 0, {
         status: 'considering',
-        note: 'Above the television cabinet, underside at 1200. Out of reach of a child standing on the cabinet, which is the height that matters rather than the height off the floor.',
+        note: 'Above the television cabinet, underside at 1200, centred on the cabinet rather than on the room so it reads as part of it.',
       }),
     ],
     openQuestions: [
       'Shelves at 1200 over a 600 cabinet are reachable by a child who climbs on the cabinet. Whether that is a problem depends on whether the cabinet is climbable, which depends on what is in front of it.',
-      'Open shelves in a room this small are a display, not storage. Anything that needs a door has to go elsewhere.',
+      'Open shelves are a display, not storage. Anything that needs a door has to go elsewhere.',
     ],
   },
   {
     id: 'sideboard',
-    name: '10 · Sofa, table and chair — the room as it would be without children',
-    theme: 'The version everybody draws first, priced honestly',
+    name: '10 · Sofa, table and chair',
+    theme: 'Everything at once, which the room can now take',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'Sofa, coffee table, armchair: the arrangement anybody would sketch for a living room, drawn here so its cost is a number rather than a feeling. It comes to 48% of the floor covered, over the line at which a room reads as the gaps between things, and there is no continuous floor left at all — the table is hard against the armchair’s standing room on one side and its own 400 mm of legroom on the other. For two adults it would be a good room. For two adults and two children under three it is a room with nowhere to put the children, which is why every other design on this list gives something up.',
+      'Sofa, coffee table and armchair: the arrangement anybody would sketch for a living room. In the 2500 room this was the control the other nine were measured against — 48% covered on the checks’ count and 55% by the time the armchair’s standing room was included, with no continuous floor left at all and the table 850 mm from the sofa, too far to reach from a seat. Here it covers 36%, the table is 400 off the sofa where a hand can reach it, and the armchair is in the south-east corner instead of standing in the route. The design that was the argument against putting three things in this room is now just a room with three things in it, which is the clearest single statement of what the 900 bought.',
     furniture: [
       ...BUILT_IN,
       SOFA_SMALL,
-      fromCatalogue('table-coffee', 700, 1150, {
+      fromCatalogue('table-coffee', 500, 1150, {
         status: 'considering',
-        note: '400 mm off the narrower sofa, which is as close as its legroom allows, and hard up against the armchair’s standing room on the other side.',
+        note: '400 mm off the two-seat sofa, which is as close as its legroom allows, and clear of the armchair’s standing room by 600.',
       }),
-      fromCatalogue('armchair-750', 150, 400, {
-        rotation: 270,
+      fromCatalogue('armchair-750', 2500, 2250, {
+        rotation: 90,
         status: 'considering',
+        note: 'In the south-east corner facing west, as in design 4. With the table in as well it is the third seat rather than the second.',
       }),
     ],
     openQuestions: [
-      'At 55% covered this is the design the checks like least, and it is drawn for that reason. It is the control the other nine are measured against.',
-      'The coffee table ends up 850 from the sofa, which is too far to reach from a seat. Adding the third piece made the second one worse, which is the usual way small rooms fail.',
+      'Three pieces is where this room stops being about floor. At 36% it is inside every check, but it is also the design that would notice a fourth object.',
+      'The coffee table serves the sofa and not the armchair, which is 900 mm from it across the corner. A second small surface by the chair would make four objects.',
     ],
   },
 ];
@@ -281,9 +289,9 @@ export const LIVING: Room = {
   id: 'living',
   name: 'Living',
   kind: 'living',
-  /** Flush with the dining room's east edge at 6500, with no partition between them. */
-  origin: { x: 6500, y: 200 },
-  shape: { kind: 'rect', width: 2500, depth: 3050 },
+  /** Flush with the dining room's east edge at 5600, with no partition between them. */
+  origin: { x: 5600, y: 200 },
+  shape: { kind: 'rect', width: 3400, depth: 3050 },
   ceiling: 2600,
   openings: [
     {
@@ -297,6 +305,23 @@ export const LIVING: Room = {
       sill: 900,
       /** Not 'outside': what is on the other side is the rain shelter, and it is drawn. */
       to: 'rain-shelter-living',
+    },
+    {
+      /**
+       * The way into the private half, which used to be in the dining room's north wall.
+       * Widening this room west took the corridor's south end with it, so the corridor now
+       * discharges here — into the first 900 of this room's north wall — and the dining
+       * room no longer touches it at all.
+       */
+      id: 'hall-opening',
+      kind: 'opening',
+      side: 'north',
+      offset: 0,
+      width: 900,
+      height: 2100,
+      sill: 0,
+      to: 'corridor',
+      note: 'Everyone going to bed now crosses this room. That is the price of the 900 it gained, and it is a real one: the corridor used to open off the dining room, where nobody was sitting still.',
     },
   ],
   designs: LIVING_DESIGNS,

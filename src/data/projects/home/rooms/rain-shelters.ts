@@ -37,6 +37,8 @@ export const RAIN_SHELTER_LIVING: Room = {
   kind: 'canopy',
   origin: { x: 9100, y: 200 },
   shape: { kind: 'rect', width: 1000, depth: 3050 },
+  /** Glazed on the three outward sides; the west side is the building. */
+  glazed: ['north', 'east', 'south'],
   ceiling: CEILING,
   openings: [
     {
@@ -94,6 +96,8 @@ export const RAIN_SHELTER_GUEST: Room = {
   /** East of the guest room's outer wall face at 9650 — 550 further out than the living room's. */
   origin: { x: 9650, y: -2580 },
   shape: { kind: 'rect', width: 1000, depth: 2680 },
+  /** Glazed on the three outward sides; the west side is the building. */
+  glazed: ['north', 'east', 'south'],
   ceiling: CEILING,
   openings: [
     {
@@ -143,6 +147,8 @@ export const RAIN_SHELTER_CHILDRENS: Room = {
   /** North of the children's room's outer wall face at −5620, aligned with its inner width. */
   origin: { x: 2950, y: -6620 },
   shape: { kind: 'rect', width: 2550, depth: 1000 },
+  /** Glazed on the three outward sides; the south side is the building. */
+  glazed: ['north', 'east', 'west'],
   ceiling: CEILING,
   openings: [
     {

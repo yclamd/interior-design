@@ -285,6 +285,15 @@ export interface Room {
   /** The room's north-west corner in the project's plan space. */
   origin: Point;
   shape: RoomShape;
+  /**
+   * Sides closed by a glazed screen rather than by a wall or left open.
+   *
+   * This is not a window, and modelling it as one would be wrong twice over: an opening
+   * is a hole in a wall, and here the screen is the boundary itself — there is no wall
+   * for it to be a hole in. So it is stated on the room, and the sides listed are drawn
+   * as glazing instead of taking the plain edge a slab would.
+   */
+  glazed?: Side[];
   /** Clear floor to ceiling. */
   ceiling: Mm;
   /**

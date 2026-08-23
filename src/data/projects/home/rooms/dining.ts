@@ -98,20 +98,20 @@ export const DINING_DESIGNS: Design[] = [
   },
   {
     id: 'table-six',
-    name: '2 · Six at the same table, two of them at the ends',
-    theme: 'Seat six without anybody getting 500 mm of table',
+    name: '2 · Five at the same table, one of them at the west end',
+    theme: 'The fifth seat, and the sixth one the room no longer has room for',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'Two chairs down each long side and one at each end. Three a side would also fit a 1500 top on paper and would give each of six people 500 mm of edge, which is under the 550 a place setting needs and not worth drawing — a chair nobody can sit at is not a seat. This way the four along the sides keep the full 750 they get in the four-seat design and the two at the ends get the whole 900 of the table depth, so all six are properly seated. What it costs is the table moving 400 mm east, which is what it takes to keep the head of the table out of the storage run’s standing room. Clear floor east then drops from 1.75 m to 0.9 m, and the last 900 of that is the corridor’s own landing space. Six proper seats costs almost all of the continuous floor.',
+      'Two chairs down each long side and one at the west end. This was six until the living room took 900 from this room’s east end, and the sixth chair stood in exactly that 900: at the east head of the table it needed 750 behind it to be pulled out, and what is behind it now is a wall. So the design is five, and the honest reading is that the sixth seat is what the wider living room cost. The five that remain are properly seated — the four along the sides keep the full 750 they get in the four-seat design, and the one at the west end gets the whole 900 of the table depth. Three a side would put six round a 1500 top on paper and give each of them 500 mm of edge, under the 550 a place setting needs, which is a drawing of six seats rather than six seats.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('table-dining-1500', 1800, 850, {
-        clearance: { north: 750, south: 750, east: 750, west: 750 },
+        clearance: { north: 750, south: 750, west: 750 },
         status: 'considering',
-        note: 'Held 400 mm east of where the four-seat design puts it, so the chair at the west end clears the storage run’s standing room instead of sitting in it.',
+        note: 'Held 400 mm east of where the four-seat design puts it, so the chair at the west end clears the storage run’s standing room instead of sitting in it. No clearance is asked for on the east face any more: nobody sits there.',
       }),
-      /** Table x 1800–3300, y 850–1750: two a side, and one at each end facing along it. */
+      /** Table x 1800–3300, y 850–1750: two a side, and one at the west end facing along it. */
       ...chairs(
         [
           [1950, 400, 0],
@@ -119,14 +119,14 @@ export const DINING_DESIGNS: Design[] = [
           [1950, 1750, 180],
           [2600, 1750, 180],
           [1350, 1075, 270],
-          [3300, 1075, 90],
         ],
         'considering',
       ),
     ],
     openQuestions: [
-      'The chair at the west end stands exactly where the storage run’s standing room ends, and the one at the east end exactly where the corridor’s landing begins. Both are checks passed rather than margins.',
-      'Six seats in a flat with two children under three is a bet on five years from now rather than on now — and this is the version of that bet that does not also seat them badly.',
+      'The chair at the west end stands exactly where the storage run’s standing room ends. That is a check passed rather than a margin.',
+      'The sixth seat could come back by moving the whole table west, but not far: 300 mm in, the west end chair is inside the storage run’s standing room. The table would have to lose depth instead, and a 750 top seats four rather than six.',
+      'Five seats in a flat with two children under three is already a bet on five years from now. Whether the sixth was worth 900 mm of living room is the question this pair of designs exists to ask.',
     ],
   },
   {
@@ -285,12 +285,12 @@ export const DINING_DESIGNS: Design[] = [
   },
   {
     id: 'rug-zones',
-    name: '8 · Zoned by rug, not by furniture',
-    theme: 'Mark the floor instead of dividing it, and buy nothing',
+    name: '8 · A rug under the table, not beside it',
+    theme: 'Mark the dining zone, because the play zone is now next door',
     style: 'warm-minimal',
     floor: ASSUMED_BOARDS,
     summary:
-      'The same table in the same place, and the east end of the room given a rug instead of a divider. Nothing is bought, nothing is climbed, nothing has to be fixed to the floor, and the boundary is a change of surface a two-year-old reads perfectly well: on the rug is where toys are allowed. It gives up what a shelf would have given — storage, and a boundary you can see over the top of — in exchange for a floor that can be swept clear in one movement and a room that stays one room. Of the eight designs so far this is the one that changes the least and costs the least.',
+      'This design used to put a 1.7 by 1.8 m rug at the east end of the room and call it the children’s corner. That floor is the living room now — the 900 the living room took is most of what the rug stood on, and what is left at the east end is an 850 strip. So the rug does the other job a rug does in a dining room: it goes under the table and catches the chairs, which marks the eating zone in a room that has no wall around it and stops four chair legs scraping bare boards twice a day. It is 2.2 by 2.0 m, which is the smallest that still has all four chairs on it when they are pulled out. Nothing is bought that was not being bought, nothing is climbed, and the play corner it gave up has moved to the room next door, where there is now 900 mm more floor to put it on.',
     furniture: [
       ...BUILT_IN,
       fromCatalogue('table-dining-1500', 1400, 850, { status: 'planned' }),
@@ -300,20 +300,21 @@ export const DINING_DESIGNS: Design[] = [
         [1550, 1750, 180],
         [2250, 1750, 180],
       ]),
-      fromCatalogue('rug-flatweave', 2800, 400, {
-        id: 'play-rug',
-        name: 'Play rug',
+      fromCatalogue('rug-flatweave', 1250, 300, {
+        id: 'dining-rug',
+        name: 'Dining rug',
         short: 'Rug',
-        width: 1700,
-        depth: 1800,
+        width: 2200,
+        depth: 2000,
         colour: '#d5bfa3',
         status: 'considering',
-        note: 'The east end of the room, held 950 mm clear of the corridor’s landing space so its edge is not something to trip over on the way to bed.',
+        note: 'Under the table and out past the chairs on all four sides, so a chair pulled back is still on it. Held 300 mm off the north wall and 300 off the south, which is where the chairs’ own clearance ends.',
       }),
     ],
     openQuestions: [
-      'A rug under a play area is the thing that gets food on it. It wants to be washable, which rules out most rugs that look good in a dining room.',
-      'No storage at all in this design. The toys go back to the children’s room every evening, which is a habit rather than a piece of furniture.',
+      'A rug under a dining table is the thing that gets food on it, and with two children under three it will. It wants to be washable, which rules out most rugs that look good in a dining room.',
+      'A rug and four hard chairs is a rug that gets dragged. Either the chairs get felt pads or the rug gets a grip underlay, and neither is on the plan.',
+      'It could be argued the other way: a room this open reads as one space, and a rug under the table is the one move that makes the eating half look like a room. Whether that is worth doing when the boards are new is a decision about liking a floor, not about using one.',
     ],
   },
   {
@@ -381,21 +382,14 @@ export const DINING: Room = {
   kind: 'dining',
   /** Flush with the entry's east edge at 1850, so the two stand open to each other. */
   origin: { x: 1850, y: 650 },
-  shape: { kind: 'rect', width: 4650, depth: 2600 },
+  shape: { kind: 'rect', width: 3750, depth: 2600 },
   ceiling: 2600,
-  openings: [
-    {
-      id: 'hall-opening',
-      kind: 'opening',
-      side: 'north',
-      /** The last 900 of the north wall, up against the living room. */
-      offset: 3750,
-      width: 900,
-      height: 2100,
-      sill: 0,
-      to: 'corridor',
-      note: 'The way into the private half: guest shower room, children’s room, guest room and main bedroom all open off the corridor beyond it. None of them is surveyed yet.',
-    },
-  ],
+  /**
+   * No opening to the corridor any more. It used to be the last 900 of this room's north
+   * wall; the living room then took 900 of this room's east end and, with it, the corridor's
+   * south end. The way into the private half is now in the living room's north wall, and
+   * this room's north wall runs unbroken along the back of the kitchen and the shower room.
+   */
+  openings: [],
   designs: DINING_DESIGNS,
 };

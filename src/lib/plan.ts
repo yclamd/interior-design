@@ -121,6 +121,54 @@ export function roomPath(room: Room): string {
   return pathOf(outlineInPlan(room));
 }
 
+/**
+ * How thick a glazed screen is drawn. Assumed: a framed glass screen is usually 50 to
+ * 100 mm through, and at the scale these plans are read at anything thinner than this
+ * stops reading as two lines with a gap between them and becomes one grey line.
+ */
+export const SCREEN: Mm = 80;
+
+/** The screen segments on a room's boundary, one per glazed side, in plan space. */
+export function glazedSegments(room: Room): { a: Point; b: Point; inward: Point }[] {
+  if (!room.glazed?.length) return [];
+  const box = bbox(outlineInPlan(room));
+  const east = box.x + box.width;
+  const south = box.y + box.depth;
+  return room.glazed.map((side) => {
+    switch (side) {
+      case 'north':
+        return { a: { x: box.x, y: box.y }, b: { x: east, y: box.y }, inward: { x: 0, y: 1 } };
+      case 'south':
+        return { a: { x: box.x, y: south }, b: { x: east, y: south }, inward: { x: 0, y: -1 } };
+      case 'west':
+        return { a: { x: box.x, y: box.y }, b: { x: box.x, y: south }, inward: { x: 1, y: 0 } };
+      case 'east':
+        return { a: { x: east, y: box.y }, b: { x: east, y: south }, inward: { x: -1, y: 0 } };
+    }
+  });
+}
+
+/** A screen drawn the way a window is: a void band with glazing lines in it. */
+export interface GlazedRender {
+  band: string;
+  lines: string[];
+}
+
+export function glazedRenders(room: Room): GlazedRender[] {
+  return glazedSegments(room).map(({ a, b, inward }) => ({
+    band: pathOf([
+      a,
+      b,
+      offset(b, inward, SCREEN),
+      offset(a, inward, SCREEN),
+    ]),
+    /** Mirrors a window's two panes: set in from each face by the same fraction. */
+    lines: [SCREEN * 0.32, SCREEN * 0.68].map((depth) =>
+      line(offset(a, inward, depth), offset(b, inward, depth)),
+    ),
+  }));
+}
+
 /** Two edges are the same edge if both ends of one sit on the line of the other. */
 const COLLINEAR: Mm = 1;
 /** Shorter than this, a shared or remaining run is rounding rather than a boundary. */
@@ -147,9 +195,17 @@ const edgesOf = (points: Point[]): [Point, Point][] =>
  * share and against something unmeasured for the rest, and only the rest is stroked.
  */
 export function wallEdges(room: Room, rooms: Room[]): string {
-  const foreign = rooms
-    .filter((other) => other.id !== room.id)
-    .flatMap((other) => edgesOf(outlineInPlan(other)));
+  const foreign: [Point, Point][] = [
+    ...rooms
+      .filter((other) => other.id !== room.id)
+      .flatMap((other) => edgesOf(outlineInPlan(other))),
+    /**
+     * A glazed side is drawn as glazing, so it must not also take the plain edge. Its
+     * segment lies exactly on the room's own edge, so the same subtraction that removes
+     * a shared boundary removes this too.
+     */
+    ...glazedSegments(room).map(({ a, b }) => [a, b] as [Point, Point]),
+  ];
 
   const parts: string[] = [];
   for (const [a, b] of edgesOf(outlineInPlan(room))) {

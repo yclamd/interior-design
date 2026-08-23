@@ -17,6 +17,7 @@ import {
   floorRender,
   frameFor,
   furnitureRenders,
+  glazedRenders,
   labelPoint,
   isDoorway,
   openingRender,
@@ -121,6 +122,8 @@ const drawn = rooms.map((room) => {
     path: roomPath(room),
     /** Only the edges with something on the other side; open plan gets no line. */
     walls: wallEdges(room, rooms),
+    /** Sides closed by a glazed screen, drawn as glazing rather than as a slab edge. */
+    glazed: glazedRenders(room),
     fill: roomFill(design),
     floor,
     /** Each room's material is its own pattern, since the colours differ room to room. */
@@ -414,6 +417,26 @@ const descId = `plan-desc-${slug}`;
               stroke-width={px(0.5)}
             />
           )}
+          {entry.glazed.map((screen) => (
+            <g>
+              <path
+                d={screen.band}
+                fill={PLAN_COLOURS.sheet}
+                stroke={PLAN_COLOURS.structureEdge}
+                stroke-opacity="0.55"
+                stroke-width={px(0.5)}
+              />
+              {screen.lines.map((d) => (
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={PLAN_COLOURS.glazing}
+                  stroke-opacity="0.95"
+                  stroke-width={px(1)}
+                />
+              ))}
+            </g>
+          ))}
         </>
       ))
     }
