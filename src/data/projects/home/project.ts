@@ -6,7 +6,11 @@ import { GUEST_BATHROOM } from './rooms/guest-bathroom';
 import { GUEST_BEDROOM } from './rooms/guest-bedroom';
 import { KITCHEN } from './rooms/kitchen';
 import { LIVING } from './rooms/living';
-import { RAIN_SHELTER_GUEST, RAIN_SHELTER_LIVING } from './rooms/rain-shelters';
+import {
+  RAIN_SHELTER_CHILDRENS,
+  RAIN_SHELTER_GUEST,
+  RAIN_SHELTER_LIVING,
+} from './rooms/rain-shelters';
 
 /**
  * The flat itself, being surveyed room by room.
@@ -17,8 +21,8 @@ import { RAIN_SHELTER_GUEST, RAIN_SHELTER_LIVING } from './rooms/rain-shelters';
  * of it, so its furniture and its three designs come with it and correcting either
  * corrects both. Three more — kitchen, guest shower room and guest room — are measured
  * and drawn as empty shells, because a measured shell is worth having and invented
- * furniture is not. Two rain shelters hang off the east face, which is stepped, so they
- * are two slabs rather than one.
+ * furniture is not. Three rain shelters hang off the outside: two on the east face, which
+ * steps between them, and one on the north over the children's room's window.
  *
  * What is missing is the main bedroom, the back balcony, and the corridor that joins the
  * two halves. The corridor's absence shows: the opening in the dining room's north wall
@@ -33,7 +37,7 @@ import { RAIN_SHELTER_GUEST, RAIN_SHELTER_LIVING } from './rooms/rain-shelters';
 export const PROJECT: Project = {
   id: 'home',
   name: 'The flat',
-  location: 'Being surveyed — seven rooms and two rain shelters drawn so far',
+  location: 'Being surveyed — seven rooms and three rain shelters drawn so far',
   scope: 'home',
   /** Assumed: plan-up is north. The living room's window faces east, which fits. */
   northOffset: 0,
@@ -119,4 +123,5 @@ export const ROOMS: Room[] = [
   CHILDRENS_ROOM_IN_FLAT,
   RAIN_SHELTER_LIVING,
   RAIN_SHELTER_GUEST,
+  RAIN_SHELTER_CHILDRENS,
 ];

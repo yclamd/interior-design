@@ -31,4 +31,16 @@ export const CHILDRENS_ROOM_IN_FLAT: Room = {
   ...CHILDRENS_ROOM,
   /** East face on the shower room's at 5500, and one 100 wall north of it at −1020. */
   origin: { x: 2950, y: -5520 },
+  /**
+   * One override, and only to say what is on the other side of the north window.
+   *
+   * On its own the room has that window leading outside, which is all a drawing of one
+   * room can know. In the flat there is a 1 m rain shelter under it, and both sides of a
+   * shared opening have to name each other or the checks report it unpaired. The window's
+   * own figures are not repeated here — the opening is taken as it stands and only its
+   * far side is changed, so its width and sill are still written down once.
+   */
+  openings: CHILDRENS_ROOM.openings.map((opening) =>
+    opening.id === 'north-window' ? { ...opening, to: 'rain-shelter-childrens' } : opening,
+  ),
 };

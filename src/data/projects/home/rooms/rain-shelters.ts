@@ -3,7 +3,7 @@ import { single, type Room } from '~/data/types';
 import { EXISTING_CANOPY_SLAB } from '../floors';
 
 /**
- * The two 雨遮, on the east face of the flat.
+ * The three 雨遮: two on the east face of the flat and one on the north.
  *
  * Neither is a balcony. There is no door onto either, and the only way to reach one is
  * over the sill of the window it shelters, so everything about what can be put on a
@@ -17,10 +17,11 @@ import { EXISTING_CANOPY_SLAB } from '../floors';
  * got, and in a flat where ten designs argue over tenths of a square metre that is not
  * a small price. Out here it costs nothing.
  *
- * They are two rooms rather than one because the east wall steps. The living room's
- * east face stands at 9100 and the guest room's at 9650, so the slabs start 550 apart
- * and are separated by the wall between those two rooms. One room spanning both would
- * have to claim floor across a wall that is there.
+ * They are three rooms rather than one for two different reasons. The children's one is
+ * on another face of the building altogether. And the two on the east face are separate
+ * because that face steps: the living room's stands at 9100 and the guest room's at 9650,
+ * so the slabs start 550 apart with the wall between those two rooms between them, and
+ * one room spanning both would have to claim floor across a wall that is there.
  */
 
 /** Overhead is the underside of the slab above, unmeasured; nothing is checked against it. */
@@ -76,13 +77,15 @@ export const RAIN_SHELTER_LIVING: Room = {
 };
 
 /**
- * The same arrangement on the guest room's east wall, and empty for now.
+ * The same arrangement on the guest room's east wall.
  *
  * Its 1000 projection is taken from the living room's, and its 2680 is the guest room's
  * inner depth, on the same reasoning that gave the other one 3050 — neither figure was
- * given. Nothing is placed on it because nothing can be placed on it yet: the guest
- * room's east window has not been measured, and the window is what decides which part
- * of this slab is within reach and which part is decoration nobody can water.
+ * given. The window onto it is in the east wall as given, but its own figures are
+ * assumed too, so this slab rests on three guesses where the living room's rests on none.
+ * It is drawn and left empty for that reason rather than for want of a use: an adult
+ * bedroom window is a perfectly good place to keep a plant, and the reachable strip
+ * follows from the sill and the width the moment either is measured.
  */
 export const RAIN_SHELTER_GUEST: Room = {
   id: 'rain-shelter-guest',
@@ -92,19 +95,83 @@ export const RAIN_SHELTER_GUEST: Room = {
   origin: { x: 9650, y: -2580 },
   shape: { kind: 'rect', width: 1000, depth: 2680 },
   ceiling: CEILING,
-  /** No window recorded on the guest room's east wall yet, so there is nothing to pair. */
-  openings: [],
+  openings: [
+    {
+      /** The guest room's east window from this side, on figures assumed at both ends. */
+      id: 'guest-east-window',
+      kind: 'window',
+      side: 'west',
+      offset: 590,
+      width: 1500,
+      height: 1200,
+      sill: 900,
+      to: 'guest-bedroom',
+    },
+  ],
   designs: single({
-    theme: 'Measured by analogy, and nothing on it',
+    theme: 'Assumed at every figure, and left empty until one of them is real',
     style: 'warm-minimal',
     floor: EXISTING_CANOPY_SLAB,
     summary:
-      'A 2.68 m² slab with nothing on it, which is the honest state of it. A rain shelter shelters a window, so there is a window in the guest room’s east wall — but it has not been measured, and until it is, the reachable part of this slab is unknown. The pattern from the living room says the answer will be the 400 mm nearest the building and only across the width of the glass; what that comes to here depends on figures nobody has taken.',
+      'A 2.68 m² slab, drawn from three assumptions and holding nothing. Its projection is copied from the living room’s, its length from the guest room’s inner depth, and the window onto it from the children’s room’s. Everything a plant needs to be decided here — how far out a hand reaches over the sill, how much of the width is in front of glass, whether the top of a pot shows from inside — follows from figures nobody has taken, so the slab is drawn because it exists and left bare because that is all that is honest. The living room’s slab, whose window is measured, is where the one plant went.',
     furniture: [],
     openQuestions: [
-      'Both figures are assumed. The 1000 projection is copied from the living room’s slab and the 2680 from the guest room’s inner depth. Either could be wrong, and the projection is the one that matters, because it is the difference between a ledge and a slab.',
-      'The guest room’s east window is not recorded. It is the figure this slab waits on: width and sill decide what can stand here and whether it can be seen from inside.',
-      'Level, parapet and load are unknown here for the same reasons as on the other slab, and the answers may differ — this one is on a different part of the facade.',
+      'Three assumed figures: the 1000 projection from the living room’s slab, the 2680 from the guest room’s inner depth, and the window’s 1500 by 1200 with a 900 sill from the children’s room. The projection matters most — it is the difference between a ledge and a slab.',
+      'Level, parapet and load are unknown here as on the other slabs, and the answers may differ, because this one is on a part of the facade that steps 550 out from the rest.',
+    ],
+  }),
+};
+
+/**
+ * 1000 north–south by 2550 east–west, off the children's room's north wall, and the full
+ * inner width of it.
+ *
+ * This is the one slab whose window was measured before the slab was: the children's
+ * room's north window is 1500 wide with a 900 sill, so both sides of the opening are
+ * known and the two are recorded as one hole rather than as a window onto nothing.
+ *
+ * It stays empty, and not for want of figures. The other slabs are reached over a sill by
+ * an adult; this one is reached over a 900 sill in a room whose whole design is a floor
+ * for two children under three to play on. A 900 sill is climbable, and a pot on a slab
+ * on the far side of it is a reason to climb. Whatever goes out here is a decision about
+ * a window catch first and about planting second.
+ */
+export const RAIN_SHELTER_CHILDRENS: Room = {
+  id: 'rain-shelter-childrens',
+  name: "Rain shelter, children's",
+  kind: 'canopy',
+  /** North of the children's room's outer wall face at −5620, aligned with its inner width. */
+  origin: { x: 2950, y: -6620 },
+  shape: { kind: 'rect', width: 2550, depth: 1000 },
+  ceiling: CEILING,
+  openings: [
+    {
+      /**
+       * The children's room's north window from this side. Same id, so the two are read as
+       * one hole; and because this slab spans the room's full width, the offset along the
+       * wall is the same figure from either side.
+       */
+      id: 'north-window',
+      kind: 'window',
+      side: 'south',
+      offset: 525,
+      width: 1500,
+      height: 1200,
+      sill: 900,
+      to: 'childrens-room',
+    },
+  ],
+  designs: single({
+    theme: 'Left empty, because of what is on the other side of the glass',
+    style: 'warm-minimal',
+    floor: EXISTING_CANOPY_SLAB,
+    summary:
+      'A 2.55 m² slab with nothing on it, and the only one of the three that is empty by decision rather than for want of a measurement. The window onto it is 1500 wide with a 900 sill, so the reachable strip is known — the 400 nearest the building, across the middle 1500 of the wall. What is on the inside of that window is the reason not to use it: this room is drawn as a floor for two children under three, and the case for a plant they can see is also the case for a plant they will climb to. The slab is worth having drawn because it is 2.55 m² of the building that exists, and because it says the north window has something under it rather than open air.',
+    furniture: [],
+    openQuestions: [
+      'The 1000 projection is given; the 2550 is taken as the room’s full inner width, by the same reasoning as the other two, and has not been measured.',
+      'Level, parapet and load are unrecorded here as on the other slabs, and here the parapet is the figure that matters most: it is the difference between a ledge a child could get onto and one they could not.',
+      'Whether the window opens at all, and how far, is not recorded. On this one that is a safety figure rather than a gardening one.',
     ],
   }),
 };

@@ -48,6 +48,22 @@ export const GUEST_BEDROOM: Room = {
       swing: 'right-in',
       to: 'corridor',
     },
+    {
+      /**
+       * The east window, onto the rain shelter. Its figures are not measured: 1500 by
+       * 1200 with a 900 sill is the children's room's window, which is measured, in the
+       * same building and the same kind of room — a better guess than a round number.
+       * Centred on the 2680 wall, as the living room's is on its own.
+       */
+      id: 'guest-east-window',
+      kind: 'window',
+      side: 'east',
+      offset: 590,
+      width: 1500,
+      height: 1200,
+      sill: 900,
+      to: 'rain-shelter-guest',
+    },
   ],
   designs: single({
     theme: 'Measured, and nothing decided',
@@ -57,7 +73,7 @@ export const GUEST_BEDROOM: Room = {
       'The shell only, at 7.91 m² — a metre more floor than the living room next door has, which is worth saying out loud before anything is put in it. At 2950 by 2680 a double bed goes against either the north or the south wall with 1.4 to 1.5 m left in front of it, and that is a real bedroom rather than a room a bed is wedged into. The choice it forces is the wardrobe: 600 of depth off the 2950 leaves 2350, still enough for a 1500 bed centred with 425 either side.',
     furniture: [],
     openQuestions: [
-      'No window is recorded, and there has to be one in the east wall: a rain shelter projects from it, and a rain shelter shelters an opening. Its width and sill are the missing figures, and they decide where anything can stand on that slab, because the only way onto it is over the sill.',
+      'The east window is in the east wall as given, but none of its figures is measured. It is drawn 1500 by 1200 with a 900 sill, taken from the children’s room’s window because that one was measured and is in the same building, and centred on the wall. Everything that can be done with the rain shelter outside it follows from these three numbers, so they are worth taking properly.',
       'The leaf folds onto the south wall for 900 of its 2950, so that corner cannot hold a wardrobe. The north wall and the north half of the west wall are the two that stay whole.',
       'It has more floor than the living room — 7.91 m² against 7.63. Whether it stays a guest room, or becomes the room the two children take, is now a question with numbers behind it.',
     ],
