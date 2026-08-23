@@ -1,6 +1,6 @@
 import { fromCatalogue } from '~/data/catalogue';
 import { single, type Room } from '~/data/types';
-import { ASSUMED_ENTRY_TILE } from '../floors';
+import { ASSUMED_BOARDS } from '../floors';
 
 /**
  * 1650 east–west by 1300 north–south, at the west end of the flat with the front
@@ -33,11 +33,30 @@ export const ENTRY: Room = {
       swing: 'left-in',
       to: 'outside',
     },
+    {
+      /**
+       * The kitchen's sliding door, recorded from this side too because both rooms have
+       * to list a shared opening. Same id, so the two are read as one hole.
+       *
+       * It runs 1300 to 2100 in plan and this room's east wall is at 1850, so 250 of it
+       * is beyond the entry and over the dining room. That is not a mistake in either
+       * room: the entry and the dining room stand open to each other, so the doorway
+       * opens onto the join between them rather than into one of them.
+       */
+      id: 'kitchen-door',
+      kind: 'door-sliding',
+      side: 'north',
+      offset: 1100,
+      width: 800,
+      height: 2100,
+      sill: 0,
+      to: 'kitchen',
+    },
   ],
   designs: single({
     theme: 'A metre of walking width, and everything else given to storage',
     style: 'warm-minimal',
-    floor: ASSUMED_ENTRY_TILE,
+    floor: ASSUMED_BOARDS,
     summary:
       'The whole south side is a 330 mm fitted run for shoes and everything that comes in with them, which leaves 970 mm to walk through. That is enough for one person with a bag and not enough for two, which is what a 1.3 m entry gets you. The run turns the corner into the dining room’s 600 mm storage without a break, so the two read as one piece of carpentry rather than two rooms’ worth.',
     furniture: [

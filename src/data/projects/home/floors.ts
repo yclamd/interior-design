@@ -7,8 +7,10 @@ import type { FloorFinish } from '~/data/types';
  * material in it is not neutral — it is a diagram, and a diagram hides the one thing
  * about a floor that costs nothing to decide and cannot be changed afterwards: which
  * way the boards run. Entry, dining and living are one open space with no threshold
- * between them, so they take one floor, laid one way, and the drawing has to show
- * that continuity or it will keep suggesting partitions that are not there.
+ * between them, so they take one floor — given as one material, laid one way — and the
+ * drawing has to show that continuity or it will keep suggesting partitions that are
+ * not there. The entry briefly had a tile of its own on the argument that a change of
+ * material makes a threshold where there is no door; it is one floor, so it does not.
  *
  * East–west is along the length of the flat, from the front door to the window. Boards
  * laid along the long axis of a narrow space make it read longer, which here is what is
@@ -27,16 +29,17 @@ export const ASSUMED_BOARDS: FloorFinish = {
 };
 
 /**
- * The entry is the one room with a reason to differ: shoes come off in it, and a
- * change of material at the door is how a threshold is made where there is no door
- * to make one.
+ * Kitchen and shower room. Both are wet, both are cleaned rather than swept, and both
+ * get the same tile for the same reason, so they share one finish rather than two that
+ * happen to agree. These are behind doors, so a change of material at the threshold is
+ * a change the door already makes.
  */
-export const ASSUMED_ENTRY_TILE: FloorFinish = {
-  name: 'Assumed: 600 mm tile',
-  colour: '#d8d2c8',
+export const ASSUMED_WET_TILE: FloorFinish = {
+  name: 'Assumed: 300 mm tile',
+  colour: '#d3cec6',
   pattern: 'tile',
-  module: 600,
-  note: 'Not chosen. A harder, darker surface where the outside comes in, and a visible edge where it stops.',
+  module: 300,
+  note: 'Not chosen. A small module because a wet floor needs falls, and a small tile takes them without cutting.',
 };
 
 /**
