@@ -92,9 +92,26 @@ const canopy = Array.from({ length: 7 }, (_, i) => {
  * say the rug is a step.
  */
 const cs = cast && item.kind !== 'rug' && !item.mounted ? `url(#${cast})` : undefined;
+
+/**
+ * Detail is set out in the piece's bounding box, which is the footprint for everything
+ * whose footprint is a rectangle. For a piece with an outline it is not: an L-shaped
+ * sofa's box includes the corner it does not occupy, and a cushion was being drawn there,
+ * on floor. Clipping the detail to the shape means the symbol can never draw upholstery
+ * outside the upholstery, whatever the outline turns out to be.
+ */
+const clip = item.cut && cast ? `${cast}-clip-${item.id}` : undefined;
 ---
 
 <g transform={item.transform} data-piece={item.id} filter={cs}>
+  {
+    clip && (
+      <clipPath id={clip}>
+        <path d={item.shape} />
+      </clipPath>
+    )
+  }
+
   {
     item.kind === 'rug' ? (
       /**
@@ -151,7 +168,13 @@ const cs = cast && item.kind !== 'rug' && !item.mounted ? `url(#${cast})` : unde
 
   {
     detail && !item.mounted && (
-      <g fill="none" stroke={PLAN_COLOURS.ink} stroke-opacity="0.55" stroke-width={hairline}>
+      <g
+        fill="none"
+        stroke={PLAN_COLOURS.ink}
+        stroke-opacity="0.55"
+        stroke-width={hairline}
+        clip-path={clip ? `url(#${clip})` : undefined}
+      >
         {item.kind === 'bed' && (
           <>
             {/**

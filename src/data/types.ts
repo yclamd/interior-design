@@ -206,7 +206,16 @@ export type StyleKey =
   | 'muji'
   | 'industrial'
   | 'classic'
-  | 'macaron';
+  | 'macaron'
+  /**
+   * The three below were added because the first seven were all one temperature. Every
+   * one of them centred on a warm neutral, so a plan restyled from any of them to any
+   * other looked like the same plan. These are a cool one, a green one and a clay one,
+   * chosen to differ in hue rather than in the name of a movement.
+   */
+  | 'slate'
+  | 'sage'
+  | 'terracotta';
 
 /**
  * A style is a palette plus a short list of materials. Both the swatches on the

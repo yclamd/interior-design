@@ -137,6 +137,24 @@ export const CATALOGUE = {
     source: TYPICAL,
     group: 'seating',
   },
+  'sofa-corner-2400': {
+    name: 'Corner sofa, 2400 × 1600',
+    short: 'Corner sofa',
+    kind: 'sofa',
+    /**
+     * The bounding box. The footprint is an L and is given as an outline where the piece
+     * is placed, because which end the return runs from is a decision about the room
+     * rather than about the sofa.
+     */
+    width: 2400,
+    depth: 1600,
+    height: 830,
+    clearance: { south: 600 },
+    measured: false,
+    source: TYPICAL,
+    note: 'Seats four along the run and one more on the return. Wants two walls meeting at a corner, and gives back the floor a second armchair would have stood on.',
+    group: 'seating',
+  },
   'sofa-two-seat': {
     name: 'Two-seat sofa',
     short: 'Sofa',
@@ -147,7 +165,21 @@ export const CATALOGUE = {
     clearance: { south: 400 },
     measured: false,
     source: TYPICAL,
-    note: 'The size small-room guidance keeps arriving at: 1600 to 2000 wide. Half a metre narrower than a three-seat, which in a room 2.5 m across is the difference between one wall and one wall plus a chair.',
+    note: 'The size small-room guidance keeps arriving at: 1600 to 2000 wide. Half a metre narrower than a three-seat, which is the difference between one wall and one wall plus a chair.',
+    group: 'seating',
+  },
+  'sofa-chaise-2600': {
+    name: 'Sofa with chaise, 2600 × 1550',
+    short: 'Chaise sofa',
+    kind: 'sofa',
+    /** Bounding box; the footprint is an L, given as an outline where it is placed. */
+    width: 2600,
+    depth: 1550,
+    height: 780,
+    clearance: { south: 600 },
+    measured: false,
+    source: TYPICAL,
+    note: 'A three-seat run with one end open and extended to lie on. Lower in the back than a corner sofa and lighter to look over, so it divides a room less while taking nearly as much floor.',
     group: 'seating',
   },
   'armchair-750': {

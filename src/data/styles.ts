@@ -102,6 +102,51 @@ export const STYLES: Record<StyleKey, StylePreset> = {
       'Rounded edges throughout',
     ],
   },
+  slate: {
+    key: 'slate',
+    name: 'Slate and linen',
+    premise:
+      'The one cool room in the set. Blue-grey upholstery and grey-washed timber against the same warm boards as everywhere else, which is the whole trick: the floor stays where it is and the furniture stops agreeing with it, so the pieces read as objects placed in a room rather than as more of the room.',
+    palette: {
+      wall: '#eceef0',
+      floor: '#cdd2d4',
+      furniture: '#9a9d9c',
+      accent: '#3d5566',
+      textile: '#8f9aa6',
+      metal: '#5c646a',
+    },
+    materials: ['Grey-washed oak', 'Linen, undyed', 'Blued steel', 'Honed limestone', 'Wool felt'],
+  },
+  sage: {
+    key: 'sage',
+    name: 'Sage and oak',
+    premise:
+      'Green as the neutral. A sage sofa is the one colour that never argues with a timber floor, because it is the colour of what the timber grew as, and it lets the oak stay plain instead of having to carry the room on its own.',
+    palette: {
+      wall: '#eef0ea',
+      floor: '#d9d7c4',
+      furniture: '#b59b74',
+      accent: '#4e6350',
+      textile: '#9fae95',
+      metal: '#6e7a68',
+    },
+    materials: ['White oak', 'Sage wool', 'Clay plaster', 'Antique bronze', 'Rush matting'],
+  },
+  terracotta: {
+    key: 'terracotta',
+    name: 'Terracotta',
+    premise:
+      'Warm, and admitting it. Clay upholstery and a redder timber, pitched to be the warmest thing in the flat rather than a beige a shade off the floor. It suits the rooms with the least daylight, because it is the one style that does not need any to look like a decision.',
+    palette: {
+      wall: '#f4ece5',
+      floor: '#e0cdbb',
+      furniture: '#b0805a',
+      accent: '#9c4f35',
+      textile: '#c98d72',
+      metal: '#8a5f43',
+    },
+    materials: ['Iroko', 'Terracotta tile', 'Brushed copper', 'Cotton canvas', 'Lime wash'],
+  },
   classic: {
     key: 'classic',
     name: 'Quiet classic',
@@ -119,11 +164,15 @@ export const STYLES: Record<StyleKey, StylePreset> = {
   },
 };
 
+/** Warm neutrals first, then the three that are not, then the two darkest. */
 export const STYLE_ORDER: StyleKey[] = [
   'japandi',
   'warm-minimal',
   'muji',
   'macaron',
+  'sage',
+  'slate',
+  'terracotta',
   'mid-century',
   'industrial',
   'classic',
