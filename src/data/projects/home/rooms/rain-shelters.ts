@@ -61,19 +61,25 @@ export const RAIN_SHELTER_LIVING: Room = {
     style: 'warm-minimal',
     floor: EXISTING_CANOPY_SLAB,
     summary:
-      'One tall planter, held against the building and set towards the north end of the window. Against the building because a metre of slab reached through a window is not a metre of usable slab — past about 400 mm nothing can be watered without climbing out, and nobody is climbing out of this window. Towards the north end because the one design next door that turns the sofa to face east is looking through the middle of this glass, and a plant in the middle of it would be the view rather than part of it. The rest of the slab stays empty, which is not indecision: it is the part that cannot be reached. The checks flag this planter for standing 300 mm above an 1800 window’s sill and taking some of the light, which it does: 400 of the 1800, at the end furthest from where anybody sits. That is the trade the design accepts, because a planter below the sill is one nobody indoors ever sees.',
+      'Two tall planters, both held against the building and set one at each end of the window. Against the building because a metre of slab reached through a window is not a metre of usable slab — past about 400 mm nothing can be watered without climbing out, and nobody is climbing out of this window. At the ends because the design next door that turns the sofa to face east looks through the middle of this glass: 400 of the 1800 goes at each end and the 850 between them stays clear, so the planting frames the view instead of being it. The rest of the slab stays bare, which is not indecision but the part that cannot be reached. The checks flag both for standing 300 above a 900 sill and taking some of the light, which they do — that is the trade, because a planter shorter than the sill is one nobody indoors ever sees.',
     furniture: [
       fromCatalogue('planter-tall', 0, 700, {
-        id: 'canopy-planter',
+        id: 'planter-north',
+        name: 'Tall planter, north',
         status: 'considering',
-        note: 'Hard against the building face, so the whole of it is inside arm’s reach of the sill. Its 1200 height puts the top of the plant 300 above the 900 sill, which is where it can be seen from inside — a planter shorter than the sill is a planter nobody in the living room ever sees.',
+        note: 'Hard against the building face, so the whole of it is inside arm’s reach of the sill. Its 1200 height puts the top of the plant 300 above the 900 sill, which is where it can be seen from inside.',
+      }),
+      fromCatalogue('planter-tall', 0, 1950, {
+        id: 'planter-south',
+        name: 'Tall planter, south',
+        status: 'considering',
+        note: 'The south end of the same window, 850 mm clear of its pair. The two together read as one gesture rather than as a row, which is what two of anything does and three does not.',
       }),
     ],
     openQuestions: [
       'The slab’s level relative to the living room floor is not measured. A plant standing on it is only visible from inside if the slab is at or near floor level; if it sits lower, the 1200 planter is the minimum height that shows at all, and if it sits higher, this is a windowsill rather than a floor.',
-      'Whether there is a parapet or an upstand at the outer edge is not recorded, and it is the figure that decides whether anything may be stood here at all. A 400 mm pot on an open slab three floors up is a falling object.',
-      'What the slab will carry is unknown. A 400 mm planter with wet soil in it is 40 to 60 kg over a footprint a builder may not have designed for anything but rain.',
-      'Nothing on this slab can be reached without opening the window, so it cannot hold anything that needs attention in the rain. That rules out most edible planting and suits one thing that survives being ignored.',
+      'The glazed screen takes the fall risk out of this, which is what makes two pots reasonable where one was cautious. What it does not do is make them reachable in the rain: everything here is watered through the window, so this suits planting that survives being ignored for a week.',
+      'What the slab will carry is unknown. Two 400 mm planters with wet soil in them are 80 to 120 kg over two footprints a builder may not have designed for anything but rain.',
     ],
   }),
 };
@@ -113,15 +119,29 @@ export const RAIN_SHELTER_GUEST: Room = {
     },
   ],
   designs: single({
-    theme: 'Assumed at every figure, and left empty until one of them is real',
+    theme: 'Two planters at the ends of the window, on figures that are all assumed',
     style: 'warm-minimal',
     floor: EXISTING_CANOPY_SLAB,
     summary:
-      'A 2.68 m² slab, drawn from three assumptions and holding nothing. Its projection is copied from the living room’s, its length from the guest room’s inner depth, and the window onto it from the children’s room’s. Everything a plant needs to be decided here — how far out a hand reaches over the sill, how much of the width is in front of glass, whether the top of a pot shows from inside — follows from figures nobody has taken, so the slab is drawn because it exists and left bare because that is all that is honest. The living room’s slab, whose window is measured, is where the one plant went.',
-    furniture: [],
+      'The same arrangement as the living room’s slab, one floor of the facade further north: two tall planters against the building, one at each end of the window, with 560 mm of clear glass between them. The reasoning is identical because the constraint is — the only way onto this slab is over the sill, so the usable strip is the 400 nearest the building and the useful width is the width of the glass. What differs is the confidence. Every figure here is assumed: the projection is copied from the living room’s slab, the length is the guest room’s inner depth, and the window is the children’s room’s window borrowed wholesale. The planting is drawn because the slab is real and green belongs on it; where exactly it lands wants one afternoon with a tape.',
+    furniture: [
+      fromCatalogue('planter-tall', 0, 660, {
+        id: 'planter-north',
+        name: 'Tall planter, north',
+        status: 'considering',
+        note: 'Against the building at the north end of the window, within reach of the sill.',
+      }),
+      fromCatalogue('planter-tall', 0, 1620, {
+        id: 'planter-south',
+        name: 'Tall planter, south',
+        status: 'considering',
+        note: 'The south end of the same window. The window is 1500 rather than the living room’s 1800, so the clear gap between the pair is 560 rather than 850.',
+      }),
+    ],
     openQuestions: [
-      'Three assumed figures: the 1000 projection from the living room’s slab, the 2680 from the guest room’s inner depth, and the window’s 1500 by 1200 with a 900 sill from the children’s room. The projection matters most — it is the difference between a ledge and a slab.',
+      'Three assumed figures: the 1000 projection from the living room’s slab, the 2680 from the guest room’s inner depth, and the window’s 1500 by 1200 with a 900 sill from the children’s room. The projection matters most — it is the difference between a ledge and a slab, and with it the whole question of whether two planters fit.',
       'Level, parapet and load are unknown here as on the other slabs, and the answers may differ, because this one is on a part of the facade that steps 550 out from the rest.',
+      'A guest room is the room nobody is in most of the year, so this is the planting least likely to be watered. That argues for the toughest thing on the list rather than the best-looking one.',
     ],
   }),
 };
@@ -134,11 +154,17 @@ export const RAIN_SHELTER_GUEST: Room = {
  * room's north window is 1500 wide with a 900 sill, so both sides of the opening are
  * known and the two are recorded as one hole rather than as a window onto nothing.
  *
- * It stays empty, and not for want of figures. The other slabs are reached over a sill by
- * an adult; this one is reached over a 900 sill in a room whose whole design is a floor
- * for two children under three to play on. A 900 sill is climbable, and a pot on a slab
- * on the far side of it is a reason to climb. Whatever goes out here is a decision about
- * a window catch first and about planting second.
+ * It is also the one whose planting was argued out of and then back in. Left bare, the
+ * case was that a 900 sill is climbable and a pot on the far side of it is a reason to
+ * climb — which was the right call while the slab was an open ledge. Glazing the three
+ * outward sides takes the fall out of it: what is beyond the sill now is an enclosure,
+ * not a drop. What remains is soil within reach of a two-year-old who gets the window
+ * open, and that is a question about a window catch rather than about whether to have
+ * plants.
+ *
+ * The geometry differs from the other two because this face of the building does. The
+ * slab is 2550 across and only 1000 deep, so the reachable strip runs east–west along
+ * the south edge rather than north–south, and the planters sit in it side by side.
  */
 export const RAIN_SHELTER_CHILDRENS: Room = {
   id: 'rain-shelter-childrens',
@@ -168,16 +194,29 @@ export const RAIN_SHELTER_CHILDRENS: Room = {
     },
   ],
   designs: single({
-    theme: 'Left empty, because of what is on the other side of the glass',
+    theme: 'Two planters at a two-year-old’s eye level, behind glass',
     style: 'warm-minimal',
     floor: EXISTING_CANOPY_SLAB,
     summary:
-      'A 2.55 m² slab with nothing on it, and the only one of the three that is empty by decision rather than for want of a measurement. The window onto it is 1500 wide with a 900 sill, so the reachable strip is known — the 400 nearest the building, across the middle 1500 of the wall. What is on the inside of that window is the reason not to use it: this room is drawn as a floor for two children under three, and the case for a plant they can see is also the case for a plant they will climb to. The slab is worth having drawn because it is 2.55 m² of the building that exists, and because it says the north window has something under it rather than open air.',
-    furniture: [],
+      'Two tall planters side by side in the strip along the building, set inside the width of the window with 510 mm of clear glass between them. This is the one slab where the planting is for somebody in particular. The window sill is at 900 and the planters stand 1200, so the tops sit 300 above it — which for an adult is a low plant and for a child standing at that window is the whole view. Of the three slabs this is the one whose planting will actually be looked at, every day, by the two people the flat is being arranged around. What it asks in return is a window catch: the glass takes the fall risk out of an open ledge, and what is left is 60 kg of soil a metre from a floor two children play on.',
+    furniture: [
+      fromCatalogue('planter-tall', 620, 600, {
+        id: 'planter-west',
+        name: 'Tall planter, west',
+        status: 'considering',
+        note: 'In the 400 strip along the building, inside the west end of the window. This slab runs east–west, so its pair sits beside it rather than beyond it.',
+      }),
+      fromCatalogue('planter-tall', 1530, 600, {
+        id: 'planter-east',
+        name: 'Tall planter, east',
+        status: 'considering',
+        note: 'The east end of the same window, 510 mm clear of its pair — enough that a child sees two plants and a gap rather than a hedge.',
+      }),
+    ],
     openQuestions: [
       'The 1000 projection is given; the 2550 is taken as the room’s full inner width, by the same reasoning as the other two, and has not been measured.',
-      'Level, parapet and load are unrecorded here as on the other slabs, and here the parapet is the figure that matters most: it is the difference between a ledge a child could get onto and one they could not.',
-      'Whether the window opens at all, and how far, is not recorded. On this one that is a safety figure rather than a gardening one.',
+      'A window catch is now part of this design rather than a detail after it. Everything else here is drawn for two children under three, and this is the one place the drawing puts something they want on the far side of an opening.',
+      'Level and load are unrecorded as on the other slabs. The parapet matters less than it did, because the screen is doing that job now.',
     ],
   }),
 };
