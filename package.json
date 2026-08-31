@@ -12,7 +12,9 @@
     "check": "astro check",
     "model": "tsx scripts/check-model.ts",
     "planner-svg": "tsx scripts/check-planner-draw.ts",
-    "plans": "python3 scripts/render-plans.py"
+    "plans": "python3 scripts/render-plans.py",
+    "arrange": "tsx scripts/check-arrange.ts",
+    "presets": "tsx scripts/check-presets.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

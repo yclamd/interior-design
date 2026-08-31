@@ -1,5 +1,20 @@
-import type { Mm } from '~/data/types';
-import { PLAN_COLOURS, type FloorRender, type FurnitureRender, type OpeningRender } from './plan';
+import type { Box, Mm, Project, Room } from '~/data/types';
+import { bbox, grow, outlineInPlan } from './geometry';
+import {
+  PLAN_COLOURS,
+  floorRender,
+  frameFor,
+  furnitureRenders,
+  glazedRenders,
+  isDoorway,
+  openingRender,
+  roomFill,
+  roomPath,
+  wallBandsPath,
+  type FloorRender,
+  type FurnitureRender,
+  type OpeningRender,
+} from './plan';
 
 /**
  * The drawing, as functions that return SVG rather than as components.
@@ -497,6 +512,116 @@ export function openingSvg(
   }
 
   return `<g>${parts.join('')}</g>`;
+}
+
+/* ── One room, whole ───────────────────────────────────────────────────────── */
+
+export interface RoomPlan {
+  /** Everything inside the svg element, defs included. */
+  body: string;
+  viewBox: string;
+  px: Px;
+}
+
+export interface RoomPlanOptions {
+  /** Drawn as a ring, in the room's own coordinates. */
+  selected?: Box | null;
+  /** Distinct per drawing, so two plans on one page cannot share a pattern id. */
+  prefix?: string;
+}
+
+/**
+ * A single room, drawn whole.
+ *
+ * Three things needed this and each had grown its own copy: the planner, the script that
+ * renders what the planner draws, and the script that checks the presets. Three copies of
+ * a composition is how the planner came to disagree with the site in the first place, so
+ * there is one, and the two scripts genuinely verify what the page shows rather than
+ * something arranged the same way by hand.
+ *
+ * A whole-flat plan is a different drawing — envelope, several rooms, dimensions, compass
+ * — and stays where it is. This is the one-room case.
+ */
+export function roomPlanSvg(
+  room: Room,
+  project: Project,
+  options: RoomPlanOptions = {},
+): RoomPlan {
+  const design = room.designs[0]!;
+  const wall = project.walls.exterior;
+  const inner = bbox(outlineInPlan(room));
+  const frame = frameFor(
+    grow(inner, wall),
+    Math.max(240, Math.round(Math.max(inner.width, inner.depth) * 0.08)),
+    900,
+  );
+  const px = frame.px;
+  const prefix = options.prefix ?? room.id;
+  const ids = {
+    floor: `${prefix}-floor`,
+    cast: `${prefix}-cast`,
+    weave: `${prefix}-weave`,
+  };
+
+  const floor = floorRender(design);
+
+  const ring = options.selected
+    ? (() => {
+        const gap = px(3);
+        const box = options.selected;
+        return rect(
+          box.x + room.origin.x - gap,
+          box.y + room.origin.y - gap,
+          box.width + gap * 2,
+          box.depth + gap * 2,
+          {
+            rx: px(2),
+            fill: 'none',
+            stroke: PLAN_COLOURS.glazing,
+            'stroke-width': px(1.2),
+            'stroke-dasharray': `${px(4)} ${px(2.5)}`,
+          },
+        );
+      })()
+    : '';
+
+  const body =
+    `<defs>${floorPatternSvg(ids.floor, floor, px)}${weavePatternSvg(ids.weave, px)}${shadowFilterSvg(ids.cast, px)}</defs>` +
+    rect(frame.box.x, frame.box.y, frame.box.width, frame.box.depth, {
+      fill: PLAN_COLOURS.sheet,
+    }) +
+    tag('path', {
+      d: wallBandsPath(room, wall),
+      fill: PLAN_COLOURS.structure,
+      stroke: PLAN_COLOURS.structureEdge,
+      'stroke-width': px(1.4),
+    }) +
+    /**
+     * The floor, with no outline on it. An open side has no wall, and a line along it
+     * says there is one; the poché is what draws an edge, so where there is no poché
+     * there should be nothing at all.
+     */
+    tag('path', {
+      d: roomPath(room),
+      fill: floor.pattern === 'none' ? roomFill(design) : `url(#${ids.floor})`,
+    }) +
+    glazedRenders(room)
+      .map((screen) => glazingSvg(screen, px))
+      .join('') +
+    room.openings
+      .map((opening) =>
+        openingSvg(openingRender(project, new Set([room.id]), room, opening), px, {
+          fill: isDoorway(opening.kind) ? roomFill(design) : PLAN_COLOURS.sheet,
+          swept: true,
+        }),
+      )
+      .join('') +
+    furnitureRenders(room, design)
+      .map((piece) => furnitureSvg(piece, px, { detail: true, cast: ids.cast, weave: ids.weave }))
+      .join('') +
+    ring;
+
+  return { body, viewBox: frame.viewBox, px };
 }
 
 /* ── Glazed screens ────────────────────────────────────────────────────────── */
