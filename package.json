@@ -15,7 +15,8 @@
     "plans": "python3 scripts/render-plans.py",
     "arrange": "tsx scripts/check-arrange.ts",
     "presets": "tsx scripts/check-presets.ts",
-    "styles": "tsx scripts/check-styles.ts"
+    "styles": "tsx scripts/check-styles.ts",
+    "axon": "tsx scripts/check-axon.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

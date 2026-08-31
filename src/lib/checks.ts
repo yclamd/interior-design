@@ -238,6 +238,26 @@ export function checkDesign(room: Room, design: Design): Finding[] {
     });
   }
 
+  /**
+   * A design that places nothing.
+   *
+   * Every other check here asks whether the furniture works, and says nothing at all when
+   * there is none — so a bathroom with no WC and a kitchen with no counter passed silently,
+   * and the axonometric drew them as empty boxes. Those two kinds cannot function empty, so
+   * for them it is a gap rather than a decision; elsewhere an unfurnished room is a room
+   * not yet arranged, which is worth stating once and no more.
+   */
+  if (furniture.length === 0 && !UNROOFED.includes(room.kind)) {
+    const fitted = room.kind === 'bathroom' || room.kind === 'kitchen';
+    findings.push({
+      severity: fitted ? 'warning' : 'note',
+      code: 'nothing-placed',
+      message: fitted
+        ? `A ${room.kind} with nothing in it. The fittings it cannot work without are not recorded, so neither the schedule nor the model knows about them.`
+        : 'This design places nothing in the room, so there is nothing here to check.',
+    });
+  }
+
   for (const opening of room.openings) {
     if (isDoor(opening) && opening.width < WALKWAY + 100) {
       findings.push({

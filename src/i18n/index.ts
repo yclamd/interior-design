@@ -112,6 +112,10 @@ const DICTIONARY = {
     openQuestions: { en: 'Still open', zh: '待確認' },
     schedule: { en: 'Schedule', zh: '物件清單' },
     preferred: { en: 'Preferred', zh: '首選' },
+    axonCaption: {
+      en: 'The same measurements seen from above and to one side. Walls are cut at 800 mm so the room can be looked into.',
+      zh: '同一組尺寸的軸測圖。牆體在 800 公釐處切開，以便看進室內。',
+    },
     untranslated: {
       en: '',
       zh: '以下說明尚未翻譯，暫以英文顯示。',

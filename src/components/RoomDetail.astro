@@ -1,11 +1,12 @@
 ---
+import Axon from '~/components/Axon.astro';
 import Plan from '~/components/Plan.astro';
 import Findings from '~/components/Findings.astro';
 import Schedule from '~/components/Schedule.astro';
 import { KIND_LABELS, roomById, type Entry } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import type { Design, Room } from '~/data/types';
-import { say, localeHref, type Locale } from '~/i18n';
+import { say, localeHref, strings, type Locale } from '~/i18n';
 import { checkDesign } from '~/lib/checks';
 import { PLAN_COLOURS, describe } from '~/lib/plan';
 import {
@@ -144,6 +145,26 @@ const legend = [
   title={`Plan of the ${say(room.name, locale).toLowerCase()}`}
   desc={`${say(room.name, locale)}, ${box.width} by ${box.depth} millimetres, ${formatArea(area)}, with ${design.furniture.length} pieces of furniture drawn at their measured footprints and numbered to match the schedule.`}
 />
+
+{
+  /**
+   * The same design again, projected. Whether a room works is decided in the plan; whether
+   * it is a room somebody would want to stand in is much easier to see from this, and the
+   * two cannot disagree because they are drawn from the same measurements.
+   */
+}
+<div class="mt-4">
+  <Axon
+    project={project}
+    rooms={rooms}
+    only={room.id}
+    designFor={(candidate) =>
+      candidate.id === room.id
+        ? design
+        : (candidate.designs.find((entry) => entry.preferred) ?? candidate.designs[0]!)}
+    caption={strings(locale).common.axonCaption}
+  />
+</div>
 
 <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
   {

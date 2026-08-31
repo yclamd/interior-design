@@ -1,7 +1,8 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { say, LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, strings, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
+import Axon from '~/components/Axon.astro';
 import Plan from '~/components/Plan.astro';
 import Findings from '~/components/Findings.astro';
 import RoomDetail from '~/components/RoomDetail.astro';
@@ -143,6 +144,21 @@ const schema = {
             inside, {project.walls.exterior} mm at the perimeter. Rooms with more than one design are
             shown in the preferred one.
           </p>
+
+          {
+            /**
+             * The same plan projected, because a floor plan is a drawing you have to be
+             * taught to read. Nothing here is modelled twice: the solids are extruded from
+             * the measurements the plan above is drawn from.
+             */
+          }
+          <div class="mt-6">
+            <Axon
+              project={project}
+              rooms={rooms}
+              caption={strings(locale).common.axonCaption}
+            />
+          </div>
         </section>
 
         <section class="mx-auto mt-12 max-w-6xl px-5 sm:px-8">

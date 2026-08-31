@@ -1,0 +1,47 @@
+---
+import type { Project, Room } from '~/data/types';
+import { axonSvg } from '~/lib/axon';
+import { modelOf } from '~/lib/model';
+
+/**
+ * The room, or the flat, seen from above and to one side.
+ *
+ * A plan is the right drawing for deciding where things go and the wrong one for showing
+ * somebody what a room will feel like — reading a doorway as a doorway takes practice.
+ * This is the same measured data projected instead, so the two drawings can never
+ * disagree: there is no second model of the flat to keep in step.
+ *
+ * Rendered on the server, as SVG, with no runtime. It works with scripting off, it prints,
+ * and it costs the reader nothing.
+ */
+
+interface Props {
+  project: Project;
+  rooms: Room[];
+  /** One room's worth, when the page is about one room. */
+  only?: string;
+  caption: string;
+  /** Which design to model, where the page is showing something other than the preferred. */
+  designFor?: (room: Room) => Room['designs'][number];
+}
+
+const { project, rooms, only, caption, designFor } = Astro.props;
+
+const solids = modelOf(project, rooms, designFor ? { designFor } : {}).filter(
+  (solid) => !only || solid.room === only,
+);
+const view = solids.length > 0 ? axonSvg(solids) : null;
+---
+
+{
+  view && (
+    <figure class="rounded-xl border border-line bg-[#f7f4ee] p-2">
+      <svg viewBox={view.viewBox} class="h-auto w-full" role="img" aria-label={caption}>
+        <Fragment set:html={view.body} />
+      </svg>
+      <figcaption class="px-2 pt-1 pb-0.5 text-2xs leading-relaxed text-ink-faint">
+        {caption}
+      </figcaption>
+    </figure>
+  )
+}
