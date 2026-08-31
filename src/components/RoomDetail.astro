@@ -5,7 +5,7 @@ import Schedule from '~/components/Schedule.astro';
 import { KIND_LABELS, roomById, type Entry } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import type { Design, Room } from '~/data/types';
-import { localeHref, type Locale } from '~/i18n';
+import { say, localeHref, type Locale } from '~/i18n';
 import { checkDesign } from '~/lib/checks';
 import { PLAN_COLOURS, describe } from '~/lib/plan';
 import {
@@ -34,6 +34,9 @@ interface Props {
 }
 
 const { entry, room, design, heading = true, locale } = Astro.props;
+
+/** Resolved once, because .length and .map cannot be called on a Localised value. */
+const questions = design.openQuestions ? say(design.openQuestions, locale) : [];
 const { project, rooms } = entry;
 
 const findings = checkDesign(room, design);
@@ -59,7 +62,7 @@ const specs = [
   { label: 'Volume', value: `${volume.toFixed(1)} m³` },
   { label: 'Floor covered', value: `${Math.round(covered * 100)}% by furniture` },
   { label: 'Floor finish', value: design.floor.name },
-  { label: 'Style', value: style.name },
+  { label: 'Style', value: say(style.name, locale) },
   { label: 'Openings', value: `${doors.length} doors, ${windows.length} windows` },
 ];
 
@@ -88,10 +91,10 @@ const legend = [
   heading && (
     <div class="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2">
       <h1 class="font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
-        {room.name}
+        {say(room.name, locale)}
       </h1>
       <span class="rounded-full bg-paper-deep px-3 py-1 text-2xs font-bold tracking-[0.14em] text-ink-soft uppercase">
-        {KIND_LABELS[room.kind]}
+        {say(KIND_LABELS[room.kind], locale)}
       </span>
     </div>
   )
@@ -127,7 +130,7 @@ const legend = [
   )
 }
 
-<p class="lede mb-6 max-w-2xl">{design.theme}</p>
+<p class="lede mb-6 max-w-2xl">{say(design.theme, locale)}</p>
 
 <Plan
   project={project}
@@ -138,8 +141,8 @@ const legend = [
   dimensions
   swept
   nominalWidth={1000}
-  title={`Plan of the ${room.name.toLowerCase()}`}
-  desc={`${room.name}, ${box.width} by ${box.depth} millimetres, ${formatArea(area)}, with ${design.furniture.length} pieces of furniture drawn at their measured footprints and numbered to match the schedule.`}
+  title={`Plan of the ${say(room.name, locale).toLowerCase()}`}
+  desc={`${say(room.name, locale)}, ${box.width} by ${box.depth} millimetres, ${formatArea(area)}, with ${design.furniture.length} pieces of furniture drawn at their measured footprints and numbered to match the schedule.`}
 />
 
 <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
@@ -163,7 +166,7 @@ const legend = [
 <div class="mt-12 grid gap-8 lg:grid-cols-[1.35fr_1fr]">
   <div>
     <h2 class="font-serif text-2xl font-bold text-ink">How it is meant to work</h2>
-    <p class="prose-note mt-3">{design.summary}</p>
+    <p class="prose-note mt-3">{say(design.summary, locale)}</p>
 
     {
       others.length > 0 && (
@@ -187,7 +190,7 @@ const legend = [
     }
 
     <h3 class="mt-8 font-serif text-lg font-bold text-ink">The style it is drawn in</h3>
-    <p class="prose-note mt-2">{style.premise}</p>
+    <p class="prose-note mt-2">{say(style.premise, locale)}</p>
     <ul class="mt-3 flex flex-wrap gap-1.5">
       {
         style.materials.map((material) => (
@@ -268,7 +271,7 @@ const legend = [
                   href={localeHref(locale, `/projects/${project.id}/rooms/${opening.to}`)}
                   class="text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
                 >
-                  {roomById(entry, opening.to)!.name}
+                  {say(roomById(entry, opening.to)!.name, locale)}
                 </a>
               ) : (
                 (opening.to ?? '—')
@@ -289,14 +292,14 @@ const legend = [
   />
 
   {
-    design.openQuestions && design.openQuestions.length > 0 && (
+    questions.length > 0 && (
       <section class="card p-5 sm:p-6">
         <h2 class="font-serif text-lg font-bold text-ink">Still undecided</h2>
         <p class="mt-1.5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
           printed so it is not quietly forgotten
         </p>
         <ul class="mt-4 space-y-3">
-          {design.openQuestions.map((question) => (
+          {questions.map((question) => (
             <li class="flex gap-3 text-sm leading-relaxed text-ink-soft">
               <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" aria-hidden="true" />
               <span>{question}</span>

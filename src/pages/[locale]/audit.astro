@@ -4,7 +4,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Findings from '~/components/Findings.astro';
 import { PROJECTS } from '~/data/projects';
 import { checkDesign, checkProject, type Severity } from '~/lib/checks';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
   LOCALES.map((locale) => ({ params: { locale } }));
@@ -99,10 +99,10 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
             href={localeHref(locale, `/projects/${audit.entry.project.id}`)}
             class="transition-colors hover:text-brand"
           >
-            {audit.entry.project.name}
+            {say(audit.entry.project.name, locale)}
           </a>
         </h2>
-        <p class="mt-1 text-sm text-ink-faint">{audit.entry.project.location}</p>
+        <p class="mt-1 text-sm text-ink-faint">{say(audit.entry.project.location, locale)}</p>
 
         <div class="mt-5 space-y-6">
           <Findings
@@ -122,10 +122,10 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
                   )}
                   class="font-serif text-xl font-bold text-ink transition-colors hover:text-brand"
                 >
-                  {item.room.name}
+                  {say(item.room.name, locale)}
                 </a>
                 {item.room.designs.length > 1 && (
-                  <span class="text-sm text-ink-soft">{item.design.name}</span>
+                  <span class="text-sm text-ink-soft">{say(item.design.name, locale)}</span>
                 )}
                 <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
                   {item.findings.length === 0 ? 'clear' : `${item.findings.length} findings`}

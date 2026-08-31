@@ -1,7 +1,7 @@
 import { CATALOGUE_IDS, GROUP_LABELS, catalogueItem, type CatalogueGroup } from './catalogue';
 import { PROJECTS, SCOPE_LABELS } from './projects';
 import { STYLES, STYLE_ORDER } from './styles';
-import { strings, type Locale } from '~/i18n';
+import { say, strings, type Locale } from '~/i18n';
 
 /**
  * The navigation, built from the data rather than written out.
@@ -109,11 +109,11 @@ export function nav(locale: Locale): NavItem[] {
   const note = (key: keyof typeof NOTES) => NOTES[key][locale];
 
   const projectChildren: NavChild[] = PROJECTS.map(({ project, rooms }) => ({
-    label: project.name,
+    label: say(project.name, locale),
     href: `/projects/${project.id}`,
     note:
       rooms.length === 1
-        ? SCOPE_LABELS[project.scope]
+        ? say(SCOPE_LABELS[project.scope], locale)
         : `${rooms.length} ${note('rooms')} · ${rooms.reduce(
             (sum, room) => sum + room.designs.length,
             0,
@@ -127,7 +127,7 @@ export function nav(locale: Locale): NavItem[] {
   }))
     .filter((entry) => entry.count > 0)
     .map((entry) => ({
-      label: GROUP_LABELS[entry.group],
+      label: say(GROUP_LABELS[entry.group], locale),
       href: `/catalogue#${entry.group}`,
       note: `${entry.count} ${note('objects')}`,
     }));
@@ -139,13 +139,13 @@ export function nav(locale: Locale): NavItem[] {
     ),
   );
   const styleChildren: NavChild[] = STYLE_ORDER.map((key) => ({
-    label: STYLES[key].name,
+    label: say(STYLES[key].name, locale),
     href: `/styles#${key}`,
     note: used.has(key) ? note('inUse') : note('spare'),
   }));
 
   const auditChildren: NavChild[] = PROJECTS.map(({ project }) => ({
-    label: project.name,
+    label: say(project.name, locale),
     href: `/audit#${project.id}`,
     note: note('audit'),
   }));

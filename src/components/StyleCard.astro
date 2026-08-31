@@ -1,13 +1,15 @@
 ---
+import { localeOf, say, type Locale } from '~/i18n';
 import type { StylePreset } from '~/data/types';
 
 interface Props {
   style: StylePreset;
   /** Rooms drawn in this style, so a palette is never shown without its use. */
   usedBy?: string[];
+  locale?: Locale;
 }
 
-const { style, usedBy = [] } = Astro.props;
+const { style, usedBy = [], locale = localeOf(Astro.url) } = Astro.props;
 
 const SWATCHES: { key: keyof StylePreset['palette']; label: string }[] = [
   { key: 'wall', label: 'Wall' },
@@ -28,8 +30,8 @@ const SWATCHES: { key: keyof StylePreset['palette']; label: string }[] = [
     }
   </div>
   <div class="p-5 sm:p-6">
-    <h3 class="font-serif text-lg font-bold text-ink">{style.name}</h3>
-    <p class="mt-2 text-sm leading-relaxed text-ink-soft">{style.premise}</p>
+    <h3 class="font-serif text-lg font-bold text-ink">{say(style.name, locale)}</h3>
+    <p class="mt-2 text-sm leading-relaxed text-ink-soft">{say(style.premise, locale)}</p>
 
     <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
       {

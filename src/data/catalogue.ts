@@ -1,4 +1,5 @@
 import { placed } from '~/lib/geometry';
+import type { Localised } from '~/i18n';
 import type { Clearance, Furniture, FurnitureKind, FurnitureSymbol, Mm } from './types';
 
 /**
@@ -50,15 +51,15 @@ export type CatalogueGroup =
   | 'laundry'
   | 'floor';
 
-export const GROUP_LABELS: Record<CatalogueGroup, string> = {
-  sleeping: 'Sleeping',
-  seating: 'Seating',
-  tables: 'Tables and desks',
-  storage: 'Storage',
-  kitchen: 'Kitchen',
-  bathroom: 'Bathroom',
-  laundry: 'Laundry',
-  floor: 'Floor and planting',
+export const GROUP_LABELS: Record<CatalogueGroup, Localised> = {
+  sleeping: { en: 'Sleeping', zh: '睡眠' },
+  seating: { en: 'Seating', zh: '座椅' },
+  tables: { en: 'Tables and desks', zh: '桌與書桌' },
+  storage: { en: 'Storage', zh: '收納' },
+  kitchen: { en: 'Kitchen', zh: '廚房' },
+  bathroom: { en: 'Bathroom', zh: '衛浴' },
+  laundry: { en: 'Laundry', zh: '洗衣' },
+  floor: { en: 'Floor and planting', zh: '地面與植栽' },
 };
 
 const TYPICAL = 'Typical for the type — confirm against the product before ordering';

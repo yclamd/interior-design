@@ -354,7 +354,7 @@ export const LIVING_DESIGNS: Design[] = [
 
 export const LIVING: Room = {
   id: 'living',
-  name: 'Living',
+  name: { en: 'Living', zh: '客廳' },
   kind: 'living',
   /** Flush with the dining room's east edge at 5600, with no partition between them. */
   origin: { x: 5600, y: 200 },

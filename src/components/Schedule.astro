@@ -1,12 +1,14 @@
 ---
+import { localeOf, say, type Locale } from '~/i18n';
 import type { Design, Furniture, FurnitureStatus } from '~/data/types';
 import { formatLength } from '~/lib/geometry';
 
 interface Props {
   design: Design;
+  locale?: Locale;
 }
 
-const { design } = Astro.props;
+const { design, locale = localeOf(Astro.url) } = Astro.props;
 
 const STATUS: Record<FurnitureStatus, { label: string; chip: string }> = {
   owned: { label: 'Have it', chip: 'bg-brand-soft text-brand-deep' },
@@ -46,7 +48,7 @@ const facing = (item: Furniture): string => {
         design.furniture.map((item) => (
           <tr>
             <th scope="row">
-              <span class="font-medium text-ink">{item.name}</span>
+              <span class="font-medium text-ink">{say(item.name, locale)}</span>
               {item.material && <span class="block text-2xs text-ink-faint">{item.material}</span>}
               {item.mountedAt !== undefined && (
                 <span class="block text-2xs text-clay">

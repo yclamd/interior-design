@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import RoomDetail from '~/components/RoomDetail.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
@@ -44,8 +44,8 @@ const schema = {
 
 <BaseLayout
   locale={locale}
-  title={`${room.name} — ${project.name}`}
-  description={`${room.name}: ${box.width} × ${box.depth} mm, ${formatArea(area)}, drawn to scale with its furniture at real sizes. ${design.theme}`}
+  title={`${say(room.name, locale)} — ${say(project.name, locale)}`}
+  description={`${say(room.name, locale)}: ${box.width} × ${box.depth} mm, ${formatArea(area)}, drawn to scale with its furniture at real sizes. ${say(design.theme, locale)}`}
   schema={schema}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
@@ -53,7 +53,7 @@ const schema = {
       <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
       <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
-        {project.name}
+        {say(project.name, locale)}
       </a>
       {
         rooms.length > 1 && (
@@ -69,7 +69,7 @@ const schema = {
         )
       }
       <span class="mx-2">/</span>
-      <span class="text-ink-soft">{room.name}</span>
+      <span class="text-ink-soft">{say(room.name, locale)}</span>
     </nav>
 
     <RoomDetail locale={locale} entry={entry} room={room} design={design} />
@@ -86,7 +86,9 @@ const schema = {
           class="card flex-1 p-5 transition-colors hover:border-brand/40"
         >
           <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Previous</span>
-          <span class="mt-1 block font-serif text-lg font-bold text-ink">{previous.name}</span>
+          <span class="mt-1 block font-serif text-lg font-bold text-ink">
+            {say(previous.name, locale)}
+          </span>
         </a>
       )
     }
@@ -97,7 +99,9 @@ const schema = {
           class="card flex-1 p-5 text-right transition-colors hover:border-brand/40"
         >
           <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Next</span>
-          <span class="mt-1 block font-serif text-lg font-bold text-ink">{next.name}</span>
+          <span class="mt-1 block font-serif text-lg font-bold text-ink">
+            {say(next.name, locale)}
+          </span>
         </a>
       )
     }

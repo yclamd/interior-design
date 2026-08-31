@@ -4,7 +4,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import { CATALOGUE_IDS, GROUP_LABELS, catalogueItem, type CatalogueGroup } from "~/data/catalogue";
 import { PROJECTS } from '~/data/projects';
 import { formatLength } from '~/lib/geometry';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
   LOCALES.map((locale) => ({ params: { locale } }));
@@ -24,7 +24,7 @@ for (const { rooms } of PROJECTS) {
     for (const design of room.designs) {
       for (const piece of design.furniture) {
         if (!piece.from) continue;
-        const where = `${room.name}, ${design.name.toLowerCase()}`;
+        const where = `${say(room.name, locale)}, ${say(design.name, locale).toLowerCase()}`;
         const held = usage.get(piece.from) ?? [];
         if (!held.includes(where)) usage.set(piece.from, [...held, where]);
       }
@@ -91,7 +91,7 @@ const madeToSize = rows.filter((row) => row.item.madeToSize).length;
       const items = rows.filter((row) => row.item.group === group);
       return items.length === 0 ? null : (
         <section id={group} class="mx-auto mt-10 max-w-5xl scroll-mt-24 px-5 sm:px-8">
-          <h2 class="font-serif text-2xl font-bold text-ink">{GROUP_LABELS[group]}</h2>
+          <h2 class="font-serif text-2xl font-bold text-ink">{say(GROUP_LABELS[group], locale)}</h2>
           <div class="card table-scroll mt-4">
             <table class="spec min-w-[46rem]">
               <thead>
@@ -107,7 +107,7 @@ const madeToSize = rows.filter((row) => row.item.madeToSize).length;
                 {items.map(({ id, item }) => (
                   <tr>
                     <th scope="row">
-                      <span class="font-medium text-ink">{item.name}</span>
+                      <span class="font-medium text-ink">{say(item.name, locale)}</span>
                       <code class="mt-0.5 block font-mono text-2xs text-ink-faint">{id}</code>
                       {item.material && (
                         <span class="mt-0.5 block text-2xs text-ink-faint">{item.material}</span>

@@ -1,3 +1,4 @@
+import type { Localised } from '~/i18n';
 /**
  * The vocabulary the whole site is drawn from.
  *
@@ -224,9 +225,9 @@ export type StyleKey =
  */
 export interface StylePreset {
   key: StyleKey;
-  name: string;
+  name: Localised;
   /** One sentence on what the style is actually asking of a room. */
-  premise: string;
+  premise: Localised;
   palette: {
     wall: string;
     floor: string;
@@ -272,16 +273,16 @@ export interface Design {
   /** URL slug within the room. */
   id: string;
   /** How this option is referred to: 'Low and open', 'Option B', 'As built'. */
-  name: string;
+  name: Localised;
   /** What this design is trying to do that the others are not. */
-  theme: string;
+  theme: Localised;
   /** A paragraph on how it is meant to work. */
-  summary: string;
+  summary: Localised;
   style: StyleKey;
   floor: FloorFinish;
   furniture: Furniture[];
   /** Decisions still open, printed as-is so they are not quietly forgotten. */
-  openQuestions?: string[];
+  openQuestions?: Localised<string[]>;
   /** Drawn wherever a page has to pick one. The first design is used if none says so. */
   preferred?: boolean;
 }
@@ -289,7 +290,7 @@ export interface Design {
 export interface Room {
   /** URL slug, and the id other rooms refer to across an opening. Unique within a project. */
   id: string;
-  name: string;
+  name: Localised;
   kind: RoomKind;
   /** The room's north-west corner in the project's plan space. */
   origin: Point;
@@ -324,9 +325,9 @@ export interface Room {
 export interface Project {
   /** URL slug. */
   id: string;
-  name: string;
+  name: Localised;
   /** Where it is, as much as is worth publishing. */
-  location: string;
+  location: Localised;
   /** What kind of job this is, for the reader. The pages key off the room count. */
   scope: 'home' | 'floor' | 'room';
   /**
@@ -361,7 +362,7 @@ export interface Project {
   ceiling: Mm;
   style: StyleKey;
   /** The brief for the job as a whole. */
-  premise: string;
+  premise: Localised;
   /**
    * Registered floor area from the deed, in square metres because that is how it
    * is published. Shown next to the area the drawing measures, so the two can

@@ -3,7 +3,7 @@ import { single, type Room } from '~/data/types';
 
 export const STUDY: Room = {
   id: 'study',
-  name: 'The study',
+  name: { en: 'The study', zh: '書房' },
   kind: 'study',
   /**
    * Set 200 mm in from the origin so the derived building outline starts at 0, 0.

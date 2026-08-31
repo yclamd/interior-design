@@ -378,7 +378,7 @@ export const DINING_DESIGNS: Design[] = [
 
 export const DINING: Room = {
   id: 'dining',
-  name: 'Dining',
+  name: { en: 'Dining', zh: '餐廳' },
   kind: 'dining',
   /** Flush with the entry's east edge at 1850, so the two stand open to each other. */
   origin: { x: 1850, y: 650 },

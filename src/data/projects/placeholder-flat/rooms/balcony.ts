@@ -3,7 +3,7 @@ import { single, type Room } from '~/data/types';
 
 export const BALCONY: Room = {
   id: 'balcony',
-  name: 'Balcony',
+  name: { en: 'Balcony', zh: '陽台' },
   kind: 'balcony',
   origin: { x: 200, y: 200 },
   shape: { kind: 'rect', width: 4800, depth: 1300 },

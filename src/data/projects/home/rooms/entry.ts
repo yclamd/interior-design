@@ -14,7 +14,7 @@ import { ASSUMED_BOARDS } from '../floors';
  */
 export const ENTRY: Room = {
   id: 'entry',
-  name: 'Entry',
+  name: { en: 'Entry', zh: '玄關' },
   kind: 'entry',
   origin: { x: 200, y: 650 },
   shape: { kind: 'rect', width: 1650, depth: 1300 },

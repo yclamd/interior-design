@@ -9,7 +9,7 @@ import type { Room } from '~/data/types';
  */
 export const LIVING: Room = {
   id: 'living',
-  name: 'Living and dining',
+  name: { en: 'Living and dining', zh: '客餐廳' },
   kind: 'living',
   origin: { x: 200, y: 1600 },
   shape: { kind: 'rect', width: 4800, depth: 4400 },

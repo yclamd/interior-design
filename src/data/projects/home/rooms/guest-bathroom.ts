@@ -16,7 +16,7 @@ import { ASSUMED_WET_TILE } from '../floors';
  */
 export const GUEST_BATHROOM: Room = {
   id: 'guest-bathroom',
-  name: 'Guest shower room',
+  name: { en: 'Guest shower room', zh: '客用衛浴' },
   kind: 'bathroom',
   origin: { x: 2950, y: -920 },
   shape: { kind: 'rect', width: 2550, depth: 1470 },

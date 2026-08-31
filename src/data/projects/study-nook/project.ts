@@ -13,7 +13,7 @@ import { STUDY } from './rooms/study';
  */
 export const PROJECT: Project = {
   id: 'study-nook',
-  name: 'The study',
+  name: { en: 'The study', zh: '書房' },
   location: 'Placeholder — one 2.6 × 3.2 m room in an existing flat',
   scope: 'room',
   northOffset: 0,

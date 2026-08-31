@@ -36,8 +36,11 @@ import {
  */
 export const PROJECT: Project = {
   id: 'home',
-  name: 'The flat',
-  location: 'Being surveyed — seven rooms and three rain shelters drawn so far',
+  name: { en: 'The flat', zh: '這間住宅' },
+  location: {
+    en: 'Being surveyed — seven rooms and three rain shelters drawn so far',
+    zh: '丈量中——目前畫了七個空間和三片雨遮',
+  },
   scope: 'home',
   /** Assumed: plan-up is north. The living room's window faces east, which fits. */
   northOffset: 0,
@@ -109,8 +112,10 @@ export const PROJECT: Project = {
   /** Assumed. */
   ceiling: 2600,
   style: 'warm-minimal',
-  premise:
-    'The public half was drawn first. Entry, dining and living run west to east in one open line with no partition between them: you come in the west wall, the shoe run turns the corner into 2.6 m of fitted storage, and the flat opens out to a window at the far end. Beyond that window a 1 m rain shelter runs the full width of the living room — the only outdoor space here, reachable only over the sill, and the one place a plant makes sense. North of that line the private half is arriving a room at a time: the kitchen sits behind the entry with a sliding door onto it, the guest shower room behind the dining room, and the guest room behind the living room, all three measured and none of them furnished. A 900 mm opening in the dining room’s north wall is the way between the two halves, and the corridor it leads to is the piece still missing, along with the main bedroom, the children’s room and the back balcony. Everything here is geometry rather than design: the point of drawing it this early is that a room in the wrong place is obvious on a plan and invisible in a list of measurements.',
+  premise: {
+    en: 'The public half was drawn first. Entry, dining and living run west to east in one open line with no partition between them: you come in the west wall, the shoe run turns the corner into 2.6 m of fitted storage, and the flat opens out to a window at the far end. Beyond that window a 1 m rain shelter runs the full width of the living room — the only outdoor space here, reachable only over the sill, and the one place a plant makes sense. North of that line the private half is arriving a room at a time: the kitchen sits behind the entry with a sliding door onto it, the guest shower room behind the dining room, and the guest room behind the living room. A 900 mm opening is the way between the two halves, and the corridor it leads to is still missing, along with the main bedroom and the back balcony. Everything here is geometry rather than design: the point of drawing it this early is that a room in the wrong place is obvious on a plan and invisible in a list of measurements.',
+    zh: '公共半邊先畫。玄關、餐廳、客廳由西向東連成一條開放的線，之間沒有任何隔間：從西牆進門，鞋櫃轉個彎接上 2.6 公尺的固定收納，然後整戶朝著盡頭那扇窗打開。窗外一片一公尺深的雨遮橫過客廳整個寬度——那是這裡唯一的對外空間，只能翻過窗台才到得了，也是唯一適合擺植栽的地方。這條線以北，私領域正一間一間進來：廚房在玄關後方、以拉門相通，客用衛浴在餐廳後方，客臥在客廳後方。兩個半邊之間靠一個 900 的開口相連，而它通往的走廊還沒進來，主臥和後陽台也還沒有。這裡的一切都還是幾何而不是設計：這麼早就畫出來的意義在於，一個位置錯了的房間在平面圖上一眼就看得出來，在一串丈量數字裡卻完全看不出來。',
+  },
 };
 
 export const ROOMS: Room[] = [

@@ -8,7 +8,7 @@ import { CHILDRENS_ROOM } from './rooms/childrens-room';
  */
 export const PROJECT: Project = {
   id: 'childrens-room',
-  name: "The children's room",
+  name: { en: "The children's room", zh: '小孩房' },
   location: 'A 2.55 × 4.50 m room with one north window',
   scope: 'room',
   /** The window is in the north wall, so plan-up is north. */

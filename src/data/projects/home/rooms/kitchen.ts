@@ -21,7 +21,7 @@ import { ASSUMED_WET_TILE } from '../floors';
  */
 export const KITCHEN: Room = {
   id: 'kitchen',
-  name: 'Kitchen',
+  name: { en: 'Kitchen', zh: '廚房' },
   kind: 'kitchen',
   /** West wall on the entry's line at 200; south wall one 100 wall north of it at 550. */
   origin: { x: 200, y: -1450 },

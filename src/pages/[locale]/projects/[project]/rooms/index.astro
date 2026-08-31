@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
 import { KIND_LABELS, PROJECTS, projectById } from '~/data/projects';
@@ -45,15 +45,15 @@ const TONE = {
 
 <BaseLayout
   locale={locale}
-  title={`Rooms — ${project.name}`}
-  description={`Every room in ${project.name}, each drawn to scale from its measured dimensions, with its furniture set out at real sizes.`}
+  title={`Rooms — ${say(project.name, locale)}`}
+  description={`Every room in ${say(project.name, locale)}, each drawn to scale from its measured dimensions, with its furniture set out at real sizes.`}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 pb-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
       <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
       <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
-        {project.name}
+        {say(project.name, locale)}
       </a>
       <span class="mx-2">/</span>
       <span class="text-ink-soft">Rooms</span>
@@ -86,14 +86,14 @@ const TONE = {
                   padding={700}
                   nominalWidth={520}
                   minWidth="min-w-0"
-                  title={`Plan of the ${card.room.name.toLowerCase()}`}
-                  desc={`${card.room.name}, ${card.box.width} by ${card.box.depth} millimetres, ${formatArea(card.area)}.`}
+                  title={`Plan of the ${say(card.room.name, locale).toLowerCase()}`}
+                  desc={`${say(card.room.name, locale)}, ${card.box.width} by ${card.box.depth} millimetres, ${formatArea(card.area)}.`}
                 />
               </div>
               <div class="p-5">
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
-                    {KIND_LABELS[card.room.kind]}
+                    {say(KIND_LABELS[card.room.kind], locale)}
                   </span>
                   {card.room.designs.length > 1 && (
                     <span class="rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
@@ -112,9 +112,9 @@ const TONE = {
                   )}
                 </div>
                 <h2 class="mt-2 font-serif text-xl font-bold text-ink transition-colors group-hover:text-brand">
-                  {card.room.name}
+                  {say(card.room.name, locale)}
                 </h2>
-                <p class="mt-2 text-sm leading-relaxed text-ink-soft">{card.design.theme}</p>
+                <p class="mt-2 text-sm leading-relaxed text-ink-soft">{say(card.design.theme, locale)}</p>
                 <dl class="mt-4 grid grid-cols-3 gap-3 border-t border-line-soft pt-4">
                   <div>
                     <dt class="text-2xs text-ink-faint uppercase">Floor</dt>

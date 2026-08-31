@@ -4,7 +4,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import StyleCard from '~/components/StyleCard.astro';
 import { PROJECTS } from '~/data/projects';
 import { STYLES, STYLE_ORDER } from '~/data/styles';
-import { LOCALES, type Locale } from '~/i18n';
+import { say, LOCALES, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
   LOCALES.map((locale) => ({ params: { locale } }));
@@ -24,8 +24,8 @@ const cards = STYLE_ORDER.map((key) => ({
         .filter((design) => design.style === key)
         .map((design) =>
           room.designs.length > 1
-            ? `${room.name.toLowerCase()} (${design.name.toLowerCase()})`
-            : room.name.toLowerCase(),
+            ? `${say(room.name, locale).toLowerCase()} (${say(design.name, locale).toLowerCase()})`
+            : say(room.name, locale).toLowerCase(),
         ),
     ),
   ),

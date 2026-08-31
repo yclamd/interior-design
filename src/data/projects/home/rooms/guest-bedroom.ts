@@ -23,7 +23,7 @@ import { ASSUMED_BOARDS } from '../floors';
  */
 export const GUEST_BEDROOM: Room = {
   id: 'guest-bedroom',
-  name: 'Guest room',
+  name: { en: 'Guest room', zh: '客臥' },
   kind: 'bedroom',
   origin: { x: 6600, y: -2580 },
   shape: { kind: 'rect', width: 2950, depth: 2680 },

@@ -1,3 +1,4 @@
+import type { Localised } from '~/i18n';
 import type { Project, Room, RoomKind } from './types';
 import {
   PROJECT as CHILDRENS_ROOM,
@@ -36,23 +37,23 @@ export const roomById = (entry: Entry, id: string): Room | undefined =>
 /** Rooms whose floor counts towards the living area, as against space that serves it. */
 export const HABITABLE: RoomKind[] = ['living', 'dining', 'kitchen', 'bedroom', 'study'];
 
-export const KIND_LABELS: Record<RoomKind, string> = {
-  living: 'Living',
-  dining: 'Dining',
-  kitchen: 'Kitchen',
-  bedroom: 'Bedroom',
-  study: 'Study',
-  bathroom: 'Bathroom',
-  entry: 'Entry',
-  corridor: 'Circulation',
-  balcony: 'Balcony',
-  canopy: 'Rain shelter',
-  utility: 'Utility',
-  storage: 'Storage',
+export const KIND_LABELS: Record<RoomKind, Localised> = {
+  living: { en: 'Living', zh: '客廳' },
+  dining: { en: 'Dining', zh: '餐廳' },
+  kitchen: { en: 'Kitchen', zh: '廚房' },
+  bedroom: { en: 'Bedroom', zh: '臥室' },
+  study: { en: 'Study', zh: '書房' },
+  bathroom: { en: 'Bathroom', zh: '衛浴' },
+  entry: { en: 'Entry', zh: '玄關' },
+  corridor: { en: 'Circulation', zh: '動線' },
+  balcony: { en: 'Balcony', zh: '陽台' },
+  canopy: { en: 'Rain shelter', zh: '雨遮' },
+  utility: { en: 'Utility', zh: '工作間' },
+  storage: { en: 'Storage', zh: '儲藏' },
 };
 
-export const SCOPE_LABELS: Record<Project['scope'], string> = {
-  home: 'Whole home',
-  floor: 'One floor',
-  room: 'Single room',
+export const SCOPE_LABELS: Record<Project['scope'], Localised> = {
+  home: { en: 'Whole home', zh: '整戶' },
+  floor: { en: 'One floor', zh: '單層' },
+  room: { en: 'Single room', zh: '單一空間' },
 };

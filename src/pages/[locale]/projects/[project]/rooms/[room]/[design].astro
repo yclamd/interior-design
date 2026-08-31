@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import RoomDetail from '~/components/RoomDetail.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
@@ -37,15 +37,15 @@ const area = roomArea(room);
 
 <BaseLayout
   locale={locale}
-  title={`${room.name}: ${design.name} — ${project.name}`}
-  description={`${design.name}, an alternative design for the ${room.name.toLowerCase()}: ${design.theme}`}
+  title={`${say(room.name, locale)}: ${say(design.name, locale)} — ${say(project.name, locale)}`}
+  description={`${say(design.name, locale)}, an alternative design for the ${say(room.name, locale).toLowerCase()}: ${say(design.theme, locale)}`}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="mb-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
       <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
       <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
-        {project.name}
+        {say(project.name, locale)}
       </a>
       {
         rooms.length > 1 && (
@@ -65,15 +65,15 @@ const area = roomArea(room);
         href={localeHref(locale, `/projects/${project.id}/rooms/${room.id}`)}
         class="transition-colors hover:text-brand"
       >
-        {room.name}
+        {say(room.name, locale)}
       </a>
       <span class="mx-2">/</span>
-      <span class="text-ink-soft">{design.name}</span>
+      <span class="text-ink-soft">{say(design.name, locale)}</span>
     </nav>
 
     <div class="mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-2">
       <h1 class="font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
-        {room.name}: {design.name}
+        {say(room.name, locale)}: {say(design.name, locale)}
       </h1>
       <span class="rounded-full bg-clay-soft px-3 py-1 text-2xs font-bold tracking-[0.14em] text-clay uppercase">
         Alternative

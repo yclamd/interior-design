@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { CATALOGUE_IDS, catalogueItem } from '~/data/catalogue';
 import { STYLES, STYLE_ORDER } from '~/data/styles';
-import { LOCALES, strings, type Locale } from '~/i18n';
+import { say, LOCALES, strings, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
   LOCALES.map((locale) => ({ params: { locale } }));
@@ -30,6 +30,7 @@ const s = strings(locale);
 const pickable = CATALOGUE_IDS.filter((id) => catalogueItem(id).mountedAt === undefined).map(
   (id) => {
     const item = catalogueItem(id);
+    /** The catalogue's own names are not localised yet, so they are read straight. */
     return { id, label: `${item.name} — ${item.width}×${item.depth}` };
   },
 );

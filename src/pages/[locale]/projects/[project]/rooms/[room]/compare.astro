@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
@@ -33,6 +33,8 @@ const columns = room.designs.map((design) => {
   return {
     design,
     findings,
+    /** Resolved here, because .length and .map cannot be called on a Localised value. */
+    questions: design.openQuestions ? say(design.openQuestions, locale) : [],
     severity: worst(findings),
     covered: Math.round((footprintArea(design) / area) * 100),
     pieces: design.furniture.filter((item) => item.kind !== 'rug').length,
@@ -60,29 +62,29 @@ const TONE = {
 
 <BaseLayout
   locale={locale}
-  title={`${room.name}, side by side — ${project.name}`}
-  description={`The ${room.designs.length} designs for the ${room.name.toLowerCase()} drawn against the same shell, with what each one costs and gains.`}
+  title={`${say(room.name, locale)}, side by side — ${say(project.name, locale)}`}
+  description={`The ${room.designs.length} designs for the ${say(room.name, locale).toLowerCase()} drawn against the same shell, with what each one costs and gains.`}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
       <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
       <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
-        {project.name}
+        {say(project.name, locale)}
       </a>
       <span class="mx-2">/</span>
       <a
         href={localeHref(locale, `/projects/${project.id}/rooms/${room.id}`)}
         class="transition-colors hover:text-brand"
       >
-        {room.name}
+        {say(room.name, locale)}
       </a>
       <span class="mx-2">/</span>
       <span class="text-ink-soft">Side by side</span>
     </nav>
 
     <h1 class="mt-5 font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
-      {room.name}, {room.designs.length} ways
+      {say(room.name, locale)}, {room.designs.length} ways
     </h1>
     <p class="lede mt-5 max-w-2xl">
       The same {box.width} × {box.depth} mm shell and the same {formatArea(area)} of floor in every
@@ -107,8 +109,8 @@ const TONE = {
                 padding={700}
                 nominalWidth={560}
                 minWidth="min-w-0"
-                title={`${room.name}, ${column.design.name}`}
-                desc={`${column.design.name}: ${column.pieces} pieces covering ${column.covered}% of the floor.`}
+                title={`${say(room.name, locale)}, ${say(column.design.name, locale)}`}
+                desc={`${say(column.design.name, locale)}: ${column.pieces} pieces covering ${column.covered}% of the floor.`}
               />
             </div>
             <div class="p-5">
@@ -131,10 +133,10 @@ const TONE = {
               </div>
               <h2 class="mt-2 font-serif text-xl font-bold text-ink">
                 <a href={column.href} class="transition-colors hover:text-brand">
-                  {column.design.name}
+                  {say(column.design.name, locale)}
                 </a>
               </h2>
-              <p class="mt-2 text-sm leading-relaxed text-ink-soft">{column.design.theme}</p>
+              <p class="mt-2 text-sm leading-relaxed text-ink-soft">{say(column.design.theme, locale)}</p>
 
               <dl class="mt-4 grid grid-cols-3 gap-3 border-t border-line-soft pt-4">
                 <div>
@@ -147,17 +149,19 @@ const TONE = {
                 </div>
                 <div>
                   <dt class="text-2xs text-ink-faint uppercase">Style</dt>
-                  <dd class="mt-0.5 text-sm font-bold text-ink">{STYLES[column.design.style].name}</dd>
+                  <dd class="mt-0.5 text-sm font-bold text-ink">
+                    {say(STYLES[column.design.style].name, locale)}
+                  </dd>
                 </div>
               </dl>
 
-              <p class="prose-note mt-4">{column.design.summary}</p>
+              <p class="prose-note mt-4">{say(column.design.summary, locale)}</p>
 
-              {column.design.openQuestions && column.design.openQuestions.length > 0 && (
+              {column.questions.length > 0 && (
                 <>
                   <p class="mt-5 eyebrow">What it costs</p>
                   <ul class="mt-2 space-y-2">
-                    {column.design.openQuestions.map((question) => (
+                    {column.questions.map((question) => (
                       <li class="flex gap-2 text-xs leading-relaxed text-ink-soft">
                         <span
                           class="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-clay"
@@ -197,7 +201,7 @@ const TONE = {
               <tr>
                 <th scope="col">Piece</th>
                 {room.designs.map((design) => (
-                  <th scope="col">{design.name}</th>
+                  <th scope="col">{say(design.name, locale)}</th>
                 ))}
               </tr>
             </thead>
@@ -206,7 +210,7 @@ const TONE = {
                 <tr>
                   <th scope="row">{name}</th>
                   {room.designs.map((design) => {
-                    const piece = design.furniture.find((item) => item.name === name);
+                    const piece = design.furniture.find((item) => say(item.name, locale) === name);
                     return (
                       <td class={piece ? 'text-ink' : 'text-ink-faint'}>
                         {piece ? `${piece.width} × ${piece.depth}` : 'not in this one'}

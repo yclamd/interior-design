@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { LOCALES, localeHref, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
 import Findings from '~/components/Findings.astro';
@@ -101,24 +101,24 @@ const schema = {
 };
 ---
 
-<BaseLayout title={project.name} description={project.premise} schema={schema}>
+<BaseLayout title={say(project.name, locale)} description={say(project.premise, locale)} schema={schema}>
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
       <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
-      <span class="text-ink-soft">{project.name}</span>
+      <span class="text-ink-soft">{say(project.name, locale)}</span>
     </nav>
 
     <div class="mt-5 flex flex-wrap items-center gap-3">
-      <p class="eyebrow">{project.location}</p>
+      <p class="eyebrow">{say(project.location, locale)}</p>
       <span class="rounded-full bg-paper-deep px-2.5 py-1 text-2xs font-bold tracking-[0.14em] text-ink-soft uppercase">
-        {SCOPE_LABELS[project.scope]}
+        {say(SCOPE_LABELS[project.scope], locale)}
       </span>
     </div>
     <h1 class="mt-3 max-w-3xl font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.6rem]">
-      {project.name}, set out at full size
+      {say(project.name, locale)}, set out at full size
     </h1>
-    <p class="lede mt-5 max-w-2xl">{project.premise}</p>
+    <p class="lede mt-5 max-w-2xl">{say(project.premise, locale)}</p>
   </section>
 
   {
@@ -133,7 +133,7 @@ const schema = {
             project={project}
             rooms={rooms}
             labels="rooms"
-            title={`Floor plan of ${project.name}`}
+            title={`Floor plan of ${say(project.name, locale)}`}
             desc={`A scaled floor plan of the whole project: ${rooms.length} rooms totalling ${formatArea(drawnArea)}, drawn inside a ${formatLength(envelope.width)} by ${formatLength(envelope.depth)} envelope with ${project.walls.exterior} mm exterior and ${project.walls.interior} mm interior walls.`}
             nominalWidth={1100}
           />
@@ -184,7 +184,7 @@ const schema = {
                         href={localeHref(locale, `/projects/${project.id}/rooms/${row.room.id}`)}
                         class="font-medium text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
                       >
-                        {row.room.name}
+                        {say(row.room.name, locale)}
                       </a>
                       {row.room.designs.length > 1 && (
                         <span class="ml-2 rounded-full bg-brand-soft px-2 py-0.5 text-2xs font-bold text-brand-deep">
@@ -192,7 +192,7 @@ const schema = {
                         </span>
                       )}
                     </th>
-                    <td class="text-ink-soft">{KIND_LABELS[row.room.kind]}</td>
+                    <td class="text-ink-soft">{say(KIND_LABELS[row.room.kind], locale)}</td>
                     <td class="whitespace-nowrap">{row.dimensions}</td>
                     <td class="whitespace-nowrap">{formatArea(row.area)}</td>
                     <td class="whitespace-nowrap">{row.room.ceiling}</td>

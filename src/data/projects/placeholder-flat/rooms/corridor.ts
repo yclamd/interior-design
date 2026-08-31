@@ -2,7 +2,7 @@ import { single, type Room } from '~/data/types';
 
 export const CORRIDOR: Room = {
   id: 'corridor',
-  name: 'Hall',
+  name: { en: 'Hall', zh: '走廊' },
   kind: 'corridor',
   origin: { x: 5100, y: 4800 },
   shape: { kind: 'rect', width: 3700, depth: 1200 },

@@ -6,7 +6,7 @@ import { PROJECTS, SCOPE_LABELS } from '~/data/projects';
 import { SITE } from '~/consts';
 import { preferredDesign } from '~/data/types';
 import { formatArea, roomArea } from '~/lib/geometry';
-import { LOCALES, localeHref, strings, type Locale } from '~/i18n';
+import { say, LOCALES, localeHref, strings, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
   LOCALES.map((locale) => ({ params: { locale } }));
@@ -54,7 +54,7 @@ const choices = PROJECTS.flatMap((entry) =>
     <div class="mx-auto max-w-6xl px-5 pt-10 pb-4 sm:px-8">
       <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h1 class="font-serif text-2xl leading-none font-bold text-ink sm:text-3xl">
-          {lead.project.name}
+          {say(lead.project.name, locale)}
         </h1>
         <p class="font-mono text-xs tracking-[0.1em] text-ink-faint uppercase tabular">
           {lead.rooms.length} {s.common.rooms.toLowerCase()} · {formatArea(lead.drawn)} · {lead.designs}
@@ -70,7 +70,7 @@ const choices = PROJECTS.flatMap((entry) =>
           labels="rooms"
           nominalWidth={1240}
           minWidth="min-w-0"
-          title={`Floor plan of ${lead.project.name}`}
+          title={`Floor plan of ${say(lead.project.name, locale)}`}
           desc={`${lead.rooms.length} rooms totalling ${formatArea(lead.drawn)}.`}
         />
       </div>
@@ -102,16 +102,16 @@ const choices = PROJECTS.flatMap((entry) =>
                   labels="none"
                   nominalWidth={420}
                   minWidth="min-w-0"
-                  title={`Floor plan of ${card.project.name}`}
+                  title={`Floor plan of ${say(card.project.name, locale)}`}
                   desc={`${card.rooms.length} rooms totalling ${formatArea(card.drawn)}.`}
                 />
               </div>
               <div class="p-4">
                 <h3 class="font-serif text-base font-bold text-ink transition-colors group-hover:text-brand">
-                  {card.project.name}
+                  {say(card.project.name, locale)}
                 </h3>
                 <p class="mt-1 font-mono text-2xs tracking-[0.1em] text-ink-faint uppercase tabular">
-                  {SCOPE_LABELS[card.project.scope]} · {formatArea(card.drawn)}
+                  {say(SCOPE_LABELS[card.project.scope], locale)} · {formatArea(card.drawn)}
                 </p>
               </div>
             </a>
@@ -130,9 +130,9 @@ const choices = PROJECTS.flatMap((entry) =>
           {choices.map((choice) => (
             <li>
               <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <h3 class="font-serif text-lg font-bold text-ink">{choice.room.name}</h3>
+                <h3 class="font-serif text-lg font-bold text-ink">{say(choice.room.name, locale)}</h3>
                 <span class="font-mono text-2xs tracking-[0.1em] text-ink-faint uppercase tabular">
-                  {choice.entry.project.name}
+                  {say(choice.entry.project.name, locale)}
                 </span>
                 <a
                   href={localeHref(
@@ -166,13 +166,13 @@ const choices = PROJECTS.flatMap((entry) =>
                           dimensions={false}
                           nominalWidth={300}
                           minWidth="min-w-0"
-                          title={`${choice.room.name}: ${design.name}`}
-                          desc={design.theme}
+                          title={`${say(choice.room.name, locale)}: ${say(design.name, locale)}`}
+                          desc={say(design.theme, locale)}
                         />
                       </div>
                       <div class="p-2.5">
                         <p class="text-xs leading-snug font-medium text-ink transition-colors group-hover:text-brand">
-                          {design.name}
+                          {say(design.name, locale)}
                         </p>
                       </div>
                     </a>

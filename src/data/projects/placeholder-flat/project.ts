@@ -19,7 +19,7 @@ export const PROJECT: Project = {
    * Named for what it is. It shared the real flat's name until both appeared in the
    * same menu, one under the other, and nothing but the room count told them apart.
    */
-  name: 'Placeholder flat',
+  name: { en: 'Placeholder flat', zh: '示範住宅' },
   location: 'Placeholder — a 9.0 × 9.2 m single-floor plan',
   scope: 'home',
   northOffset: 0,

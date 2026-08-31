@@ -122,7 +122,7 @@ const FITTED: Furniture[] = [
 
 export const CHILDRENS_ROOM: Room = {
   id: 'childrens-room',
-  name: "Children's room",
+  name: { en: "Children's room", zh: '小孩房' },
   kind: 'bedroom',
   origin: { x: 200, y: 200 },
   shape: { kind: 'rect', width: 2550, depth: 4500 },

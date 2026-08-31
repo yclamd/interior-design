@@ -3,7 +3,7 @@ import { single, type Room } from '~/data/types';
 
 export const BEDROOM_MAIN: Room = {
   id: 'bedroom-main',
-  name: 'Main bedroom',
+  name: { en: 'Main bedroom', zh: '主臥' },
   kind: 'bedroom',
   origin: { x: 200, y: 6100 },
   shape: { kind: 'rect', width: 4600, depth: 2900 },

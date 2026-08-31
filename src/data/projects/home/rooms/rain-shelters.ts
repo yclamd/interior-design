@@ -33,7 +33,7 @@ const CEILING = 2600;
  */
 export const RAIN_SHELTER_LIVING: Room = {
   id: 'rain-shelter-living',
-  name: 'Rain shelter, living',
+  name: { en: 'Rain shelter, living', zh: '雨遮，客廳' },
   kind: 'canopy',
   origin: { x: 9100, y: 200 },
   shape: { kind: 'rect', width: 1000, depth: 3050 },
@@ -97,7 +97,7 @@ export const RAIN_SHELTER_LIVING: Room = {
  */
 export const RAIN_SHELTER_GUEST: Room = {
   id: 'rain-shelter-guest',
-  name: 'Rain shelter, guest',
+  name: { en: 'Rain shelter, guest', zh: '雨遮，客臥' },
   kind: 'canopy',
   /** East of the guest room's outer wall face at 9650 — 550 further out than the living room's. */
   origin: { x: 9650, y: -2580 },
@@ -168,7 +168,7 @@ export const RAIN_SHELTER_GUEST: Room = {
  */
 export const RAIN_SHELTER_CHILDRENS: Room = {
   id: 'rain-shelter-childrens',
-  name: "Rain shelter, children's",
+  name: { en: "Rain shelter, children's", zh: '雨遮，小孩房' },
   kind: 'canopy',
   /** North of the children's room's outer wall face at −5620, aligned with its inner width. */
   origin: { x: 2950, y: -6620 },
