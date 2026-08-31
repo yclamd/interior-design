@@ -194,7 +194,7 @@ const edgesOf = (points: Point[]): [Point, Point][] =>
  * matches matter: the dining room's west edge is open to the entry for the 1300 they
  * share and against something unmeasured for the rest, and only the rest is stroked.
  */
-export function wallEdges(room: Room, rooms: Room[]): string {
+export function wallSegments(room: Room, rooms: Room[]): { a: Point; b: Point }[] {
   const foreign: [Point, Point][] = [
     ...rooms
       .filter((other) => other.id !== room.id)
@@ -207,7 +207,7 @@ export function wallEdges(room: Room, rooms: Room[]): string {
     ...glazedSegments(room).map(({ a, b }) => [a, b] as [Point, Point]),
   ];
 
-  const parts: string[] = [];
+  const parts: { a: Point; b: Point }[] = [];
   for (const [a, b] of edgesOf(outlineInPlan(room))) {
     const span = Math.hypot(b.x - a.x, b.y - a.y);
     if (span < RUN) continue;
@@ -227,15 +227,28 @@ export function wallEdges(room: Room, rooms: Room[]): string {
     }
 
     covered.sort((one, two) => one[0] - two[0]);
-    const point = (t: number) => `${round(a.x + (b.x - a.x) * t)} ${round(a.y + (b.y - a.y) * t)}`;
+    const at = (t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
     let cursor = 0;
     for (const [from, to] of covered) {
-      if ((from - cursor) * span > RUN) parts.push(`M ${point(cursor)} L ${point(from)}`);
+      if ((from - cursor) * span > RUN) parts.push({ a: at(cursor), b: at(from) });
       cursor = Math.max(cursor, to);
     }
-    if ((1 - cursor) * span > RUN) parts.push(`M ${point(cursor)} L ${point(1)}`);
+    if ((1 - cursor) * span > RUN) parts.push({ a: at(cursor), b: at(1) });
   }
-  return parts.join(' ');
+  return parts;
+}
+
+/**
+ * The same segments as a path, for the drawing.
+ *
+ * The model needs them as geometry and the plan needs them as a path, and they must be
+ * the same segments: a wall drawn in one view and missing from the other would be the
+ * kind of disagreement this whole codebase is arranged to make impossible.
+ */
+export function wallEdges(room: Room, rooms: Room[]): string {
+  return wallSegments(room, rooms)
+    .map(({ a, b }) => `M ${round(a.x)} ${round(a.y)} L ${round(b.x)} ${round(b.y)}`)
+    .join(' ');
 }
 
 export function roomFill(design: Design): string {

@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "model": "tsx scripts/check-model.ts",
     "plans": "python3 scripts/render-plans.py"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3"
   }
 }
