@@ -217,10 +217,35 @@ const plannerText = {
 <script>
   import { catalogueItem, fromCatalogue, type CatalogueId } from '~/data/catalogue';
   import { STYLES } from '~/data/styles';
-  import type { Design, Furniture, Room, StyleKey } from '~/data/types';
+  import type { Design, Furniture, Opening, Project, Room, StyleKey } from '~/data/types';
   import { checkDesign } from '~/lib/checks';
-  import { formatArea, formatLength, roomArea } from '~/lib/geometry';
-  import { PLAN_COLOURS } from '~/lib/plan';
+  import {
+    bbox,
+    envelopeOf,
+    formatArea,
+    formatLength,
+    grow,
+    outlineInPlan,
+    pathOf,
+    roomArea,
+  } from '~/lib/geometry';
+  import {
+    PLAN_COLOURS,
+    floorRender,
+    frameFor,
+    furnitureRenders,
+    isDoorway,
+    openingRender,
+    roomFill,
+    roomPath,
+  } from '~/lib/plan';
+  import {
+    floorPatternSvg,
+    furnitureSvg,
+    openingSvg,
+    shadowFilterSvg,
+    weavePatternSvg,
+  } from '~/lib/draw';
 
   const text = (
     window as unknown as {
@@ -265,6 +290,25 @@ const plannerText = {
   let pieces: Placed[] = [{ key: 1, ref: 'sofa-three-seat', x: 610, y: 2100, rotation: 180 }];
   let nextKey = 2;
 
+  /**
+   * A room starts with a door, because a room without one is not a room. The default is
+   * a 900 door hard against the west end of the south wall, which is where a door usually
+   * is and which nobody has to think about to get started.
+   */
+  let openings: Opening[] = [
+    {
+      id: 'door',
+      kind: 'door-swing',
+      side: 'south',
+      offset: 200,
+      width: 900,
+      height: 2100,
+      sill: 0,
+      swing: 'left-in',
+      to: 'outside',
+    },
+  ];
+
   const num = (input: HTMLInputElement) => {
     const value = Math.round(input.valueAsNumber);
     const min = Number(input.min);
@@ -306,57 +350,74 @@ const plannerText = {
       origin: { x: wall, y: wall },
       shape: { kind: 'rect', width, depth },
       ceiling: 2600,
-      openings: [],
+      openings: openings.map((opening) => ({ ...opening })),
       designs: [design],
     };
-    return { room, design, width, depth, wall, style };
+    /**
+     * A project, because the drawing needs wall thicknesses and an envelope. No envelope
+     * is stated, so it is taken as the room grown by one exterior wall — which is exactly
+     * right for a single room and means the poché comes out at the thickness set above.
+     */
+    const project: Project = {
+      id: 'draft',
+      name: 'Draft',
+      location: '',
+      scope: 'room',
+      northOffset: 0,
+      walls: { exterior: wall, interior: wall },
+      ceiling: 2600,
+      style,
+      premise: '',
+    };
+    return { room, design, project, width, depth, wall, style };
   }
 
-  const SOFT = ['bed', 'sofa', 'armchair', 'chair'];
+  const openingsOf = (room: Room): Opening[] => room.openings;
 
-  function fillFor(kind: string, palette: (typeof STYLES)[StyleKey]['palette']) {
-    if (SOFT.includes(kind) || kind === 'rug') return palette.textile;
-    if (kind === 'plant') return PLAN_COLOURS.foliage;
-    if (kind === 'appliance') return PLAN_COLOURS.appliance;
-    if (kind === 'sanitary') return PLAN_COLOURS.sanitary;
-    return palette.furniture;
-  }
-
+  /**
+   * The drawing, through the same functions the published plans go through.
+   *
+   * Nothing here decides what a sofa looks like. It composes: the frame, the poché, the
+   * floor pattern, then each piece through furnitureSvg. That is the whole point of the
+   * exercise — a room arranged here comes out drawn to the standard of the rooms on the
+   * rest of the site, because it is not a second renderer that happens to look similar.
+   */
   function draw() {
-    const { room, design, width, depth, wall, style } = build();
-    const palette = STYLES[style].palette;
-    const outerW = width + wall * 2;
-    const outerD = depth + wall * 2;
-    const pad = Math.max(200, Math.round(Math.max(outerW, outerD) * 0.06));
+    const { room, design, project, width, depth, wall } = build();
 
-    out.svg.setAttribute(
-      'viewBox',
-      `${-wall - pad} ${-wall - pad} ${outerW + pad * 2} ${outerD + pad * 2}`,
-    );
-    const stroke = Math.max(6, Math.round(outerW / 500));
+    const outer = grow(bbox(outlineInPlan(room)), wall);
+    const frame = frameFor(outer, Math.max(240, Math.round(Math.max(width, depth) * 0.08)), 900);
+    const px = frame.px;
+    out.svg.setAttribute('viewBox', frame.viewBox);
 
-    const body = design.furniture
-      .map((item) => {
-        const cx = item.x + item.width / 2;
-        const cy = item.y + item.depth / 2;
-        const round = SOFT.includes(item.kind) ? Math.min(100, item.width / 4) : 0;
-        return `<g transform="rotate(${item.rotation ?? 0} ${cx} ${cy})"><rect x="${item.x}" y="${
-          item.y
-        }" width="${item.width}" height="${item.depth}" rx="${round}" fill="${fillFor(
-          item.kind,
-          palette,
-        )}" fill-opacity="${item.kind === 'rug' ? 0.6 : 0.92}" stroke="${
-          PLAN_COLOURS.ink
-        }" stroke-opacity="0.85" stroke-width="${stroke}"/></g>`;
-      })
+    const floor = floorRender(design);
+    const ids = { floor: 'pl-floor', cast: 'pl-cast', weave: 'pl-weave' };
+
+    const defs =
+      floorPatternSvg(ids.floor, floor, px) +
+      weavePatternSvg(ids.weave, px) +
+      shadowFilterSvg(ids.cast, px);
+
+    const pieces = furnitureRenders(room, design)
+      .map((piece) => furnitureSvg(piece, px, { detail: true, cast: ids.cast, weave: ids.weave }))
+      .join('');
+
+    const openings = openingsOf(room)
+      .map((opening) =>
+        openingSvg(openingRender(project, new Set([room.id]), room, opening), px, {
+          fill: isDoorway(opening.kind) ? roomFill(design) : PLAN_COLOURS.sheet,
+          swept: true,
+        }),
+      )
       .join('');
 
     out.svg.innerHTML =
-      `<rect x="${-wall}" y="${-wall}" width="${outerW}" height="${outerD}" fill="${
-        PLAN_COLOURS.structure
-      }"/>` +
-      `<rect x="0" y="0" width="${width}" height="${depth}" fill="${palette.floor}"/>` +
-      body;
+      `<defs>${defs}</defs>` +
+      `<rect x="${frame.box.x}" y="${frame.box.y}" width="${frame.box.width}" height="${frame.box.depth}" fill="${PLAN_COLOURS.sheet}"/>` +
+      `<path d="${pathOf(envelopeOf(project, [room]))}" fill="${PLAN_COLOURS.structure}" stroke="${PLAN_COLOURS.structureEdge}" stroke-width="${px(1.4)}"/>` +
+      `<path d="${roomPath(room)}" fill="${floor.pattern === 'none' ? roomFill(design) : `url(#${ids.floor})`}" stroke="${PLAN_COLOURS.structureEdge}" stroke-opacity="0.5" stroke-width="${px(0.5)}"/>` +
+      openings +
+      pieces;
 
     const area = roomArea(room);
     const covered = design.furniture
@@ -365,7 +426,7 @@ const plannerText = {
 
     out.area.textContent = formatArea(area);
     out.coverage.textContent = area > 0 ? `${Math.round((covered / area) * 100)}%` : '—';
-    out.outer.textContent = `${formatLength(outerW)} × ${formatLength(outerD)}`;
+    out.outer.textContent = `${formatLength(outer.width)} × ${formatLength(outer.depth)}`;
 
     const findings = checkDesign(room, design);
     out.findings.innerHTML =
@@ -382,7 +443,7 @@ const plannerText = {
             )
             .join('');
 
-    out.data.textContent = asSource(width, depth, wall, style);
+    out.data.textContent = asSource(width, depth, wall, inputs.style.value);
   }
 
   /** The format the rest of the dataset is written in, ready to paste into a room file. */

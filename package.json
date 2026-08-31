@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "model": "tsx scripts/check-model.ts",
+    "planner-svg": "tsx scripts/check-planner-draw.ts",
     "plans": "python3 scripts/render-plans.py"
   },
   "dependencies": {
