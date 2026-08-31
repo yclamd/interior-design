@@ -1,22 +1,25 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import { preferredDesign } from '~/data/types';
-import { withBase } from '~/consts';
 import { checkDesign, worst } from '~/lib/checks';
 import { bbox, footprintArea, formatArea, outlineOf, roomArea } from '~/lib/geometry';
 
 /** Only rooms with something to compare. */
 export const getStaticPaths: GetStaticPaths = () =>
-  PROJECTS.flatMap((entry) =>
-    entry.rooms
-      .filter((room) => room.designs.length > 1)
-      .map((room) => ({ params: { project: entry.project.id, room: room.id } })),
+  LOCALES.flatMap((locale) =>
+    PROJECTS.flatMap((entry) =>
+      entry.rooms
+        .filter((room) => room.designs.length > 1)
+        .map((room) => ({ params: { locale, project: entry.project.id, room: room.id } })),
+    ),
   );
 
+const locale = Astro.params.locale as Locale;
 const entry = projectById(Astro.params.project!)!;
 const room = roomById(entry, Astro.params.room!)!;
 const { project, rooms } = entry;
@@ -33,7 +36,7 @@ const columns = room.designs.map((design) => {
     severity: worst(findings),
     covered: Math.round((footprintArea(design) / area) * 100),
     pieces: design.furniture.filter((item) => item.kind !== 'rug').length,
-    href: withBase(
+    href: localeHref(locale, 
       design.id === preferred.id
         ? `/projects/${project.id}/rooms/${room.id}`
         : `/projects/${project.id}/rooms/${room.id}/${design.id}`,
@@ -56,19 +59,20 @@ const TONE = {
 ---
 
 <BaseLayout
+  locale={locale}
   title={`${room.name}, side by side — ${project.name}`}
   description={`The ${room.designs.length} designs for the ${room.name.toLowerCase()} drawn against the same shell, with what each one costs and gains.`}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
-      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
-      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+      <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
         {project.name}
       </a>
       <span class="mx-2">/</span>
       <a
-        href={withBase(`/projects/${project.id}/rooms/${room.id}`)}
+        href={localeHref(locale, `/projects/${project.id}/rooms/${room.id}`)}
         class="transition-colors hover:text-brand"
       >
         {room.name}

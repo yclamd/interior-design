@@ -1,0 +1,499 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { CATALOGUE_IDS, catalogueItem } from '~/data/catalogue';
+import { STYLES, STYLE_ORDER } from '~/data/styles';
+import { LOCALES, strings, type Locale } from '~/i18n';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  LOCALES.map((locale) => ({ params: { locale } }));
+
+const locale = Astro.params.locale as Locale;
+const s = strings(locale);
+
+/**
+ * The planner: the site's own engine, running in the reader's browser.
+ *
+ * This is the one page that ships JavaScript, and it exists because the engine was
+ * already the right shape for it. The module below imports the same pure functions the
+ * build uses — fromCatalogue, checkDesign, the geometry, the plan colours — so a room
+ * drawn here cannot disagree with a room drawn by the build, and a finding reported here
+ * is the finding the audit page would report. No framework and no server: the markup is
+ * the interface and the module drives it.
+ *
+ * Input is a shell and some objects. Output is three things — the drawing, the findings,
+ * and the room as source in the format the rest of the dataset is written in, so the
+ * answer to "what do I do with this" is "paste it in".
+ */
+
+/** Anything that stands on the floor. A wall-hung piece has no position to set here. */
+const pickable = CATALOGUE_IDS.filter((id) => catalogueItem(id).mountedAt === undefined).map(
+  (id) => {
+    const item = catalogueItem(id);
+    return { id, label: `${item.name} — ${item.width}×${item.depth}` };
+  },
+);
+
+const TEXT = {
+  shell: { en: 'The shell', zh: '外殼' },
+  style: { en: 'Palette', zh: '色調' },
+  choose: { en: 'Choose an object…', zh: '選一個物件…' },
+  pieces: { en: 'In the room', zh: '房間內的物件' },
+  roomArea: { en: 'Clear floor', zh: '淨面積' },
+  overall: { en: 'Outside face', zh: '外緣尺寸' },
+  empty: { en: 'Nothing in the room yet.', zh: '房間裡還沒有東西。' },
+  facing: {
+    en: ['faces south', 'faces west', 'faces north', 'faces east'],
+    zh: ['朝南', '朝西', '朝北', '朝東'],
+  },
+} as const;
+
+const l = {
+  shell: TEXT.shell[locale],
+  style: TEXT.style[locale],
+  choose: TEXT.choose[locale],
+  pieces: TEXT.pieces[locale],
+  roomArea: TEXT.roomArea[locale],
+  overall: TEXT.overall[locale],
+  empty: TEXT.empty[locale],
+};
+
+/** Handed to the module so it holds no dictionary and the page decides the language. */
+const plannerText = {
+  facing: [0, 90, 180, 270].map((value, i) => ({
+    value,
+    label: TEXT.facing[locale][i]!,
+  })),
+  remove: s.planner.remove,
+  rotation: s.planner.rotation,
+  clear: s.common.nothingFlagged,
+};
+---
+
+<BaseLayout locale={locale} title={s.planner.title} description={s.planner.lede}>
+  <section class="mx-auto max-w-6xl px-5 pt-12 pb-8 sm:px-8">
+    <h1 class="font-serif text-3xl leading-tight font-bold text-ink sm:text-[2.4rem]">
+      {s.planner.title}
+    </h1>
+    <p class="lede mt-4 max-w-2xl">{s.planner.lede}</p>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+    <div class="grid gap-8 lg:grid-cols-[21rem_1fr] lg:items-start">
+      <div class="space-y-5">
+        <fieldset class="card space-y-4 p-5">
+          <legend class="px-1 text-2xs font-bold tracking-[0.14em] text-ink-faint uppercase">
+            {l.shell}
+          </legend>
+          <label class="block">
+            <span class="text-xs font-medium text-ink-soft">{s.planner.width}</span>
+            <input
+              id="p-width"
+              type="number"
+              value="3400"
+              min="800"
+              max="12000"
+              step="10"
+              class="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink tabular"
+            />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-ink-soft">{s.planner.depth}</span>
+            <input
+              id="p-depth"
+              type="number"
+              value="3050"
+              min="800"
+              max="12000"
+              step="10"
+              class="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink tabular"
+            />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-ink-soft">{s.planner.wall}</span>
+            <input
+              id="p-wall"
+              type="number"
+              value="100"
+              min="50"
+              max="400"
+              step="10"
+              class="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink tabular"
+            />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-ink-soft">{l.style}</span>
+            <select
+              id="p-style"
+              class="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"
+            >
+              {
+                STYLE_ORDER.map((key) => (
+                  <option value={key} selected={key === 'warm-minimal'}>
+                    {STYLES[key].name}
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset class="card space-y-3 p-5">
+          <legend class="px-1 text-2xs font-bold tracking-[0.14em] text-ink-faint uppercase">
+            {s.planner.addPiece}
+          </legend>
+          <select
+            id="p-add"
+            class="w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"
+          >
+            <option value="">{l.choose}</option>
+            {pickable.map((item) => <option value={item.id}>{item.label}</option>)}
+          </select>
+          <p class="text-2xs tracking-[0.12em] text-ink-faint uppercase">{l.pieces}</p>
+          <ul id="p-list" class="space-y-2"></ul>
+          <p id="p-empty" class="text-xs text-ink-faint">{l.empty}</p>
+        </fieldset>
+      </div>
+
+      <div class="space-y-5">
+        <div class="table-scroll rounded-xl border border-line bg-[#f7f4ee] p-2">
+          <svg id="p-svg" class="h-auto w-full" role="img" aria-label={s.planner.title}></svg>
+        </div>
+
+        <dl class="grid grid-cols-3 gap-3">
+          <div class="card p-4">
+            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{l.roomArea}</dt>
+            <dd id="p-area" class="mt-1 font-serif text-xl font-bold text-ink tabular">—</dd>
+          </div>
+          <div class="card p-4">
+            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
+              {s.planner.coverage}
+            </dt>
+            <dd id="p-coverage" class="mt-1 font-serif text-xl font-bold text-ink tabular">—</dd>
+          </div>
+          <div class="card p-4">
+            <dt class="text-2xs tracking-[0.14em] text-ink-faint uppercase">{l.overall}</dt>
+            <dd id="p-outer" class="mt-1 font-serif text-base font-bold text-ink tabular">—</dd>
+          </div>
+        </dl>
+
+        <div class="card p-5">
+          <h2 class="text-2xs font-bold tracking-[0.14em] text-ink-faint uppercase">
+            {s.common.findings}
+          </h2>
+          <ul id="p-findings" class="mt-2 space-y-2"></ul>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h2 class="text-2xs font-bold tracking-[0.14em] text-ink-faint uppercase">
+              {s.planner.exportTitle}
+            </h2>
+            <button
+              id="p-copy"
+              type="button"
+              data-copy={s.planner.copy}
+              data-copied={s.planner.copied}
+              class="rounded-full bg-ink px-3 py-1 text-2xs font-bold text-paper transition-colors hover:bg-brand-deep"
+            >
+              {s.planner.copy}
+            </button>
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-ink-faint">{s.planner.exportNote}</p>
+          <pre
+            id="p-data"
+            class="mt-3 overflow-x-auto rounded-lg bg-paper-deep/60 p-3 font-mono text-2xs leading-relaxed text-ink"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline define:vars={{ plannerText }}>
+  window.plannerText = plannerText;
+</script>
+
+<script>
+  import { catalogueItem, fromCatalogue, type CatalogueId } from '~/data/catalogue';
+  import { STYLES } from '~/data/styles';
+  import type { Design, Furniture, Room, StyleKey } from '~/data/types';
+  import { checkDesign } from '~/lib/checks';
+  import { formatArea, formatLength, roomArea } from '~/lib/geometry';
+  import { PLAN_COLOURS } from '~/lib/plan';
+
+  const text = (
+    window as unknown as {
+      plannerText: {
+        facing: { value: number; label: string }[];
+        remove: string;
+        rotation: string;
+        clear: string;
+      };
+    }
+  ).plannerText;
+
+  interface Placed {
+    key: number;
+    ref: CatalogueId;
+    x: number;
+    y: number;
+    rotation: number;
+  }
+
+  const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  const inputs = {
+    width: el<HTMLInputElement>('p-width'),
+    depth: el<HTMLInputElement>('p-depth'),
+    wall: el<HTMLInputElement>('p-wall'),
+    style: el<HTMLSelectElement>('p-style'),
+    add: el<HTMLSelectElement>('p-add'),
+  };
+  const out = {
+    svg: document.getElementById('p-svg') as unknown as SVGSVGElement,
+    list: el<HTMLUListElement>('p-list'),
+    empty: el<HTMLParagraphElement>('p-empty'),
+    area: el('p-area'),
+    coverage: el('p-coverage'),
+    outer: el('p-outer'),
+    findings: el<HTMLUListElement>('p-findings'),
+    data: el<HTMLPreElement>('p-data'),
+    copy: el<HTMLButtonElement>('p-copy'),
+  };
+
+  let pieces: Placed[] = [{ key: 1, ref: 'sofa-three-seat', x: 610, y: 2100, rotation: 180 }];
+  let nextKey = 2;
+
+  const num = (input: HTMLInputElement) => {
+    const value = Math.round(input.valueAsNumber);
+    const min = Number(input.min);
+    const max = Number(input.max);
+    return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min;
+  };
+
+  /**
+   * Rebuilt on every change and thrown away. A Room and a Design are plain data, so the
+   * cheapest way to reuse the engine is to hand it the shapes the dataset holds rather
+   * than to keep a second, lighter model of any of it in step with the first.
+   */
+  function build() {
+    const width = num(inputs.width);
+    const depth = num(inputs.depth);
+    const wall = num(inputs.wall);
+    const style = inputs.style.value as StyleKey;
+
+    const furniture: Furniture[] = pieces.map((piece) =>
+      fromCatalogue(piece.ref, piece.x, piece.y, {
+        id: `piece-${piece.key}`,
+        rotation: piece.rotation,
+      }),
+    );
+    const design: Design = {
+      id: 'draft',
+      name: 'Draft',
+      preferred: true,
+      theme: '',
+      summary: '',
+      style,
+      floor: { name: 'Boards', colour: STYLES[style].palette.floor },
+      furniture,
+    };
+    const room: Room = {
+      id: 'draft',
+      name: 'Room',
+      kind: 'living',
+      origin: { x: wall, y: wall },
+      shape: { kind: 'rect', width, depth },
+      ceiling: 2600,
+      openings: [],
+      designs: [design],
+    };
+    return { room, design, width, depth, wall, style };
+  }
+
+  const SOFT = ['bed', 'sofa', 'armchair', 'chair'];
+
+  function fillFor(kind: string, palette: (typeof STYLES)[StyleKey]['palette']) {
+    if (SOFT.includes(kind) || kind === 'rug') return palette.textile;
+    if (kind === 'plant') return PLAN_COLOURS.foliage;
+    if (kind === 'appliance') return PLAN_COLOURS.appliance;
+    if (kind === 'sanitary') return PLAN_COLOURS.sanitary;
+    return palette.furniture;
+  }
+
+  function draw() {
+    const { room, design, width, depth, wall, style } = build();
+    const palette = STYLES[style].palette;
+    const outerW = width + wall * 2;
+    const outerD = depth + wall * 2;
+    const pad = Math.max(200, Math.round(Math.max(outerW, outerD) * 0.06));
+
+    out.svg.setAttribute(
+      'viewBox',
+      `${-wall - pad} ${-wall - pad} ${outerW + pad * 2} ${outerD + pad * 2}`,
+    );
+    const stroke = Math.max(6, Math.round(outerW / 500));
+
+    const body = design.furniture
+      .map((item) => {
+        const cx = item.x + item.width / 2;
+        const cy = item.y + item.depth / 2;
+        const round = SOFT.includes(item.kind) ? Math.min(100, item.width / 4) : 0;
+        return `<g transform="rotate(${item.rotation ?? 0} ${cx} ${cy})"><rect x="${item.x}" y="${
+          item.y
+        }" width="${item.width}" height="${item.depth}" rx="${round}" fill="${fillFor(
+          item.kind,
+          palette,
+        )}" fill-opacity="${item.kind === 'rug' ? 0.6 : 0.92}" stroke="${
+          PLAN_COLOURS.ink
+        }" stroke-opacity="0.85" stroke-width="${stroke}"/></g>`;
+      })
+      .join('');
+
+    out.svg.innerHTML =
+      `<rect x="${-wall}" y="${-wall}" width="${outerW}" height="${outerD}" fill="${
+        PLAN_COLOURS.structure
+      }"/>` +
+      `<rect x="0" y="0" width="${width}" height="${depth}" fill="${palette.floor}"/>` +
+      body;
+
+    const area = roomArea(room);
+    const covered = design.furniture
+      .filter((item) => item.kind !== 'rug' && item.mountedAt === undefined)
+      .reduce((sum, item) => sum + item.width * item.depth, 0);
+
+    out.area.textContent = formatArea(area);
+    out.coverage.textContent = area > 0 ? `${Math.round((covered / area) * 100)}%` : '—';
+    out.outer.textContent = `${formatLength(outerW)} × ${formatLength(outerD)}`;
+
+    const findings = checkDesign(room, design);
+    out.findings.innerHTML =
+      findings.length === 0
+        ? `<li class="text-sm text-ink-soft">${text.clear}</li>`
+        : findings
+            .map(
+              (finding) =>
+                `<li class="flex gap-2 text-sm leading-relaxed"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                  finding.severity === 'error' ? 'bg-flag' : 'bg-clay'
+                }" aria-hidden="true"></span><span class="text-ink-soft">${
+                  finding.message
+                }</span></li>`,
+            )
+            .join('');
+
+    out.data.textContent = asSource(width, depth, wall, style);
+  }
+
+  /** The format the rest of the dataset is written in, ready to paste into a room file. */
+  function asSource(width: number, depth: number, wall: number, style: string) {
+    const placed = pieces
+      .map((piece) => {
+        const turn = piece.rotation === 0 ? '' : `, { rotation: ${piece.rotation} }`;
+        return `      fromCatalogue('${piece.ref}', ${piece.x}, ${piece.y}${turn}),`;
+      })
+      .join('\n');
+    return [
+      'export const ROOM: Room = {',
+      "  id: 'new-room',",
+      "  name: 'New room',",
+      "  kind: 'living',",
+      `  origin: { x: ${wall}, y: ${wall} },`,
+      `  shape: { kind: 'rect', width: ${width}, depth: ${depth} },`,
+      '  ceiling: 2600,',
+      '  openings: [],',
+      '  designs: single({',
+      "    theme: 'Drafted in the planner',",
+      `    style: '${style}',`,
+      "    floor: { name: 'Boards', pattern: 'plank', grain: 'ew', module: 190 },",
+      "    summary: '',",
+      '    furniture: [',
+      placed,
+      '    ],',
+      '  }),',
+      '};',
+    ].join('\n');
+  }
+
+  function renderList() {
+    out.empty.hidden = pieces.length > 0;
+    out.list.innerHTML = pieces
+      .map((piece) => {
+        const item = catalogueItem(piece.ref);
+        const options = text.facing
+          .map(
+            (face) =>
+              `<option value="${face.value}"${
+                face.value === piece.rotation ? ' selected' : ''
+              }>${face.label}</option>`,
+          )
+          .join('');
+        return `<li class="rounded-lg border border-line-soft bg-paper-deep/40 p-3" data-key="${piece.key}">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="text-xs font-medium text-ink">${item.name}</span>
+            <button type="button" data-remove class="text-2xs text-flag hover:underline">${text.remove}</button>
+          </div>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <label class="block"><span class="text-2xs text-ink-faint">x</span>
+              <input data-x type="number" value="${piece.x}" step="10" class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs tabular"/></label>
+            <label class="block"><span class="text-2xs text-ink-faint">y</span>
+              <input data-y type="number" value="${piece.y}" step="10" class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs tabular"/></label>
+            <label class="block"><span class="text-2xs text-ink-faint">${text.rotation}</span>
+              <select data-rot class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs">${options}</select></label>
+          </div>
+        </li>`;
+      })
+      .join('');
+  }
+
+  out.list.addEventListener('input', (event) => {
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    const holder = (target.closest('[data-key]') as HTMLElement | null)?.dataset.key;
+    const piece = pieces.find((p) => p.key === Number(holder));
+    if (!piece) return;
+    if (target.hasAttribute('data-x')) piece.x = Math.round(Number(target.value));
+    if (target.hasAttribute('data-y')) piece.y = Math.round(Number(target.value));
+    if (target.hasAttribute('data-rot')) piece.rotation = Number(target.value);
+    draw();
+  });
+
+  out.list.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest('[data-remove]');
+    if (!button) return;
+    const key = Number((button.closest('[data-key]') as HTMLElement).dataset.key);
+    pieces = pieces.filter((piece) => piece.key !== key);
+    renderList();
+    draw();
+  });
+
+  inputs.add.addEventListener('change', () => {
+    const ref = inputs.add.value as CatalogueId;
+    if (!ref) return;
+    const item = catalogueItem(ref);
+    pieces.push({
+      key: nextKey++,
+      ref,
+      /** Dropped just inside the north-west corner, where it is always in view. */
+      x: Math.max(0, Math.min(200, num(inputs.width) - item.width)),
+      y: Math.max(0, Math.min(200, num(inputs.depth) - item.depth)),
+      rotation: 0,
+    });
+    inputs.add.value = '';
+    renderList();
+    draw();
+  });
+
+  for (const input of [inputs.width, inputs.depth, inputs.wall, inputs.style]) {
+    input.addEventListener('input', draw);
+  }
+
+  out.copy.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(out.data.textContent ?? '');
+    out.copy.textContent = out.copy.dataset.copied ?? 'Copied';
+    window.setTimeout(() => {
+      out.copy.textContent = out.copy.dataset.copy ?? 'Copy';
+    }, 1600);
+  });
+
+  renderList();
+  draw();
+</script>

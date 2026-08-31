@@ -10,7 +10,7 @@ import sys
 
 PROJECT = sys.argv[1] if len(sys.argv) > 1 else "home"
 
-page = open("dist/audit/index.html", encoding="utf-8").read()
+page = open("dist/en/audit/index.html", encoding="utf-8").read()
 page = re.sub(r"<script.*?</script>", "", page, flags=re.S)
 
 start = page.find(f'id="{PROJECT}"')

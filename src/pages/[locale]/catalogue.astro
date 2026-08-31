@@ -1,9 +1,15 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { CATALOGUE_IDS, GROUP_LABELS, catalogueItem, type CatalogueGroup } from "~/data/catalogue";
 import { PROJECTS } from '~/data/projects';
-import { withBase } from '~/consts';
 import { formatLength } from '~/lib/geometry';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  LOCALES.map((locale) => ({ params: { locale } }));
+
+const locale = Astro.params.locale as Locale;
 
 /**
  * The object database, listed. Every dimension the site draws with is here, and this
@@ -43,6 +49,7 @@ const madeToSize = rows.filter((row) => row.item.madeToSize).length;
 ---
 
 <BaseLayout
+  locale={locale}
   title="Catalogue"
   description="Every object this site knows the size of, with where its figures came from and which rooms it is standing in."
 >
@@ -168,7 +175,7 @@ const madeToSize = rows.filter((row) => row.item.madeToSize).length;
         conflict found on the plan is a real conflict. They are not near enough to order against. When
         a real product is chosen, its figures replace the ones here and every room using it is redrawn
         and rechecked at once — which is the reason for keeping them in one place rather than in the
-        rooms. The <a href={withBase('/method')} class="text-brand underline decoration-brand/30 underline-offset-4">method page</a> is where the fields are described.
+        rooms. The <a href={localeHref(locale, '/method')} class="text-brand underline decoration-brand/30 underline-offset-4">method page</a> is where the fields are described.
       </p>
     </div>
   </section>

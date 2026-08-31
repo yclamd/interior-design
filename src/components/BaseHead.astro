@@ -1,5 +1,6 @@
 ---
 import { SITE, withBase } from '~/consts';
+import { LOCALES, LOCALE_TAGS, swapLocale, type Locale } from '~/i18n';
 import '~/styles/global.css';
 
 interface Props {
@@ -7,12 +8,23 @@ interface Props {
   description: string;
   schema?: Record<string, unknown> | Record<string, unknown>[];
   type?: 'website' | 'article';
+  locale: Locale;
 }
 
-const { title, description, schema, type = 'website' } = Astro.props;
+const { title, description, schema, type = 'website', locale } = Astro.props;
 
 const pageTitle = title === SITE.name ? `${SITE.name} — ${SITE.tagline}` : `${title} — ${SITE.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com');
+
+/**
+ * Each page declares the other language's URL for the same content. Without this a
+ * search engine treats the two locales as duplicates and picks one, which is the whole
+ * problem hreflang exists to solve.
+ */
+const alternates = LOCALES.map((other) => ({
+  locale: other,
+  href: new URL(swapLocale(Astro.url.pathname, other), Astro.site ?? 'https://example.com').href,
+}));
 ---
 
 <meta charset="utf-8" />
@@ -20,13 +32,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com
 <title>{pageTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical.href} />
+{alternates.map((alt) => <link rel="alternate" hreflang={alt.locale} href={alt.href} />)}
 <meta name="generator" content={Astro.generator} />
 
 <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
 
 <meta property="og:type" content={type} />
 <meta property="og:site_name" content={SITE.name} />
-<meta property="og:locale" content="en" />
+<meta property="og:locale" content={LOCALE_TAGS[locale]} />
 <meta property="og:title" content={pageTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical.href} />

@@ -1,9 +1,15 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Findings from '~/components/Findings.astro';
 import { PROJECTS } from '~/data/projects';
-import { withBase } from '~/consts';
 import { checkDesign, checkProject, type Severity } from '~/lib/checks';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  LOCALES.map((locale) => ({ params: { locale } }));
+
+const locale = Astro.params.locale as Locale;
 
 /**
  * Every finding on the site, on one page. Room pages each carry their own, but when
@@ -50,6 +56,7 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
 ---
 
 <BaseLayout
+  locale={locale}
   title="Audit"
   description="Every dimensional conflict, tight fit and note found across every project on the site, on one page."
 >
@@ -89,7 +96,7 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
       >
         <h2 class="font-serif text-2xl font-bold text-ink">
           <a
-            href={withBase(`/projects/${audit.entry.project.id}`)}
+            href={localeHref(locale, `/projects/${audit.entry.project.id}`)}
             class="transition-colors hover:text-brand"
           >
             {audit.entry.project.name}
@@ -108,7 +115,7 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
             <div>
               <h3 class="mb-3 flex flex-wrap items-baseline gap-x-3">
                 <a
-                  href={withBase(
+                  href={localeHref(locale, 
                     `/projects/${audit.entry.project.id}/rooms/${item.room.id}${
                       item.design.preferred ? '' : `/${item.design.id}`
                     }`,

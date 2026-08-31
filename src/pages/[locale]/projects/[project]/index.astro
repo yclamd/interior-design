@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Plan from '~/components/Plan.astro';
 import Findings from '~/components/Findings.astro';
@@ -7,7 +8,6 @@ import RoomDetail from '~/components/RoomDetail.astro';
 import { HABITABLE, KIND_LABELS, PROJECTS, SCOPE_LABELS, projectById } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import { preferredDesign } from '~/data/types';
-import { withBase } from '~/consts';
 import { checkProject } from '~/lib/checks';
 import {
   SQM_PER_PING,
@@ -21,8 +21,11 @@ import {
 } from '~/lib/geometry';
 
 export const getStaticPaths: GetStaticPaths = () =>
-  PROJECTS.map((entry) => ({ params: { project: entry.project.id } }));
+  LOCALES.flatMap((locale) =>
+    PROJECTS.map((entry) => ({ params: { locale, project: entry.project.id } })),
+  );
 
+const locale = Astro.params.locale as Locale;
 const entry = projectById(Astro.params.project!)!;
 const { project, rooms } = entry;
 
@@ -101,7 +104,7 @@ const schema = {
 <BaseLayout title={project.name} description={project.premise} schema={schema}>
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="text-2xs tracking-[0.14em] text-ink-faint uppercase">
-      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
       <span class="text-ink-soft">{project.name}</span>
     </nav>
@@ -121,7 +124,7 @@ const schema = {
   {
     only ? (
       <section class="mx-auto mt-10 max-w-6xl px-5 sm:px-8">
-        <RoomDetail entry={entry} room={only} design={preferredDesign(only)} heading={false} />
+        <RoomDetail locale={locale} entry={entry} room={only} design={preferredDesign(only)} heading={false} />
       </section>
     ) : (
       <>
@@ -178,7 +181,7 @@ const schema = {
                   <tr>
                     <th scope="row">
                       <a
-                        href={withBase(`/projects/${project.id}/rooms/${row.room.id}`)}
+                        href={localeHref(locale, `/projects/${project.id}/rooms/${row.room.id}`)}
                         class="font-medium text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
                       >
                         {row.room.name}
@@ -220,7 +223,7 @@ const schema = {
               </p>
             </div>
             <a
-              href={withBase(`/projects/${project.id}/rooms`)}
+              href={localeHref(locale, `/projects/${project.id}/rooms`)}
               class="shrink-0 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-deep"
             >
               See the rooms

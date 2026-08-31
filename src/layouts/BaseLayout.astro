@@ -2,31 +2,39 @@
 import BaseHead from '~/components/BaseHead.astro';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
+import { LOCALE_TAGS, localeOf, strings, type Locale } from '~/i18n';
 
 interface Props {
   title: string;
   description: string;
   schema?: Record<string, unknown> | Record<string, unknown>[];
   type?: 'website' | 'article';
+  /** Pages under [locale] pass it; anything outside that tree falls back to the URL. */
+  locale?: Locale;
+  /** Off on the front page, which carries its own full-bleed header treatment. */
+  chrome?: boolean;
 }
+
+const { locale = localeOf(Astro.url), chrome = true, ...head } = Astro.props;
+const s = strings(locale);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={LOCALE_TAGS[locale]}>
   <head>
-    <BaseHead {...Astro.props} />
+    <BaseHead {...head} locale={locale} />
   </head>
   <body class="flex min-h-screen flex-col">
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-100 focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:text-white"
     >
-      Skip to content
+      {s.nav.skip}
     </a>
-    <Header />
+    {chrome && <Header locale={locale} />}
     <main id="main" class="flex-1">
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </body>
 </html>

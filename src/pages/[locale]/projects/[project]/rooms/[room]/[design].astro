@@ -1,10 +1,10 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import RoomDetail from '~/components/RoomDetail.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
 import { designById, preferredDesign } from '~/data/types';
-import { withBase } from '~/consts';
 import { bbox, formatArea, outlineOf, roomArea } from '~/lib/geometry';
 
 /**
@@ -13,16 +13,19 @@ import { bbox, formatArea, outlineOf, roomArea } from '~/lib/geometry';
  * at two URLs.
  */
 export const getStaticPaths: GetStaticPaths = () =>
-  PROJECTS.flatMap((entry) =>
-    entry.rooms.flatMap((room) =>
-      room.designs
-        .filter((design) => design.id !== preferredDesign(room).id)
-        .map((design) => ({
-          params: { project: entry.project.id, room: room.id, design: design.id },
-        })),
+  LOCALES.flatMap((locale) =>
+    PROJECTS.flatMap((entry) =>
+      entry.rooms.flatMap((room) =>
+        room.designs
+          .filter((design) => design.id !== preferredDesign(room).id)
+          .map((design) => ({
+            params: { locale, project: entry.project.id, room: room.id, design: design.id },
+          })),
+      ),
     ),
   );
 
+const locale = Astro.params.locale as Locale;
 const entry = projectById(Astro.params.project!)!;
 const room = roomById(entry, Astro.params.room!)!;
 const design = designById(room, Astro.params.design!)!;
@@ -33,14 +36,15 @@ const area = roomArea(room);
 ---
 
 <BaseLayout
+  locale={locale}
   title={`${room.name}: ${design.name} — ${project.name}`}
   description={`${design.name}, an alternative design for the ${room.name.toLowerCase()}: ${design.theme}`}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="mb-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
-      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+      <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
         {project.name}
       </a>
       {
@@ -48,7 +52,7 @@ const area = roomArea(room);
           <>
             <span class="mx-2">/</span>
             <a
-              href={withBase(`/projects/${project.id}/rooms`)}
+              href={localeHref(locale, `/projects/${project.id}/rooms`)}
               class="transition-colors hover:text-brand"
             >
               Rooms
@@ -58,7 +62,7 @@ const area = roomArea(room);
       }
       <span class="mx-2">/</span>
       <a
-        href={withBase(`/projects/${project.id}/rooms/${room.id}`)}
+        href={localeHref(locale, `/projects/${project.id}/rooms/${room.id}`)}
         class="transition-colors hover:text-brand"
       >
         {room.name}
@@ -81,6 +85,6 @@ const area = roomArea(room);
       them; only what stands inside changes.
     </p>
 
-    <RoomDetail entry={entry} room={room} design={design} heading={false} />
+    <RoomDetail locale={locale} entry={entry} room={room} design={design} heading={false} />
   </section>
 </BaseLayout>

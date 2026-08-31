@@ -1,9 +1,21 @@
 ---
-import { SITE, withBase } from '~/consts';
-import { NAV } from '~/data/navigation';
+import { SITE } from '~/consts';
+import { nav } from '~/data/navigation';
 import { PROJECTS } from '~/data/projects';
+import { LOCALES, LOCALE_LABELS, localeHref, strings, swapLocale, type Locale } from '~/i18n';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const rooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
+
+const UNITS = {
+  en: `All dimensions in millimetres · ${PROJECTS.length} projects · ${rooms} rooms`,
+  zh: `所有尺寸單位為公釐 · ${PROJECTS.length} 個專案 · ${rooms} 個空間`,
+} as const;
 ---
 
 <footer class="mt-20 border-t border-line bg-paper-deep/40">
@@ -11,23 +23,39 @@ const rooms = PROJECTS.reduce((sum, entry) => sum + entry.rooms.length, 0);
     <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
       <div class="max-w-md">
         <p class="font-serif text-lg font-bold text-ink">{SITE.name}</p>
-        <p class="mt-2 text-sm leading-relaxed text-ink-soft">{SITE.description}</p>
-        <p class="mt-4 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-          All dimensions in millimetres · {PROJECTS.length} projects · {rooms} rooms
-        </p>
+        <p class="mt-2 text-sm leading-relaxed text-ink-soft">{s.home.tagline}</p>
+        <p class="mt-4 text-2xs tracking-[0.14em] text-ink-faint uppercase">{UNITS[locale]}</p>
       </div>
-      <nav class="flex flex-col gap-2" aria-label="Footer">
-        {
-          NAV.map((item) => (
-            <a
-              href={withBase(item.href)}
-              class="text-sm text-ink-soft transition-colors hover:text-brand"
-            >
-              {item.label}
-            </a>
-          ))
-        }
-      </nav>
+      <div class="flex flex-col gap-4">
+        <nav class="flex flex-col gap-2" aria-label="Footer">
+          {
+            nav(locale).map((item) => (
+              <a
+                href={localeHref(locale, item.href)}
+                class="text-sm text-ink-soft transition-colors hover:text-brand"
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="flex gap-1" role="group" aria-label={s.nav.language}>
+          {
+            LOCALES.map((other) => (
+              <a
+                href={swapLocale(Astro.url.pathname, other)}
+                hreflang={other}
+                class:list={[
+                  'rounded-full px-2.5 py-1 text-2xs font-bold tracking-[0.1em] transition-colors',
+                  other === locale ? 'bg-ink text-paper' : 'text-ink-faint hover:text-ink',
+                ]}
+              >
+                {LOCALE_LABELS[other]}
+              </a>
+            ))
+          }
+        </div>
+      </div>
     </div>
   </div>
 </footer>

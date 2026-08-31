@@ -1,8 +1,15 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import StyleCard from '~/components/StyleCard.astro';
 import { PROJECTS } from '~/data/projects';
 import { STYLES, STYLE_ORDER } from '~/data/styles';
+import { LOCALES, type Locale } from '~/i18n';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  LOCALES.map((locale) => ({ params: { locale } }));
+
+const locale = Astro.params.locale as Locale;
 
 /**
  * Styles are the one thing shared across projects: the palettes are a common
@@ -29,6 +36,7 @@ const spare = cards.filter((card) => card.usedBy.length === 0);
 ---
 
 <BaseLayout
+  locale={locale}
   title="Styles"
   description="The palettes and material lists the rooms are drawn from. Naming a style on a design changes the colours in its drawing, so a style here is a decision rather than a mood."
 >

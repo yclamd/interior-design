@@ -1,6 +1,7 @@
 import { CATALOGUE_IDS, GROUP_LABELS, catalogueItem, type CatalogueGroup } from './catalogue';
 import { PROJECTS, SCOPE_LABELS } from './projects';
 import { STYLES, STYLE_ORDER } from './styles';
+import { strings, type Locale } from '~/i18n';
 
 /**
  * The navigation, built from the data rather than written out.
@@ -51,33 +52,76 @@ export const slug = (text: string): string =>
     .replace(/^-|-$/g, '');
 
 /** Headings the method page slugs for its own ids, so the two agree by construction. */
-const METHOD_SECTIONS: { id: string; label: string; note: string }[] = [
-  { id: 'conventions', label: 'The three conventions', note: 'Units, one space, rooms against designs' },
-  { id: slug('The project'), label: 'The project', note: 'Envelope, walls, ceiling, deed area' },
-  { id: slug('Each room'), label: 'Each room', note: 'Origin, shape, openings' },
-  { id: slug('Each design'), label: 'Each design', note: 'Style, floor, furniture, questions' },
-  { id: slug('Each door and window'), label: 'Each door and window', note: 'Side, width, sill, swing' },
+const METHOD_SECTIONS: { id: string; label: Record<Locale, string>; note: Record<Locale, string> }[] = [
+  {
+    id: 'conventions',
+    label: { en: 'The three conventions', zh: '三個約定' },
+    note: { en: 'Units, one space, rooms against designs', zh: '單位、共用座標、房間與設計之分' },
+  },
+  {
+    id: slug('The project'),
+    label: { en: 'The project', zh: '專案' },
+    note: { en: 'Envelope, walls, ceiling, deed area', zh: '外圍、牆、天花、權狀面積' },
+  },
+  {
+    id: slug('Each room'),
+    label: { en: 'Each room', zh: '每個房間' },
+    note: { en: 'Origin, shape, openings', zh: '原點、形狀、開口' },
+  },
+  {
+    id: slug('Each design'),
+    label: { en: 'Each design', zh: '每個設計' },
+    note: { en: 'Style, floor, furniture, questions', zh: '色調、地板、家具、待確認' },
+  },
+  {
+    id: slug('Each door and window'),
+    label: { en: 'Each door and window', zh: '每扇門窗' },
+    note: { en: 'Side, width, sill, swing', zh: '哪面牆、寬度、窗台、開向' },
+  },
   {
     id: slug('Each piece of furniture'),
-    label: 'Each piece of furniture',
-    note: 'Position, rotation, clearance',
+    label: { en: 'Each piece of furniture', zh: '每件家具' },
+    note: { en: 'Position, rotation, clearance', zh: '位置、旋轉、淨空' },
   },
-  { id: 'checks', label: 'What is checked', note: 'Every finding the audit can report' },
+  {
+    id: 'checks',
+    label: { en: 'What is checked', zh: '檢查哪些事' },
+    note: { en: 'Every finding the audit can report', zh: '檢查頁會報出的所有項目' },
+  },
 ];
 
-const projectChildren = (): NavChild[] =>
-  PROJECTS.map(({ project, rooms }) => ({
+const NOTES = {
+  rooms: { en: 'rooms', zh: '個空間' },
+  designs: { en: 'designs', zh: '個設計' },
+  objects: { en: 'objects', zh: '件物件' },
+  inUse: { en: 'in use', zh: '使用中' },
+  spare: { en: 'on the shelf', zh: '未使用' },
+  audit: { en: 'findings for this project', zh: '此專案的檢查結果' },
+} as const;
+
+/**
+ * The names below come out of the dataset and are still English in both locales. The
+ * interface is translated; the content is a separate pass, and calling say() on fields
+ * that are not Localised yet would only hide which is which.
+ */
+export function nav(locale: Locale): NavItem[] {
+  const s = strings(locale);
+  const note = (key: keyof typeof NOTES) => NOTES[key][locale];
+
+  const projectChildren: NavChild[] = PROJECTS.map(({ project, rooms }) => ({
     label: project.name,
     href: `/projects/${project.id}`,
     note:
       rooms.length === 1
         ? SCOPE_LABELS[project.scope]
-        : `${rooms.length} rooms · ${rooms.reduce((sum, room) => sum + room.designs.length, 0)} designs`,
+        : `${rooms.length} ${note('rooms')} · ${rooms.reduce(
+            (sum, room) => sum + room.designs.length,
+            0,
+          )} ${note('designs')}`,
   }));
 
-const catalogueChildren = (): NavChild[] => {
   const items = CATALOGUE_IDS.map((id) => catalogueItem(id));
-  return CATALOGUE_GROUPS.map((group) => ({
+  const catalogueChildren: NavChild[] = CATALOGUE_GROUPS.map((group) => ({
     group,
     count: items.filter((item) => item.group === group).length,
   }))
@@ -85,59 +129,49 @@ const catalogueChildren = (): NavChild[] => {
     .map((entry) => ({
       label: GROUP_LABELS[entry.group],
       href: `/catalogue#${entry.group}`,
-      note: `${entry.count} object${entry.count === 1 ? '' : 's'}`,
+      note: `${entry.count} ${note('objects')}`,
     }));
-};
 
-const styleChildren = (): NavChild[] => {
   /** Which styles anything is actually drawn in, so the menu can say which are spare. */
   const used = new Set(
     PROJECTS.flatMap(({ rooms }) =>
       rooms.flatMap((room) => room.designs.map((design) => design.style)),
     ),
   );
-  return STYLE_ORDER.map((key) => ({
+  const styleChildren: NavChild[] = STYLE_ORDER.map((key) => ({
     label: STYLES[key].name,
     href: `/styles#${key}`,
-    note: used.has(key) ? 'in use' : 'on the shelf',
+    note: used.has(key) ? note('inUse') : note('spare'),
   }));
-};
 
-const auditChildren = (): NavChild[] =>
-  PROJECTS.map(({ project }) => ({
+  const auditChildren: NavChild[] = PROJECTS.map(({ project }) => ({
     label: project.name,
     href: `/audit#${project.id}`,
-    note: 'findings for this project',
+    note: note('audit'),
   }));
 
-export const NAV: NavItem[] = [
-  {
-    label: 'Projects',
-    href: '/',
-    children: projectChildren(),
-  },
-  {
-    label: 'Catalogue',
-    href: '/catalogue',
-    children: catalogueChildren(),
-  },
-  {
-    label: 'Styles',
-    href: '/styles',
-    children: styleChildren(),
-  },
-  {
-    label: 'Audit',
-    href: '/audit',
-    children: auditChildren(),
-  },
-  {
-    label: 'Method',
-    href: '/method',
-    children: METHOD_SECTIONS.map((section) => ({
-      label: section.label,
-      href: `/method#${section.id}`,
-      note: section.note,
-    })),
-  },
-];
+  return [
+    { label: s.nav.projects, href: '/', children: projectChildren },
+    { label: s.nav.catalogue, href: '/catalogue', children: catalogueChildren },
+    { label: s.nav.styles, href: '/styles', children: styleChildren },
+    { label: s.nav.audit, href: '/audit', children: auditChildren },
+    {
+      label: s.nav.method,
+      href: '/method',
+      children: METHOD_SECTIONS.map((section) => ({
+        label: section.label[locale],
+        href: `/method#${section.id}`,
+        note: section.note[locale],
+      })),
+    },
+    { label: s.nav.planner, href: '/planner', children: [] },
+  ];
+}
+
+/** The method page reads these to label and slug its own sections. */
+export const methodSections = (locale: Locale) =>
+  METHOD_SECTIONS.map((section) => ({
+    id: section.id,
+    label: section.label[locale],
+    note: section.note[locale],
+  }));

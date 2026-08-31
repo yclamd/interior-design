@@ -1,7 +1,14 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { PROJECTS } from '~/data/projects';
 import { slug } from '~/data/navigation';
+import { LOCALES, type Locale } from '~/i18n';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  LOCALES.map((locale) => ({ params: { locale } }));
+
+const locale = Astro.params.locale as Locale;
 
 /**
  * The page that makes the dataset legible: what has to be measured, in what unit,
@@ -115,6 +122,7 @@ const tables = [
 ---
 
 <BaseLayout
+  locale={locale}
   title="Method"
   description="What has to be measured to draw a room this way: units, the shared coordinate space, the split between a room and a design, and every field of the dataset."
 >

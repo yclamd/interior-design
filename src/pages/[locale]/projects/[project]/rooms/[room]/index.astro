@@ -1,19 +1,22 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { LOCALES, localeHref, type Locale } from '~/i18n';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import RoomDetail from '~/components/RoomDetail.astro';
 import { PROJECTS, projectById, roomById } from '~/data/projects';
 import { preferredDesign } from '~/data/types';
-import { withBase } from '~/consts';
 import { bbox, formatArea, outlineOf, roomArea } from '~/lib/geometry';
 
 export const getStaticPaths: GetStaticPaths = () =>
-  PROJECTS.flatMap((entry) =>
-    entry.rooms.map((room) => ({
-      params: { project: entry.project.id, room: room.id },
-    })),
+  LOCALES.flatMap((locale) =>
+    PROJECTS.flatMap((entry) =>
+      entry.rooms.map((room) => ({
+        params: { locale, project: entry.project.id, room: room.id },
+      })),
+    ),
   );
 
+const locale = Astro.params.locale as Locale;
 const entry = projectById(Astro.params.project!)!;
 const room = roomById(entry, Astro.params.room!)!;
 const design = preferredDesign(room);
@@ -40,15 +43,16 @@ const schema = {
 ---
 
 <BaseLayout
+  locale={locale}
   title={`${room.name} — ${project.name}`}
   description={`${room.name}: ${box.width} × ${box.depth} mm, ${formatArea(area)}, drawn to scale with its furniture at real sizes. ${design.theme}`}
   schema={schema}
 >
   <section class="mx-auto max-w-6xl px-5 pt-10 sm:px-8 sm:pt-14">
     <nav aria-label="Breadcrumb" class="mb-5 text-2xs tracking-[0.14em] text-ink-faint uppercase">
-      <a href={withBase('/')} class="transition-colors hover:text-brand">Projects</a>
+      <a href={localeHref(locale, '/')} class="transition-colors hover:text-brand">Projects</a>
       <span class="mx-2">/</span>
-      <a href={withBase(`/projects/${project.id}`)} class="transition-colors hover:text-brand">
+      <a href={localeHref(locale, `/projects/${project.id}`)} class="transition-colors hover:text-brand">
         {project.name}
       </a>
       {
@@ -56,7 +60,7 @@ const schema = {
           <>
             <span class="mx-2">/</span>
             <a
-              href={withBase(`/projects/${project.id}/rooms`)}
+              href={localeHref(locale, `/projects/${project.id}/rooms`)}
               class="transition-colors hover:text-brand"
             >
               Rooms
@@ -68,7 +72,7 @@ const schema = {
       <span class="text-ink-soft">{room.name}</span>
     </nav>
 
-    <RoomDetail entry={entry} room={room} design={design} />
+    <RoomDetail locale={locale} entry={entry} room={room} design={design} />
   </section>
 
   <nav
@@ -78,7 +82,7 @@ const schema = {
     {
       previous && (
         <a
-          href={withBase(`/projects/${project.id}/rooms/${previous.id}`)}
+          href={localeHref(locale, `/projects/${project.id}/rooms/${previous.id}`)}
           class="card flex-1 p-5 transition-colors hover:border-brand/40"
         >
           <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Previous</span>
@@ -89,7 +93,7 @@ const schema = {
     {
       next && (
         <a
-          href={withBase(`/projects/${project.id}/rooms/${next.id}`)}
+          href={localeHref(locale, `/projects/${project.id}/rooms/${next.id}`)}
           class="card flex-1 p-5 text-right transition-colors hover:border-brand/40"
         >
           <span class="text-2xs tracking-[0.14em] text-ink-faint uppercase">Next</span>

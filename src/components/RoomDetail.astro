@@ -5,7 +5,7 @@ import Schedule from '~/components/Schedule.astro';
 import { KIND_LABELS, roomById, type Entry } from '~/data/projects';
 import { STYLES } from '~/data/styles';
 import type { Design, Room } from '~/data/types';
-import { withBase } from '~/consts';
+import { localeHref, type Locale } from '~/i18n';
 import { checkDesign } from '~/lib/checks';
 import { PLAN_COLOURS, describe } from '~/lib/plan';
 import {
@@ -30,9 +30,10 @@ interface Props {
   design: Design;
   /** Off on the project page of a one-room project, where the heading says it already. */
   heading?: boolean;
+  locale: Locale;
 }
 
-const { entry, room, design, heading = true } = Astro.props;
+const { entry, room, design, heading = true, locale } = Astro.props;
 const { project, rooms } = entry;
 
 const findings = checkDesign(room, design);
@@ -104,7 +105,7 @@ const legend = [
       </span>
       {room.designs.map((option) => (
         <a
-          href={withBase(option.preferred ? roomHref : `${roomHref}/${option.id}`)}
+          href={localeHref(locale, option.preferred ? roomHref : `${roomHref}/${option.id}`)}
           aria-current={option.id === design.id ? 'page' : undefined}
           class:list={[
             'rounded-full border px-3.5 py-1.5 text-sm transition-colors',
@@ -117,7 +118,7 @@ const legend = [
         </a>
       ))}
       <a
-        href={withBase(`${roomHref}/compare`)}
+        href={localeHref(locale, `${roomHref}/compare`)}
         class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-ink-soft transition-colors hover:bg-paper-deep hover:text-ink"
       >
         Side by side
@@ -172,7 +173,7 @@ const legend = [
             {others.map((other) => (
               <li class="text-sm leading-relaxed text-ink-soft">
                 <a
-                  href={withBase(other.preferred ? roomHref : `${roomHref}/${other.id}`)}
+                  href={localeHref(locale, other.preferred ? roomHref : `${roomHref}/${other.id}`)}
                   class="font-bold text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
                 >
                   {other.name}
@@ -264,7 +265,7 @@ const legend = [
             <td class="text-ink-soft">
               {opening.to && roomById(entry, opening.to) ? (
                 <a
-                  href={withBase(`/projects/${project.id}/rooms/${opening.to}`)}
+                  href={localeHref(locale, `/projects/${project.id}/rooms/${opening.to}`)}
                   class="text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-clay"
                 >
                   {roomById(entry, opening.to)!.name}
