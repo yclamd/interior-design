@@ -89,6 +89,7 @@ const TEXT = {
     en: 'The layout does not change. Click one to draw the room in it.',
     zh: '佈局不變，只換材質與色調。點一下即套用。',
   },
+  axonLabel: { en: 'The draft room in three dimensions', zh: '草稿房間的軸測圖' },
   openSides: { en: 'Sides with no wall', zh: '沒有牆的邊' },
   openSidesNote: {
     en: 'An open-plan room is not walled on all four sides. Say which sides stand open and no wall is drawn there.',
@@ -114,6 +115,7 @@ const l = {
   hintHolding: TEXT.hintHolding[locale],
   inEveryStyle: TEXT.inEveryStyle[locale],
   inEveryStyleNote: TEXT.inEveryStyleNote[locale],
+  axonLabel: TEXT.axonLabel[locale],
   shell: TEXT.shell[locale],
   kind: TEXT.kind[locale],
   style: TEXT.style[locale],
@@ -399,21 +401,36 @@ const plannerText = {
             role="application"
             tabindex="0"
             aria-label={s.planner.title}></svg>
-          <style is:inline>
-            /* A piece has to look like something that can be picked up. */
-            #p-svg [data-piece] {
-              cursor: grab;
-            }
-            #p-svg:active [data-piece] {
-              cursor: grabbing;
-            }
-            /* The frame takes focus for the keyboard, and should say so quietly. */
-            #p-svg:focus-visible {
-              outline: 2px solid var(--color-brand, #7a6a55);
-              outline-offset: 2px;
-            }
-          </style>
         </div>
+
+        {
+          /**
+           * The draft in three dimensions, from the same solids the room pages are drawn
+           * from. A plan answers whether the room works; this answers whether it is a room
+           * somebody would want to stand in, and they are the same measurements either way.
+           */
+        }
+        <figure class="rounded-xl border border-line bg-[#f7f4ee] p-2">
+          <svg id="p-axon" class="h-auto w-full" role="img" aria-label={l.axonLabel}></svg>
+          <figcaption class="px-2 pt-1 pb-0.5 text-2xs leading-relaxed text-ink-faint">
+            {s.common.axonCaption}
+          </figcaption>
+        </figure>
+
+        <style is:inline>
+          /* A piece has to look like something that can be picked up. */
+          #p-svg [data-piece] {
+            cursor: grab;
+          }
+          #p-svg:active [data-piece] {
+            cursor: grabbing;
+          }
+          /* The frame takes focus for the keyboard, and should say so quietly. */
+          #p-svg:focus-visible {
+            outline: 2px solid var(--color-brand, #7a6a55);
+            outline-offset: 2px;
+          }
+        </style>
 
         <dl class="grid grid-cols-3 gap-3">
           <div class="card p-4">
@@ -486,6 +503,8 @@ const plannerText = {
   import { checkDesign, checkRoom } from '~/lib/checks';
   import { bbox, formatArea, formatLength, grow, outlineInPlan, roomArea } from '~/lib/geometry';
   import { roomPlanSvg } from '~/lib/draw';
+  import { axonSvg } from '~/lib/axon';
+  import { modelOf } from '~/lib/model';
 
   const text = (
     window as unknown as {
@@ -1050,13 +1069,28 @@ const plannerText = {
   }
 
   /**
-   * Everything that follows a discrete change: the plan, the ten palettes, and the saved
-   * draft. Not called from a pointer move, where redrawing ten plans per frame would make
-   * dragging feel heavy for thumbnails nobody is watching mid-gesture.
+   * The draft extruded and projected, through the same two functions the room pages use.
+   * Nothing is modelled twice: this reads the room the plan above is drawn from.
+   */
+  function drawAxon() {
+    const axon = document.getElementById('p-axon');
+    if (!axon) return;
+    const { room, project } = build();
+    const view = axonSvg(modelOf(project, [room]));
+    axon.setAttribute('viewBox', view.viewBox);
+    axon.innerHTML = view.body;
+  }
+
+  /**
+   * Everything that follows a discrete change: the plan, the ten palettes, the projection,
+   * and the saved draft. Not called from a pointer move — redrawing ten plans and a model
+   * per frame would make dragging feel heavy for the sake of pictures nobody is watching
+   * while their hand is moving.
    */
   function refresh() {
     draw();
     drawStyles();
+    drawAxon();
     save();
   }
 
@@ -1182,6 +1216,7 @@ const plannerText = {
     if (out.svg.hasPointerCapture(event.pointerId)) out.svg.releasePointerCapture(event.pointerId);
     /** Once the hand has stopped, and not before: ten plans is ten times the work. */
     drawStyles();
+    drawAxon();
     save();
   };
   out.svg.addEventListener('pointerup', endDrag);
@@ -1289,6 +1324,7 @@ const plannerText = {
     renderList();
     draw();
     drawStyles();
+    drawAxon();
   }
 
   function undo() {
@@ -1419,5 +1455,6 @@ const plannerText = {
   if (!load()) {
     draw();
     drawStyles();
+    drawAxon();
   }
 </script>

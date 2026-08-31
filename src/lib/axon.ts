@@ -190,6 +190,7 @@ export function axonSvg(solids: Solid[], options: AxonOptions = {}): AxonRender 
     const fill = solid.colour;
     const opacity = solid.opacity ?? 1;
     const faces: string[] = [];
+    let sides = 0;
 
     /**
      * A side is drawn when it faces the eye. Both x and y increase towards it, so an edge
@@ -222,12 +223,20 @@ export function axonSvg(solids: Solid[], options: AxonOptions = {}): AxonRender 
         project(a.x, a.y, solid.base),
       ];
       wall.forEach(see);
+      sides += 1;
       /** East-facing sides get the deeper shade; south-facing ones the lighter. */
       const face: Face = Math.abs(normal.x) >= Math.abs(normal.y) ? 'east' : 'south';
       faces.push(
         `<polygon points="${polygon(wall)}" fill="${shade(fill, SHADE[face])}" fill-opacity="${opacity}"/>`,
       );
     }
+
+    /**
+     * A wall that lost every side it had turned towards the eye is one we are looking over,
+     * and its top has to go with it. Left in, it draws a bright ribbon at the cut height
+     * with no wall beneath it — a handrail across the middle of the room, floating.
+     */
+    if (solid.role === 'wall' && sides === 0) continue;
 
     lid.forEach(see);
     faces.push(

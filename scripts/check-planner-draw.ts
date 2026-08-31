@@ -16,8 +16,10 @@
 import { writeFileSync } from 'node:fs';
 import { fromCatalogue } from '../src/data/catalogue';
 import type { Design, Opening, Project, Room, RoomKind, Side } from '../src/data/types';
+import { axonSvg } from '../src/lib/axon';
 import { checkDesign, checkRoom } from '../src/lib/checks';
 import { roomPlanSvg } from '../src/lib/draw';
+import { modelOf } from '../src/lib/model';
 
 const WIDTH = 3400;
 const DEPTH = 3050;
@@ -106,6 +108,13 @@ for (const { room, note } of cases) {
   writeFileSync(
     `dist/planner-${room.id}.svg`,
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${plan.viewBox}">${plan.body}</svg>`,
+  );
+
+  /** The projection too, since the planner now shows one and it is the same two calls. */
+  const view = axonSvg(modelOf(project, [room]));
+  writeFileSync(
+    `dist/planner-${room.id}-axon.svg`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view.viewBox}">${view.body}</svg>`,
   );
 
   const findings = [...checkRoom(room), ...checkDesign(room, room.designs[0]!)];
