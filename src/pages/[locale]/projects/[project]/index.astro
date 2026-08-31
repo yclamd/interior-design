@@ -207,8 +207,10 @@ const schema = {
         <section class="mx-auto mt-14 max-w-6xl px-5 sm:px-8">
           <Findings
             findings={findings}
+            rooms={rooms}
+            locale={locale}
             heading="What the whole-plan checks found"
-            clear="No rooms overlap, every shared door is recorded the same way by both rooms, and the drawn area is close enough to the deed to be explained by walls and shafts."
+            clear="No rooms overlap, every shared door is recorded the same way by both rooms, every room has a way in, and the drawn area is close enough to the deed to be explained by walls and shafts."
           />
         </section>
 

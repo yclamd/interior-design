@@ -40,6 +40,15 @@ export interface Finding {
   /** Short machine-ish label, shown as a tag. */
   code: string;
   message: string;
+  /**
+   * Which room this is about, where that is not already obvious from where it is shown.
+   *
+   * Findings printed under a room need no attribution and carry none. The ones gathered
+   * for a whole plan do: a message saying a room has no daylight, printed under a
+   * heading that covers nine rooms, tells the reader there is a problem and hides which
+   * one it is — which is worse than not checking.
+   */
+  room?: string;
 }
 
 /** Rotation can move a corner by a fraction of a millimetre; ignore slivers. */
@@ -226,6 +235,88 @@ export function checkDesign(room: Room, design: Design): Finding[] {
   return findings;
 }
 
+/** Rooms people are meant to spend time in, which are the ones that want daylight. */
+const HABITABLE_KINDS: RoomKind[] = ['living', 'dining', 'kitchen', 'bedroom', 'study'];
+
+/**
+ * Whether a room is a room.
+ *
+ * The checks above ask whether the furniture in a room works. These ask something more
+ * basic that a drawing can get wrong without anything overlapping anything: whether
+ * there is a way in, and whether there is any daylight. A bedroom with no door and a
+ * living room sealed on four sides are both perfectly valid geometry and both obvious
+ * nonsense, and nonsense of exactly the kind that makes a drawing look unprofessional
+ * the moment somebody who builds things looks at it.
+ *
+ * A side the room states as open counts as a way in and as a source of borrowed light,
+ * because that is what an opening onto the rest of a flat is.
+ */
+export function checkRoom(room: Room, rooms: Room[] = []): Finding[] {
+  const findings: Finding[] = [];
+  if (UNROOFED.includes(room.kind)) return findings;
+
+  const open = room.open ?? [];
+  const doors = room.openings.filter(isDoor);
+  const windows = room.openings.filter(isWindow);
+
+  /** A room flush against another is open to it, whether or not it says so. */
+  const flush = rooms.some(
+    (other) => other.id !== room.id && sharesAnEdge(room, other),
+  );
+
+  if (doors.length === 0 && open.length === 0 && !flush) {
+    findings.push({
+      severity: 'error',
+      code: 'no-way-in',
+      room: room.id,
+      message: `No door and no open side, so there is no way into this room. Either it wants a door, or it wants a side declared open to the rest of the space.`,
+    });
+  }
+
+  if (HABITABLE_KINDS.includes(room.kind) && windows.length === 0) {
+    const borrowed = open.length > 0 || flush;
+    findings.push({
+      severity: borrowed ? 'note' : 'warning',
+      code: 'no-daylight',
+      room: room.id,
+      message: borrowed
+        ? `No window of its own, so the daylight here is borrowed from whatever it opens onto. Worth checking that something over there has one.`
+        : `A room to spend time in, with no window and no open side: it has no daylight at all.`,
+    });
+  }
+
+  return findings;
+}
+
+/** Rooms are open to each other when an edge of one lies exactly on an edge of the other. */
+function sharesAnEdge(room: Room, other: Room): boolean {
+  const mine = outlineInPlan(room);
+  const theirs = outlineInPlan(other);
+  for (let i = 0; i < mine.length; i += 1) {
+    const a = mine[i]!;
+    const b = mine[(i + 1) % mine.length]!;
+    for (let j = 0; j < theirs.length; j += 1) {
+      const c = theirs[j]!;
+      const d = theirs[(j + 1) % theirs.length]!;
+      const vertical = Math.abs(a.x - b.x) < 1 && Math.abs(c.x - d.x) < 1;
+      const horizontal = Math.abs(a.y - b.y) < 1 && Math.abs(c.y - d.y) < 1;
+      if (vertical && Math.abs(a.x - c.x) < 1) {
+        const overlap =
+          Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) -
+          Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y));
+        if (overlap > WALKWAY) return true;
+      }
+      if (horizontal && Math.abs(a.y - c.y) < 1) {
+        const overlap =
+          Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) -
+          Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x));
+        if (overlap > WALKWAY) return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * Checks that need more than one room to answer. Designs do not enter into these:
  * a room's shell is one shell however many ways it has been furnished, so two
@@ -234,6 +325,9 @@ export function checkDesign(room: Room, design: Design): Finding[] {
 export function checkProject(project: Project, rooms: Room[]): Finding[] {
   const findings: Finding[] = [];
   const ids = new Set(rooms.map((room) => room.id));
+
+  /** Whether each room is a room at all, which is a property of the shell. */
+  for (const room of rooms) findings.push(...checkRoom(room, rooms));
   const NON_ROOM = new Set(['outside', 'balcony', 'stairs', 'corridor', 'shaft', 'lift-lobby']);
 
   for (const room of rooms) {

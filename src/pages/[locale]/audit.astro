@@ -107,8 +107,10 @@ const drawings = audits.reduce((sum, audit) => sum + audit.designs.length, 0);
         <div class="mt-5 space-y-6">
           <Findings
             findings={audit.project}
+            rooms={audit.entry.rooms}
+            locale={locale}
             heading="The plan as a whole"
-            clear="No rooms overlap, every shared door is recorded the same way by both rooms, and every room has at least one design."
+            clear="No rooms overlap, every shared door is recorded the same way by both rooms, every room has a way in, and every room has at least one design."
           />
 
           {audit.designs.map((item) => (

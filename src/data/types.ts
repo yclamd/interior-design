@@ -304,6 +304,16 @@ export interface Room {
    * as glazing instead of taking the plain edge a slab would.
    */
   glazed?: Side[];
+  /**
+   * Sides with no wall at all, because the room is open to whatever is beyond them.
+   *
+   * A plan of a whole flat says this by putting two rooms flush against each other and
+   * letting the absence of a wall speak. A room drawn on its own cannot: there is no
+   * neighbour to be flush with, so an open-plan living room comes out as a sealed box
+   * with four walls, which is both wrong and the kind of wrong that looks amateurish.
+   * Naming the side says the wall is missing on purpose.
+   */
+  open?: Side[];
   /** Clear floor to ceiling. */
   ceiling: Mm;
   /**

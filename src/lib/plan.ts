@@ -7,6 +7,7 @@ import type {
   Point,
   Project,
   Room,
+  Side,
   StylePreset,
 } from '~/data/types';
 import { STYLES } from '~/data/styles';
@@ -128,24 +129,87 @@ export function roomPath(room: Room): string {
  */
 export const SCREEN: Mm = 80;
 
-/** The screen segments on a room's boundary, one per glazed side, in plan space. */
-export function glazedSegments(room: Room): { a: Point; b: Point; inward: Point }[] {
-  if (!room.glazed?.length) return [];
+/** One whole side of a room, as a segment with the direction into the room. */
+export function sideSegment(room: Room, side: Side): { a: Point; b: Point; inward: Point } {
   const box = bbox(outlineInPlan(room));
   const east = box.x + box.width;
   const south = box.y + box.depth;
-  return room.glazed.map((side) => {
-    switch (side) {
-      case 'north':
-        return { a: { x: box.x, y: box.y }, b: { x: east, y: box.y }, inward: { x: 0, y: 1 } };
-      case 'south':
-        return { a: { x: box.x, y: south }, b: { x: east, y: south }, inward: { x: 0, y: -1 } };
-      case 'west':
-        return { a: { x: box.x, y: box.y }, b: { x: box.x, y: south }, inward: { x: 1, y: 0 } };
-      case 'east':
-        return { a: { x: east, y: box.y }, b: { x: east, y: south }, inward: { x: -1, y: 0 } };
+  switch (side) {
+    case 'north':
+      return { a: { x: box.x, y: box.y }, b: { x: east, y: box.y }, inward: { x: 0, y: 1 } };
+    case 'south':
+      return { a: { x: box.x, y: south }, b: { x: east, y: south }, inward: { x: 0, y: -1 } };
+    case 'west':
+      return { a: { x: box.x, y: box.y }, b: { x: box.x, y: south }, inward: { x: 1, y: 0 } };
+    case 'east':
+      return { a: { x: east, y: box.y }, b: { x: east, y: south }, inward: { x: -1, y: 0 } };
+  }
+}
+
+/** The screen segments on a room's boundary, one per glazed side, in plan space. */
+export function glazedSegments(room: Room): { a: Point; b: Point; inward: Point }[] {
+  return (room.glazed ?? []).map((side) => sideSegment(room, side));
+}
+
+/** Sides the room states it has no wall on, which are drawn as nothing at all. */
+export function openSegments(room: Room): { a: Point; b: Point; inward: Point }[] {
+  return (room.open ?? []).map((side) => sideSegment(room, side));
+}
+
+const SIDES: Side[] = ['north', 'east', 'south', 'west'];
+
+/**
+ * The poché of a single room, as a band on each side that actually has a wall.
+ *
+ * A whole-flat plan gets its poché from the envelope: one outer boundary, with the rooms
+ * drawn on top of it and the partitions left as whatever the rooms do not cover. That is
+ * the right way round for a flat, and the wrong way round for one room on its own —
+ * growing a room by a wall thickness wraps it on all four sides, so a living room open
+ * to a hall comes out as a sealed box no matter what the data says. Which is precisely
+ * the mistake worth not making.
+ *
+ * So this asks each side whether it has a wall and draws only those. A band runs into a
+ * corner when the side meeting it there is walled too, and stops flush when it is not:
+ * two walls make a corner, and one wall makes an end.
+ */
+export function wallBandsPath(room: Room, thickness: Mm): string {
+  const open = new Set<Side>([...(room.open ?? []), ...(room.glazed ?? [])]);
+  const walled = (side: Side) => !open.has(side);
+  const box = bbox(outlineInPlan(room));
+  const x1 = box.x + box.width;
+  const y1 = box.y + box.depth;
+  const t = thickness;
+
+  const bands: { x: number; y: number; width: number; depth: number }[] = [];
+  for (const side of SIDES) {
+    if (!walled(side)) continue;
+    /** How far the band reaches past each end: into the corner, or nowhere. */
+    const horizontal = side === 'north' || side === 'south';
+    const before = walled(horizontal ? 'west' : 'north') ? t : 0;
+    const after = walled(horizontal ? 'east' : 'south') ? t : 0;
+    if (horizontal) {
+      bands.push({
+        x: box.x - before,
+        y: side === 'north' ? box.y - t : y1,
+        width: box.width + before + after,
+        depth: t,
+      });
+    } else {
+      bands.push({
+        x: side === 'west' ? box.x - t : x1,
+        y: box.y - before,
+        width: t,
+        depth: box.depth + before + after,
+      });
     }
-  });
+  }
+
+  return bands
+    .map(
+      ({ x, y, width, depth }) =>
+        `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${y + depth} L ${x} ${y + depth} Z`,
+    )
+    .join(' ');
 }
 
 /** A screen drawn the way a window is: a void band with glazing lines in it. */
@@ -200,11 +264,12 @@ export function wallSegments(room: Room, rooms: Room[]): { a: Point; b: Point }[
       .filter((other) => other.id !== room.id)
       .flatMap((other) => edgesOf(outlineInPlan(other))),
     /**
-     * A glazed side is drawn as glazing, so it must not also take the plain edge. Its
-     * segment lies exactly on the room's own edge, so the same subtraction that removes
-     * a shared boundary removes this too.
+     * A glazed side is drawn as glazing and an open side is drawn as nothing, so neither
+     * may also take a plain edge. Both lie exactly on the room's own edge, so the same
+     * subtraction that removes a shared boundary removes them too.
      */
     ...glazedSegments(room).map(({ a, b }) => [a, b] as [Point, Point]),
+    ...openSegments(room).map(({ a, b }) => [a, b] as [Point, Point]),
   ];
 
   const parts: { a: Point; b: Point }[] = [];

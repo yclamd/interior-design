@@ -1,14 +1,21 @@
 ---
 import type { Finding, Severity } from '~/lib/checks';
+import type { Room } from '~/data/types';
+import { localeOf, say, type Locale } from '~/i18n';
 
 interface Props {
   findings: Finding[];
   heading: string;
   /** Shown when the checks pass, so a clean room says so rather than saying nothing. */
   clear: string;
+  /** Needed only where findings are gathered for a plan and have to name their room. */
+  rooms?: Room[];
+  locale?: Locale;
 }
 
-const { findings, heading, clear } = Astro.props;
+const { findings, heading, clear, rooms = [], locale = localeOf(Astro.url) } = Astro.props;
+
+const names = Object.fromEntries(rooms.map((room) => [room.id, say(room.name, locale)]));
 
 const TONE: Record<Severity, { label: string; chip: string; dot: string }> = {
   error: { label: 'Conflict', chip: 'bg-flag-soft text-flag', dot: 'bg-flag' },
@@ -52,6 +59,15 @@ const sorted = [...findings].sort(
                   {TONE[finding.severity].label}
                 </span>
                 <code class="font-mono text-2xs text-ink-faint">{finding.code}</code>
+                {
+                  /**
+                   * Only the plan-wide findings carry a room, and they are the ones that
+                   * would otherwise leave the reader hunting for which room is meant.
+                   */
+                  finding.room && names[finding.room] && (
+                    <span class="text-2xs font-medium text-ink">{names[finding.room]}</span>
+                  )
+                }
               </div>
               <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">{finding.message}</p>
             </div>

@@ -2,7 +2,9 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { CATALOGUE_IDS, catalogueItem } from '~/data/catalogue';
+import { KIND_LABELS } from '~/data/projects';
 import { STYLES, STYLE_ORDER } from '~/data/styles';
+import type { RoomKind, Side } from '~/data/types';
 import { say, LOCALES, strings, type Locale } from '~/i18n';
 
 export const getStaticPaths: GetStaticPaths = () =>
@@ -35,9 +37,44 @@ const pickable = CATALOGUE_IDS.filter((id) => catalogueItem(id).mountedAt === un
   },
 );
 
+const SIDES: Side[] = ['north', 'east', 'south', 'west'];
+
+const SIDE_LABELS: Record<Side, Record<Locale, string>> = {
+  north: { en: 'North', zh: '北' },
+  east: { en: 'East', zh: '東' },
+  south: { en: 'South', zh: '南' },
+  west: { en: 'West', zh: '西' },
+};
+
+/** The kinds worth offering: what a person draws a single room for. */
+const KINDS: RoomKind[] = ['living', 'dining', 'kitchen', 'bedroom', 'study', 'bathroom', 'utility'];
+
 const TEXT = {
   shell: { en: 'The shell', zh: '外殼' },
+  kind: { en: 'What the room is', zh: '房間類型' },
   style: { en: 'Palette', zh: '色調' },
+  openings: { en: 'Doors and windows', zh: '門與窗' },
+  openingsNote: {
+    en: 'A room needs a way in, and a room to spend time in needs daylight. Both are checked.',
+    zh: '房間需要進得去，久待的房間需要採光。兩者都會被檢查。',
+  },
+  addDoor: { en: '+ Door', zh: '＋ 門' },
+  addWindow: { en: '+ Window', zh: '＋ 窗' },
+  aDoor: { en: 'Door', zh: '門' },
+  aWindow: { en: 'Window', zh: '窗' },
+  side: { en: 'Side', zh: '方位' },
+  openingWidth: { en: 'Width', zh: '寬' },
+  along: { en: 'Along', zh: '位置' },
+  remove: { en: 'Remove', zh: '移除' },
+  noOpenings: {
+    en: 'No doors or windows. This room has no way in.',
+    zh: '沒有門也沒有窗，這個房間進不去。',
+  },
+  openSides: { en: 'Sides with no wall', zh: '沒有牆的邊' },
+  openSidesNote: {
+    en: 'An open-plan room is not walled on all four sides. Say which sides stand open and no wall is drawn there.',
+    zh: '開放式空間不會四面都是牆。指定哪幾邊是開放的，那幾邊就不會畫牆。',
+  },
   choose: { en: 'Choose an object…', zh: '選一個物件…' },
   pieces: { en: 'In the room', zh: '房間內的物件' },
   roomArea: { en: 'Clear floor', zh: '淨面積' },
@@ -51,7 +88,14 @@ const TEXT = {
 
 const l = {
   shell: TEXT.shell[locale],
+  kind: TEXT.kind[locale],
   style: TEXT.style[locale],
+  openings: TEXT.openings[locale],
+  openingsNote: TEXT.openingsNote[locale],
+  addDoor: TEXT.addDoor[locale],
+  addWindow: TEXT.addWindow[locale],
+  openSides: TEXT.openSides[locale],
+  openSidesNote: TEXT.openSidesNote[locale],
   choose: TEXT.choose[locale],
   pieces: TEXT.pieces[locale],
   roomArea: TEXT.roomArea[locale],
@@ -123,6 +167,21 @@ const plannerText = {
             />
           </label>
           <label class="block">
+            <span class="text-xs font-medium text-ink-soft">{l.kind}</span>
+            <select
+              id="p-kind"
+              class="mt-1 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"
+            >
+              {
+                KINDS.map((kind) => (
+                  <option value={kind} selected={kind === 'living'}>
+                    {say(KIND_LABELS[kind], locale)}
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+          <label class="block">
             <span class="text-xs font-medium text-ink-soft">{l.style}</span>
             <select
               id="p-style"
@@ -131,12 +190,71 @@ const plannerText = {
               {
                 STYLE_ORDER.map((key) => (
                   <option value={key} selected={key === 'warm-minimal'}>
-                    {STYLES[key].name}
+                    {say(STYLES[key].name, locale)}
                   </option>
                 ))
               }
             </select>
           </label>
+        </fieldset>
+
+        <fieldset class="card space-y-3 p-5">
+          <legend class="px-1 text-2xs font-bold tracking-[0.14em] text-ink-faint uppercase">
+            {l.openings}
+          </legend>
+          <p class="text-xs leading-relaxed text-ink-faint">{l.openingsNote}</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              id="p-add-door"
+              type="button"
+              class="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-paper-deep"
+            >
+              {l.addDoor}
+            </button>
+            <button
+              id="p-add-window"
+              type="button"
+              class="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-paper-deep"
+            >
+              {l.addWindow}
+            </button>
+          </div>
+          <ul id="p-openings" class="space-y-2"></ul>
+
+          {
+            /**
+             * Labels the script needs, passed as data rather than duplicated in it. The
+             * translations stay where every other translation on the page lives, and the
+             * client bundle carries no second copy of them.
+             */
+          }
+          <script id="p-side-labels" type="application/json" is:inline set:html={JSON.stringify(
+            Object.fromEntries(SIDES.map((side) => [side, SIDE_LABELS[side][locale]])),
+          )} />
+          <script id="p-opening-labels" type="application/json" is:inline set:html={JSON.stringify({
+            door: TEXT.aDoor[locale],
+            window: TEXT.aWindow[locale],
+            side: TEXT.side[locale],
+            width: TEXT.openingWidth[locale],
+            along: TEXT.along[locale],
+            remove: TEXT.remove[locale],
+            none: TEXT.noOpenings[locale],
+          })} />
+
+          <div>
+            <p class="text-xs font-medium text-ink-soft">{l.openSides}</p>
+            <p class="mt-1 text-2xs leading-relaxed text-ink-faint">{l.openSidesNote}</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {
+                SIDES.map((side) => (
+                  <label class="flex cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs text-ink transition-colors hover:bg-paper-deep">
+                    <input type="checkbox" data-open-side={side} class="accent-brand" />
+                    {SIDE_LABELS[side][locale]}
+                  </label>
+                ))
+              }
+            </div>
+          </div>
         </fieldset>
 
         <fieldset class="card space-y-3 p-5">
@@ -217,11 +335,19 @@ const plannerText = {
 <script>
   import { catalogueItem, fromCatalogue, type CatalogueId } from '~/data/catalogue';
   import { STYLES } from '~/data/styles';
-  import type { Design, Furniture, Opening, Project, Room, StyleKey } from '~/data/types';
-  import { checkDesign } from '~/lib/checks';
+  import type {
+    Design,
+    Furniture,
+    Opening,
+    Project,
+    Room,
+    RoomKind,
+    Side,
+    StyleKey,
+  } from '~/data/types';
+  import { checkDesign, checkRoom } from '~/lib/checks';
   import {
     bbox,
-    envelopeOf,
     formatArea,
     formatLength,
     grow,
@@ -238,6 +364,7 @@ const plannerText = {
     openingRender,
     roomFill,
     roomPath,
+    wallBandsPath,
   } from '~/lib/plan';
   import {
     floorPatternSvg,
@@ -272,6 +399,7 @@ const plannerText = {
     width: el<HTMLInputElement>('p-width'),
     depth: el<HTMLInputElement>('p-depth'),
     wall: el<HTMLInputElement>('p-wall'),
+    kind: el<HTMLSelectElement>('p-kind'),
     style: el<HTMLSelectElement>('p-style'),
     add: el<HTMLSelectElement>('p-add'),
   };
@@ -307,7 +435,20 @@ const plannerText = {
       swing: 'left-in',
       to: 'outside',
     },
+    /** And a window, because a living room without one fails its own daylight check. */
+    {
+      id: 'window',
+      kind: 'window',
+      side: 'east',
+      offset: 700,
+      width: 1600,
+      height: 1400,
+      sill: 900,
+      to: 'outside',
+    },
   ];
+  let nextOpening = 1;
+  let openSides: Side[] = [];
 
   const num = (input: HTMLInputElement) => {
     const value = Math.round(input.valueAsNumber);
@@ -346,10 +487,11 @@ const plannerText = {
     const room: Room = {
       id: 'draft',
       name: 'Room',
-      kind: 'living',
+      kind: inputs.kind.value as RoomKind,
       origin: { x: wall, y: wall },
       shape: { kind: 'rect', width, depth },
       ceiling: 2600,
+      open: [...openSides],
       openings: openings.map((opening) => ({ ...opening })),
       designs: [design],
     };
@@ -373,6 +515,156 @@ const plannerText = {
   }
 
   const openingsOf = (room: Room): Opening[] => room.openings;
+
+  /* ── Doors, windows and open sides ──────────────────────────────────────── */
+
+  const SIDES: Side[] = ['north', 'east', 'south', 'west'];
+  const SIDE_TEXT: Record<Side, string> = JSON.parse(
+    document.getElementById('p-side-labels')?.textContent ?? '{}',
+  );
+  const OPENING_TEXT: Record<string, string> = JSON.parse(
+    document.getElementById('p-opening-labels')?.textContent ?? '{}',
+  );
+
+  /** Where a new opening goes: the middle of the longest side that has no opening yet. */
+  function freeSide(): Side {
+    const taken = new Set(openings.map((opening) => opening.side));
+    const free = SIDES.filter((side) => !taken.has(side));
+    const order = (side: Side) =>
+      side === 'north' || side === 'south' ? Number(inputs.width.value) : Number(inputs.depth.value);
+    const pool = free.length > 0 ? free : SIDES;
+    return [...pool].sort((a, b) => order(b) - order(a))[0]!;
+  }
+
+  const sideRun = (side: Side): number =>
+    side === 'north' || side === 'south' ? Number(inputs.width.value) : Number(inputs.depth.value);
+
+  function addOpening(kind: 'door-swing' | 'window') {
+    const side = freeSide();
+    const width = kind === 'window' ? 1500 : 900;
+    /** Centred, because the middle of a wall is never a wrong first guess. */
+    const offset = Math.max(0, Math.round((sideRun(side) - width) / 2));
+    openings = [
+      ...openings,
+      kind === 'window'
+        ? { id: `w${nextOpening}`, kind, side, offset, width, height: 1400, sill: 900, to: 'outside' }
+        : {
+            id: `d${nextOpening}`,
+            kind,
+            side,
+            offset,
+            width,
+            height: 2100,
+            sill: 0,
+            swing: 'left-in',
+            to: 'outside',
+          },
+    ];
+    nextOpening += 1;
+    /** A side cannot be both open and carry a door: the door would be in nothing. */
+    openSides = openSides.filter((s) => s !== side);
+    syncOpenSides();
+    renderOpenings();
+    draw();
+  }
+
+  /**
+   * One row per opening: what it is, which side, how wide, how far along. Four controls,
+   * which is as few as the thing can be described in and still be moved where it belongs.
+   */
+  function renderOpenings() {
+    const list = document.getElementById('p-openings');
+    if (!list) return;
+    if (openings.length === 0) {
+      list.innerHTML = `<li class="text-xs text-flag">${OPENING_TEXT.none}</li>`;
+      return;
+    }
+    list.innerHTML = openings
+      .map((opening, index) => {
+        const run = sideRun(opening.side);
+        const glazed = opening.kind.startsWith('window');
+        return (
+          `<li class="rounded-lg border border-line bg-paper-deep/40 p-2.5" data-opening="${index}">` +
+          `<div class="flex items-center justify-between gap-2">` +
+          `<span class="text-xs font-medium text-ink">${glazed ? OPENING_TEXT.window : OPENING_TEXT.door}</span>` +
+          `<button type="button" data-drop-opening="${index}" class="text-2xs text-ink-faint hover:text-flag" aria-label="${OPENING_TEXT.remove}">${OPENING_TEXT.remove}</button>` +
+          `</div>` +
+          `<div class="mt-2 grid grid-cols-3 gap-2">` +
+          `<label class="block"><span class="text-2xs text-ink-faint">${OPENING_TEXT.side}</span>` +
+          `<select data-field="side" class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs text-ink">` +
+          SIDES.map(
+            (side) =>
+              `<option value="${side}"${side === opening.side ? ' selected' : ''}>${SIDE_TEXT[side]}</option>`,
+          ).join('') +
+          `</select></label>` +
+          `<label class="block"><span class="text-2xs text-ink-faint">${OPENING_TEXT.width}</span>` +
+          `<input data-field="width" type="number" min="600" max="${run}" step="50" value="${opening.width}" class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs text-ink"/></label>` +
+          `<label class="block"><span class="text-2xs text-ink-faint">${OPENING_TEXT.along}</span>` +
+          `<input data-field="offset" type="number" min="0" max="${Math.max(0, run - opening.width)}" step="50" value="${opening.offset}" class="mt-0.5 w-full rounded border border-line bg-card px-1.5 py-1 text-xs text-ink"/></label>` +
+          `</div></li>`
+        );
+      })
+      .join('');
+  }
+
+  function syncOpenSides() {
+    for (const box of document.querySelectorAll<HTMLInputElement>('[data-open-side]')) {
+      const side = box.dataset.openSide as Side;
+      box.checked = openSides.includes(side);
+      /** A side carrying a door or window cannot also be open, so say so rather than allow it. */
+      const used = openings.some((opening) => opening.side === side);
+      box.disabled = used;
+      box.parentElement?.classList.toggle('opacity-40', used);
+    }
+  }
+
+  document.getElementById('p-add-door')?.addEventListener('click', () => addOpening('door-swing'));
+  document.getElementById('p-add-window')?.addEventListener('click', () => addOpening('window'));
+
+  document.getElementById('p-openings')?.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>('[data-drop-opening]');
+    if (!button) return;
+    openings = openings.filter((_, i) => i !== Number(button.dataset.dropOpening));
+    syncOpenSides();
+    renderOpenings();
+    draw();
+  });
+
+  document.getElementById('p-openings')?.addEventListener('change', (event) => {
+    const field = (event.target as HTMLElement).closest<HTMLElement>('[data-field]');
+    const row = (event.target as HTMLElement).closest<HTMLElement>('[data-opening]');
+    if (!field || !row) return;
+    const index = Number(row.dataset.opening);
+    const opening = openings[index];
+    if (!opening) return;
+    const value = (field as HTMLInputElement | HTMLSelectElement).value;
+
+    if (field.dataset.field === 'side') {
+      opening.side = value as Side;
+      openSides = openSides.filter((s) => s !== opening.side);
+    } else if (field.dataset.field === 'width') {
+      opening.width = Number(value);
+    } else {
+      opening.offset = Number(value);
+    }
+
+    /** Kept inside its wall, so an opening can never run off the end of the side it is on. */
+    const run = sideRun(opening.side);
+    opening.width = Math.min(Math.max(600, opening.width), run);
+    opening.offset = Math.min(Math.max(0, opening.offset), run - opening.width);
+
+    syncOpenSides();
+    renderOpenings();
+    draw();
+  });
+
+  for (const box of document.querySelectorAll<HTMLInputElement>('[data-open-side]')) {
+    box.addEventListener('change', () => {
+      const side = box.dataset.openSide as Side;
+      openSides = box.checked ? [...openSides, side] : openSides.filter((s) => s !== side);
+      draw();
+    });
+  }
 
   /**
    * The drawing, through the same functions the published plans go through.
@@ -414,8 +706,13 @@ const plannerText = {
     out.svg.innerHTML =
       `<defs>${defs}</defs>` +
       `<rect x="${frame.box.x}" y="${frame.box.y}" width="${frame.box.width}" height="${frame.box.depth}" fill="${PLAN_COLOURS.sheet}"/>` +
-      `<path d="${pathOf(envelopeOf(project, [room]))}" fill="${PLAN_COLOURS.structure}" stroke="${PLAN_COLOURS.structureEdge}" stroke-width="${px(1.4)}"/>` +
-      `<path d="${roomPath(room)}" fill="${floor.pattern === 'none' ? roomFill(design) : `url(#${ids.floor})`}" stroke="${PLAN_COLOURS.structureEdge}" stroke-opacity="0.5" stroke-width="${px(0.5)}"/>` +
+      `<path d="${wallBandsPath(room, wall)}" fill="${PLAN_COLOURS.structure}" stroke="${PLAN_COLOURS.structureEdge}" stroke-width="${px(1.4)}"/>` +
+      /**
+       * The floor, with no outline on it. An open side has no wall, and a line along it
+       * says there is one; the poché is what draws an edge, so where there is no poché
+       * there should be nothing at all.
+       */
+      `<path d="${roomPath(room)}" fill="${floor.pattern === 'none' ? roomFill(design) : `url(#${ids.floor})`}"/>` +
       openings +
       pieces;
 
@@ -428,7 +725,12 @@ const plannerText = {
     out.coverage.textContent = area > 0 ? `${Math.round((covered / area) * 100)}%` : '—';
     out.outer.textContent = `${formatLength(outer.width)} × ${formatLength(outer.depth)}`;
 
-    const findings = checkDesign(room, design);
+    /**
+     * The shell first, then the furniture. Whether a room has a door outranks whether a
+     * coffee table is too close to a sofa, and the sort in the display puts errors above
+     * warnings anyway, so a sealed box says so at the top of the list.
+     */
+    const findings = [...checkRoom(room), ...checkDesign(room, design)];
     out.findings.innerHTML =
       findings.length === 0
         ? `<li class="text-sm text-ink-soft">${text.clear}</li>`
@@ -544,8 +846,21 @@ const plannerText = {
     draw();
   });
 
-  for (const input of [inputs.width, inputs.depth, inputs.wall, inputs.style]) {
-    input.addEventListener('input', draw);
+  for (const input of [inputs.width, inputs.depth, inputs.wall, inputs.style, inputs.kind]) {
+    input.addEventListener('input', () => {
+      /**
+       * Shrinking a room can leave an opening hanging off the end of its wall, so every
+       * opening is pulled back inside before anything is drawn. The alternative is a
+       * window drawn in mid-air, which the geometry would accept.
+       */
+      for (const opening of openings) {
+        const run = sideRun(opening.side);
+        opening.width = Math.min(opening.width, run);
+        opening.offset = Math.min(opening.offset, Math.max(0, run - opening.width));
+      }
+      renderOpenings();
+      draw();
+    });
   }
 
   out.copy.addEventListener('click', async () => {
@@ -556,6 +871,8 @@ const plannerText = {
     }, 1600);
   });
 
+  renderOpenings();
+  syncOpenSides();
   renderList();
   draw();
 </script>
