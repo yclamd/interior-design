@@ -49,6 +49,15 @@ export interface Finding {
    * one it is — which is worse than not checking.
    */
   room?: string;
+  /**
+   * The pieces the finding is about, by id.
+   *
+   * A finding names them in its message, which is enough to read but not enough to act
+   * on: "the coffee table eats into the sofa's legroom" still leaves somebody scanning a
+   * drawing for a coffee table. Carrying the ids lets whatever shows the finding point at
+   * the thing instead of describing it.
+   */
+  pieces?: string[];
 }
 
 /** Rotation can move a corner by a fraction of a millimetre; ignore slivers. */
@@ -102,6 +111,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
       findings.push({
         severity: 'error',
         code: 'outside-room',
+        pieces: [item.id],
         message: `${item.name} is ${formatArea(own - inside)} outside the room outline. Either the piece has moved or the room was measured smaller than it is.`,
       });
     }
@@ -117,6 +127,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
         findings.push({
           severity: 'error',
           code: 'pieces-overlap',
+          pieces: [a.id, b.id],
           message: `${a.name} and ${b.name} share ${formatArea(area)} of floor. Two things cannot stand in the same place.`,
         });
       }
@@ -140,6 +151,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
           findings.push({
             severity: 'warning',
             code: 'door-swing',
+            pieces: [item.id],
             message: `The ${label(opening)} sweeps ${formatArea(area)} of ${item.name}. It will stop before it is open.`,
           });
         }
@@ -156,6 +168,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
           findings.push({
             severity: 'warning',
             code: 'door-approach',
+            pieces: [item.id],
             message: `${item.name} stands in the ${formatLength(DOOR_APPROACH)} of landing space in front of the ${label(opening)}.`,
           });
         }
@@ -171,6 +184,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
           findings.push({
             severity: 'note',
             code: 'window-blocked',
+            pieces: [item.id],
             message: `${item.name} stands ${formatLength(item.height)} tall against the ${label(opening)}, whose sill is at ${formatLength(opening.sill)}. It will take some of the light.`,
           });
         }
@@ -189,6 +203,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
           findings.push({
             severity: 'warning',
             code: 'clearance',
+            pieces: [other.id, item.id],
             message: `${other.name} eats into the ${formatLength(zone.depth)} ${item.name} needs on its ${zone.side} face.`,
           });
         }
@@ -199,6 +214,7 @@ export function checkDesign(room: Room, design: Design): Finding[] {
         findings.push({
           severity: 'note',
           code: 'clearance-wall',
+          pieces: [item.id],
           message: `The ${formatLength(zone.depth)} ${item.name} needs on its ${zone.side} face runs into a wall.`,
         });
       }

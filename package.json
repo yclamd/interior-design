@@ -14,7 +14,8 @@
     "planner-svg": "tsx scripts/check-planner-draw.ts",
     "plans": "python3 scripts/render-plans.py",
     "arrange": "tsx scripts/check-arrange.ts",
-    "presets": "tsx scripts/check-presets.ts"
+    "presets": "tsx scripts/check-presets.ts",
+    "styles": "tsx scripts/check-styles.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

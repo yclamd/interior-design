@@ -1,7 +1,8 @@
 import type { Box, Mm, Project, Room } from '~/data/types';
-import { bbox, grow, outlineInPlan } from './geometry';
+import { bbox, formatLength, grow, outlineInPlan } from './geometry';
 import {
   PLAN_COLOURS,
+  dimension,
   floorRender,
   frameFor,
   furnitureRenders,
@@ -11,6 +12,7 @@ import {
   roomFill,
   roomPath,
   wallBandsPath,
+  type DimensionRender,
   type FloorRender,
   type FurnitureRender,
   type OpeningRender,
@@ -514,6 +516,79 @@ export function openingSvg(
   return `<g>${parts.join('')}</g>`;
 }
 
+/* ── Dimensions and north ──────────────────────────────────────────────────── */
+
+/**
+ * A dimension line, its witness lines, and the figure it carries.
+ *
+ * The figure gets its own patch of sheet rather than relying on paint-order, which not
+ * every renderer honours: a dimension has to be readable over whatever it crosses.
+ */
+export function dimensionSvg(dim: DimensionRender, px: Px): string {
+  const font = px(11);
+  const plate = {
+    width: dim.text.length * font * 0.62 + px(6),
+    height: font * 1.15,
+    y: dim.at.y - px(3.5),
+  };
+  const witnesses = dim.witnesses
+    .map((d) => tag('path', { d, 'stroke-width': px(0.5), 'stroke-opacity': 0.55 }))
+    .join('');
+  const turn = dim.vertical ? ` transform="rotate(-90 ${dim.at.x} ${dim.at.y})"` : '';
+
+  return (
+    `<g stroke="${PLAN_COLOURS.dimension}" fill="none">` +
+    tag('path', { d: dim.line, 'stroke-width': px(0.7) }) +
+    witnesses +
+    `<g${turn}>` +
+    rect(dim.at.x - plate.width / 2, plate.y - font * 0.82, plate.width, plate.height, {
+      rx: px(2),
+      fill: PLAN_COLOURS.sheet,
+      'fill-opacity': 0.93,
+      stroke: 'none',
+    }) +
+    `<text x="${dim.at.x}" y="${plate.y}" text-anchor="middle" font-size="${font}" font-weight="700" fill="${PLAN_COLOURS.dimension}" stroke="none">${escapeText(dim.text)}</text>` +
+    `</g></g>`
+  );
+}
+
+/**
+ * North, and with it the daylight.
+ *
+ * Which way a room faces decides which of its windows are worth anything, and a plan
+ * without a north point cannot be asked the question. Drawn as an arrow rather than a
+ * full rose: the bearing is the information, and a compass rose at this size is
+ * decoration standing in for it.
+ */
+export function northSvg(at: { x: Mm; y: Mm }, radius: Mm, northOffset: number): string {
+  const angle = ((northOffset - 90) * Math.PI) / 180;
+  const tip = { x: at.x + Math.cos(angle) * radius, y: at.y + Math.sin(angle) * radius };
+  const tail = {
+    x: at.x - Math.cos(angle) * radius * 0.55,
+    y: at.y - Math.sin(angle) * radius * 0.55,
+  };
+  const barb = radius * 0.34;
+  const left = {
+    x: tip.x - Math.cos(angle - 0.42) * barb,
+    y: tip.y - Math.sin(angle - 0.42) * barb,
+  };
+  const right = {
+    x: tip.x - Math.cos(angle + 0.42) * barb,
+    y: tip.y - Math.sin(angle + 0.42) * barb,
+  };
+
+  return (
+    `<g stroke="${PLAN_COLOURS.dimension}" fill="none" stroke-width="${radius * 0.07}" stroke-linecap="round">` +
+    circle(at.x, at.y, radius, { 'stroke-opacity': 0.3 }) +
+    tag('path', { d: `M ${tail.x} ${tail.y} L ${tip.x} ${tip.y}` }) +
+    tag('path', {
+      d: `M ${left.x} ${left.y} L ${tip.x} ${tip.y} L ${right.x} ${right.y}`,
+      fill: PLAN_COLOURS.dimension,
+    }) +
+    `</g>`
+  );
+}
+
 /* ── One room, whole ───────────────────────────────────────────────────────── */
 
 export interface RoomPlan {
@@ -528,6 +603,10 @@ export interface RoomPlanOptions {
   selected?: Box | null;
   /** Distinct per drawing, so two plans on one page cannot share a pattern id. */
   prefix?: string;
+  /** Off for a thumbnail, where the figures would be illegible and the detail noise. */
+  dimensions?: boolean;
+  north?: boolean;
+  detail?: boolean;
 }
 
 /**
@@ -549,12 +628,16 @@ export function roomPlanSvg(
 ): RoomPlan {
   const design = room.designs[0]!;
   const wall = project.walls.exterior;
+  const { dimensions = true, north = true, detail = true } = options;
   const inner = bbox(outlineInPlan(room));
-  const frame = frameFor(
-    grow(inner, wall),
-    Math.max(240, Math.round(Math.max(inner.width, inner.depth) * 0.08)),
-    900,
-  );
+  /**
+   * Room enough for the dimension strings outside the walls when they are drawn, and a
+   * tighter margin when they are not, so a thumbnail is not mostly paper.
+   */
+  const margin = dimensions
+    ? Math.max(620, Math.round(Math.max(inner.width, inner.depth) * 0.19))
+    : Math.max(200, Math.round(Math.max(inner.width, inner.depth) * 0.06));
+  const frame = frameFor(grow(inner, wall), margin, 900);
   const px = frame.px;
   const prefix = options.prefix ?? room.id;
   const ids = {
@@ -617,9 +700,37 @@ export function roomPlanSvg(
       )
       .join('') +
     furnitureRenders(room, design)
-      .map((piece) => furnitureSvg(piece, px, { detail: true, cast: ids.cast, weave: ids.weave }))
+      .map((piece) => furnitureSvg(piece, px, { detail, cast: ids.cast, weave: ids.weave }))
       .join('') +
-    ring;
+    ring +
+    (dimensions
+      ? [
+          dimension(
+            { x: inner.x, y: inner.y + inner.depth },
+            { x: inner.x + inner.width, y: inner.y + inner.depth },
+            px(52),
+            formatLength(inner.width),
+          ),
+          dimension(
+            { x: inner.x, y: inner.y },
+            { x: inner.x, y: inner.y + inner.depth },
+            -px(52),
+            formatLength(inner.depth),
+          ),
+        ]
+          .map((dim) => dimensionSvg(dim, px))
+          .join('')
+      : '') +
+    (north
+      ? northSvg(
+          {
+            x: frame.box.x + frame.box.width - px(32),
+            y: frame.box.y + px(32),
+          },
+          px(14),
+          project.northOffset,
+        )
+      : '');
 
   return { body, viewBox: frame.viewBox, px };
 }
